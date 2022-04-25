@@ -1,38 +1,44 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pytorch_lite/pigeon.dart';
 
 import 'enums/dtype.dart';
+
+export 'enums/dtype.dart';
 
 const TORCHVISION_NORM_MEAN_RGB = [0.485, 0.456, 0.406];
 const TORCHVISION_NORM_STD_RGB = [0.229, 0.224, 0.225];
 
 class PytorchLite {
-  static const MethodChannel _channel = MethodChannel('pytorch_lite');
-
-  static Future<String?> get platformVersion async {
-    final String? version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
+  ///Sets pytorch model path and returns Model
+  static Future<CustomModel> loadCustomModel(String path) async {
+    String absPathModelPath = await _getAbsolutePath(path);
+    int index = await ModelApi().loadModel(absPathModelPath, null, 0, 0);
+    return CustomModel(index);
   }
 
   ///Sets pytorch model path and returns Model
-  static Future<Model> loadModel(String path) async {
-    String absPath = await _getAbsolutePath(path);
-    int index = await _channel
-        .invokeMethod("loadModel", {"absPath": absPath, "assetPath": path});
-    return Model(index);
-  }
-
-  ///Sets pytorch model path and returns Model
-  static Future<ModelObjectDetection> loadObjectDetectionModel(
+  static Future<ClassificationModel> loadClassificationModel(
       String path) async {
-    String absPath = await _getAbsolutePath(path);
-    int index = await _channel
-        .invokeMethod("loadModel", {"absPath": absPath, "assetPath": path});
-    return ModelObjectDetection(index);
+    String absPathModelPath = await _getAbsolutePath(path);
+    int index = await ModelApi().loadModel(absPathModelPath, null, 0, 0);
+    return ClassificationModel(index);
+  }
+
+  ///Sets pytorch object detection model (path and lables) and returns Model
+  static Future<ModelObjectDetection> loadObjectDetectionModel(
+      String path, int numberOfClasses, int imageWidth, int imageHeight) async {
+    String absPathModelPath = await _getAbsolutePath(path);
+    int index = await ModelApi()
+        .loadModel(absPathModelPath, numberOfClasses, imageWidth, imageHeight);
+    return ModelObjectDetection(index, imageWidth, imageHeight);
   }
 
   static Future<String> _getAbsolutePath(String path) async {
@@ -73,24 +79,24 @@ Future<List<String>> _getLabelsTxt(String labelPath) async {
   return labelsData.split("\n");
 }
 
-class Model {
-  static const MethodChannel _channel = const MethodChannel('pytorch_mobile');
-
+class CustomModel {
   final int _index;
 
-  Model(this._index);
+  CustomModel(this._index);
 
   ///predicts abstract number input
   Future<List?> getPrediction(
       List<double> input, List<int> shape, DType dtype) async {
-    final List? prediction = await _channel.invokeListMethod('predict', {
-      "index": _index,
-      "data": input,
-      "shape": shape,
-      "dtype": dtype.toString().split(".").last
-    });
+    final List? prediction = await ModelApi().getPredictionCustom(
+        _index, input, shape, dtype.toString().split(".").last);
     return prediction;
   }
+}
+
+class ClassificationModel {
+  final int _index;
+
+  ClassificationModel(this._index);
 
   ///predicts image and returns the supposed label belonging to it
   Future<String> getImagePrediction(
@@ -108,20 +114,16 @@ class Model {
       labels = await _getLabelsCsv(labelPath);
     }
 
-    List byteArray = image.readAsBytesSync();
-    final List? prediction = await _channel.invokeListMethod("predictImage", {
-      "index": _index,
-      "image": byteArray,
-      "width": width,
-      "height": height,
-      "mean": mean,
-      "std": std
-    });
+    Uint8List byteArray = image.readAsBytesSync();
+
+    final List<double?>? prediction = await ModelApi()
+        .getImagePredictionList(_index, byteArray, width, height, mean, std);
+
     double maxScore = double.negativeInfinity;
     int maxScoreIndex = -1;
     for (int i = 0; i < prediction!.length; i++) {
-      if (prediction[i] > maxScore) {
-        maxScore = prediction[i];
+      if (prediction[i]! > maxScore) {
+        maxScore = prediction[i]!;
         maxScoreIndex = i;
       }
     }
@@ -135,38 +137,164 @@ class Model {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
-    final List? prediction = await _channel.invokeListMethod("predictImage", {
-      "index": _index,
-      "image": image.readAsBytesSync(),
-      "width": width,
-      "height": height,
-      "mean": mean,
-      "std": std
-    });
+    Uint8List byteArray = image.readAsBytesSync();
+    final List? prediction = await ModelApi()
+        .getImagePredictionList(_index, byteArray, width, height, mean, std);
     return prediction;
   }
 }
 
 class ModelObjectDetection {
-  static const MethodChannel _channel = const MethodChannel('pytorch_mobile');
-
   final int _index;
+  final int imageWidth;
+  final int imageHeight;
+  ModelObjectDetection(this._index, this.imageWidth, this.imageHeight);
 
-  ModelObjectDetection(this._index);
+  ///predicts image and returns the supposed label belonging to it
+  Future<List<ResultObjectDetection?>> getImagePrediction(
+      File image, String labelPath,
+      {double minimumScore = 0.5,
+      double IOUThershold = 0.5,
+      int boxesLimit = 10}) async {
+    List<String> labels = [];
+    if (labelPath.endsWith(".txt")) {
+      labels = await _getLabelsTxt(labelPath);
+    } else {
+      labels = await _getLabelsCsv(labelPath);
+    }
 
-  ///predicts abstract number input
-  Future<List?> getPrediction(
-      List<double> input, List<int> shape, DType dtype) async {
-    final List? prediction =
-        await _channel.invokeListMethod('predict_ObjectDetection', {
-      "index": _index,
-      "data": input,
-      "shape": shape,
-      "dtype": dtype.toString().split(".").last
-    });
+    Uint8List byteArray = image.readAsBytesSync();
+
+    List<ResultObjectDetection?> prediction = await ModelApi()
+        .getImagePredictionListObjectDetection(
+            _index, byteArray, minimumScore, IOUThershold, boxesLimit);
+    for (var element in prediction) {
+      element?.className = labels[element.classIndex];
+    }
     return prediction;
   }
 
+  ///predicts image but returns the raw net output
+  Future<List<ResultObjectDetection?>> getImagePredictionList(File image,
+      {double minimumScore = 0.5,
+      double IOUThershold = 0.5,
+      int boxesLimit = 10}) async {
+    Uint8List byteArray = image.readAsBytesSync();
+    final List<ResultObjectDetection?> prediction = await ModelApi()
+        .getImagePredictionListObjectDetection(
+            _index, byteArray, minimumScore, IOUThershold, boxesLimit);
+    return prediction;
+  }
+
+  /*
+
+   */
+  Widget renderBoxesOnImage(
+      File _image, List<ResultObjectDetection?> _recognitions,
+      {Color? boxesColor, bool showPercentage = true}) {
+    //if (_recognitions == null) return Cont;
+    //if (_imageHeight == null || _imageWidth == null) return [];
+
+    //double factorX = screen.width;
+    //double factorY = _imageHeight / _imageWidth * screen.width;
+    //boxesColor ??= Color.fromRGBO(37, 213, 253, 1.0);
+
+    print(_recognitions.length);
+    return LayoutBuilder(builder: (context, constraints) {
+      debugPrint(
+          'Max height: ${constraints.maxHeight}, max width: ${constraints.maxWidth}');
+      double factorX = constraints.maxWidth;
+      double factorY = constraints.maxHeight;
+      return Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            width: factorX,
+            height: factorY,
+            child: Container(
+                child: Image.file(
+              _image,
+              fit: BoxFit.fill,
+            )),
+          ),
+          ..._recognitions.map((re) {
+            if (re == null) {
+              return Container();
+            }
+            //change colors for each label
+            boxesColor ??= Colors.primaries[((re.className ?? "").length +
+                    (re.className ?? "").codeUnitAt(0) +
+                    re.classIndex) %
+                Colors.primaries.length];
+            print({
+              "left": re.rect.left.toDouble() * factorX,
+              "top": re.rect.top.toDouble() * factorY,
+              "width": re.rect.width.toDouble() * factorX,
+              "height": re.rect.height.toDouble() * factorY,
+            });
+            return Positioned(
+              left: re.rect.left * factorX,
+              top: re.rect.top * factorY - 20,
+              //width: re.rect.width.toDouble(),
+              //height: re.rect.height.toDouble(),
+
+              //left: re?.rect.left.toDouble(),
+              //top: re?.rect.top.toDouble(),
+              //right: re.rect.right.toDouble(),
+              //bottom: re.rect.bottom.toDouble(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 20,
+                    alignment: Alignment.centerRight,
+                    color: boxesColor,
+                    child: Text(
+                      (re.className ?? re.classIndex.toString()) +
+                          (showPercentage
+                              ? (re.score * 100).toStringAsFixed(2)
+                              : ""),
+                    ),
+                  ),
+                  Container(
+                    width: re.rect.width.toDouble() * factorX,
+                    height: re.rect.height.toDouble() * factorY,
+                    decoration: BoxDecoration(
+                        border: Border.all(color: boxesColor!, width: 3),
+                        borderRadius: BorderRadius.all(Radius.circular(2))),
+                    child: Container(),
+                  ),
+                ],
+              ),
+              /*
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  border: Border.all(
+                    color: boxesColor!,
+                    width: 2,
+                  ),
+                ),
+                child: Text(
+                  "${re.className ?? re.classIndex} ${(re.score * 100).toStringAsFixed(0)}%",
+                  style: TextStyle(
+                    background: Paint()..color = boxesColor!,
+                    color: Colors.white,
+                    fontSize: 12.0,
+                  ),
+                ),
+              ),*/
+            );
+          }).toList()
+        ],
+      );
+    });
+  }
+
+/*
   ///predicts image and returns the supposed label belonging to it
   Future<String> getImagePrediction(
       File image, int width, int height, String labelPath,
@@ -222,4 +350,6 @@ class ModelObjectDetection {
     });
     return prediction;
   }
+
+ */
 }

@@ -6,45 +6,46 @@ flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart 
 flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart  --java_out android/src/main/java/com/zezo789/pytorch_lite/Pigeon.java --java_package "com.zezo789.pytorch_lite"
 
 */
+class Rect {
+  double left;
+  double top;
+  double right;
+  double bottom;
+  double width;
+  double height;
+  Rect(this.left, this.top, this.width, this.height, this.right, this.bottom);
+}
 
-enum DType {
-  float32,
-  float64,
-  int32,
-  int64,
-  int8,
-  uint8,
+class ResultObjectDetection {
+  int classIndex;
+  String? className;
+  double score;
+  Rect rect;
+
+  ResultObjectDetection(this.classIndex, this.score, this.rect);
 }
 
 @HostApi()
 abstract class ModelApi {
   int loadModel(
-    String modelPath,
-    String labelsPath,
-  );
+      String modelPath, int? numberOfClasses, int imageWidth, int imageHeight);
 
   ///predicts abstract number input
   @async
   List? getPredictionCustom(
       int index, List<double> input, List<int> shape, String dtype);
 
-  ///predicts image and returns the supposed label belonging to it
-  @async
-  String getImagePrediction(int index, String imagePath, int width, int height,
-      List<double> mean, List<double> std);
-
   ///predicts image but returns the raw net output
   @async
-  List? getImagePredictionList(int index, String imagePath, int width,
-      int height, List<double> mean, List<double> std);
-
-  ///predicts image and returns the path of the image with detection on it
-  @async
-  String getImagePredictionObjectDetection(int index, String imagePath,
+  List<double>? getImagePredictionList(int index, Uint8List imageData,
       int width, int height, List<double> mean, List<double> std);
 
   ///predicts image but returns the output detections
   @async
-  List? getImagePredictionListObjectDetection(int index, String imagePath,
-      int width, int height, List<double> mean, List<double> std);
+  List<ResultObjectDetection> getImagePredictionListObjectDetection(
+      int index,
+      Uint8List imageData,
+      double minimumScore,
+      double IOUThreshold,
+      int boxesLimit);
 }
