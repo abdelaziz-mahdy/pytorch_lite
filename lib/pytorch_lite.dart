@@ -27,9 +27,11 @@ class PytorchLite {
    */
 
   ///Sets pytorch model path and returns Model
-  static Future<ClassificationModel> loadClassificationModel(String path, int imageWidth, int imageHeight) async {
+  static Future<ClassificationModel> loadClassificationModel(
+      String path, int imageWidth, int imageHeight) async {
     String absPathModelPath = await _getAbsolutePath(path);
-    int index = await ModelApi().loadModel(absPathModelPath, null, imageWidth, imageHeight);
+    int index = await ModelApi()
+        .loadModel(absPathModelPath, null, imageWidth, imageHeight);
     return ClassificationModel(index);
   }
 
@@ -101,8 +103,7 @@ class ClassificationModel {
   ClassificationModel(this._index);
 
   ///predicts image and returns the supposed label belonging to it
-  Future<String> getImagePrediction(
-      File image, String labelPath,
+  Future<String> getImagePrediction(File image, String labelPath,
       {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
       List<double> std = TORCHVISION_NORM_STD_RGB}) async {
     // Assert mean std
@@ -118,8 +119,8 @@ class ClassificationModel {
 
     Uint8List byteArray = image.readAsBytesSync();
 
-    final List<double?>? prediction = await ModelApi()
-        .getImagePredictionList(_index, byteArray, mean, std);
+    final List<double?>? prediction =
+        await ModelApi().getImagePredictionList(_index, byteArray, mean, std);
 
     double maxScore = double.negativeInfinity;
     int maxScoreIndex = -1;
@@ -140,8 +141,8 @@ class ClassificationModel {
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
     Uint8List byteArray = image.readAsBytesSync();
-    final List? prediction = await ModelApi()
-        .getImagePredictionList(_index, byteArray, mean, std);
+    final List? prediction =
+        await ModelApi().getImagePredictionList(_index, byteArray, mean, std);
     return prediction;
   }
 }
@@ -224,11 +225,19 @@ class ModelObjectDetection {
             if (re == null) {
               return Container();
             }
-            //change colors for each label
-            boxesColor ??= Colors.primaries[((re.className ?? "").length +
-                    (re.className ?? "").codeUnitAt(0) +
-                    re.classIndex) %
-                Colors.primaries.length];
+            Color usedColor;
+            if (boxesColor == null) {
+              //change colors for each label
+              usedColor = Colors.primaries[
+                  ((re.className ?? re.classIndex.toString()).length +
+                          (re.className ?? re.classIndex.toString())
+                              .codeUnitAt(0) +
+                          re.classIndex) %
+                      Colors.primaries.length];
+            } else {
+              usedColor = boxesColor;
+            }
+
             print({
               "left": re.rect.left.toDouble() * factorX,
               "top": re.rect.top.toDouble() * factorY,
@@ -253,11 +262,12 @@ class ModelObjectDetection {
                   Container(
                     height: 20,
                     alignment: Alignment.centerRight,
-                    color: boxesColor,
+                    color: usedColor,
                     child: Text(
                       (re.className ?? re.classIndex.toString()) +
+                          "_" +
                           (showPercentage
-                              ? (re.score * 100).toStringAsFixed(2)
+                              ? (re.score * 100).toStringAsFixed(2) + "%"
                               : ""),
                     ),
                   ),
@@ -265,7 +275,7 @@ class ModelObjectDetection {
                     width: re.rect.width.toDouble() * factorX,
                     height: re.rect.height.toDouble() * factorY,
                     decoration: BoxDecoration(
-                        border: Border.all(color: boxesColor!, width: 3),
+                        border: Border.all(color: usedColor, width: 3),
                         borderRadius: BorderRadius.all(Radius.circular(2))),
                     child: Container(),
                   ),

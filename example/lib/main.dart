@@ -35,9 +35,10 @@ class _MyAppState extends State<MyApp> {
 
   //load your model
   Future loadModel() async {
-    String pathImageModel = "assets/models/model.ptl";
+    String pathImageModel = "assets/models/skin classification.ptl";
     //String pathCustomModel = "assets/models/custom_model.ptl";
-    String pathObjectDetectionModel = "assets/models/best (2).torchscript";
+    String pathObjectDetectionModel =
+        "assets/models/Dental objectDetection.torchscript";
     try {
       _imageModel =
           await PytorchLite.loadClassificationModel(pathImageModel, 224, 224);
@@ -50,31 +51,38 @@ class _MyAppState extends State<MyApp> {
   }
 
   //run an image model
-  Future runImageModel() async {
+  Future runObjectDetectionWithoutLabels() async {
     //pick a random image
-    final PickedFile? image = await _picker.getImage(
-        source: ImageSource.gallery, maxHeight: 512, maxWidth: 512);
-    //get prediction
-    //labels are 1000 random english words for show purposes
-    _imagePrediction = await _imageModel!
-        .getImagePrediction(File(image!.path), "assets/labels/labels_skin.csv");
-    print(await _imageModel!.getImagePredictionList(
-      File(image.path),
-    ));
-
-    List<ResultObjectDetection?> objDetect =
-        await _objectModel.getImagePredictionList(File(image.path));
+    final PickedFile? image =
+        await _picker.getImage(source: ImageSource.gallery);
+    objDetect = await _objectModel.getImagePredictionList(File(image!.path));
     objDetect.forEach((element) {
       print({
         "score": element?.score,
         "className": element?.className,
         "class": element?.classIndex,
-        "rect": element?.rect,
+        "rect": {
+          "left": element?.rect.left,
+          "top": element?.rect.top,
+          "width": element?.rect.width,
+          "height": element?.rect.height,
+          "right": element?.rect.right,
+          "bottom": element?.rect.bottom,
+        },
       });
     });
+    setState(() {
+      //this.objDetect = objDetect;
+      _image = File(image.path);
+    });
+  }
 
+  Future runObjectDetection() async {
+    //pick a random image
+    final PickedFile? image =
+        await _picker.getImage(source: ImageSource.gallery);
     objDetect = await _objectModel.getImagePrediction(
-        File(image.path), "assets/labels/labelmap.txt",
+        File(image!.path), "assets/labels/labelmap_dental.txt",
         minimumScore: 0.1, IOUThershold: 0.3);
     objDetect.forEach((element) {
       print({
@@ -86,11 +94,31 @@ class _MyAppState extends State<MyApp> {
           "top": element?.rect.top,
           "width": element?.rect.width,
           "height": element?.rect.height,
+          "right": element?.rect.right,
+          "bottom": element?.rect.bottom,
         },
       });
     });
     setState(() {
-      this.objDetect = objDetect;
+      //this.objDetect = objDetect;
+      _image = File(image.path);
+    });
+  }
+
+  Future runClassification() async {
+    objDetect = [];
+    //pick a random image
+    final PickedFile? image =
+        await _picker.getImage(source: ImageSource.gallery);
+    //get prediction
+    //labels are 1000 random english words for show purposes
+    _imagePrediction = await _imageModel!
+        .getImagePrediction(File(image!.path), "assets/labels/labels_skin.csv");
+    print(await _imageModel!.getImagePredictionList(
+      File(image.path),
+    ));
+    setState(() {
+      //this.objDetect = objDetect;
       _image = File(image.path);
     });
   }
@@ -115,7 +143,7 @@ class _MyAppState extends State<MyApp> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Expanded(
-              child: objDetect != null
+              child: objDetect.isNotEmpty
                   ? _image == null
                       ? Text('No image selected.')
                       : _objectModel.renderBoxesOnImage(_image!, objDetect)
@@ -129,30 +157,59 @@ class _MyAppState extends State<MyApp> {
                 child: Text("$_imagePrediction"),
               ),
             ),
+            /*
             Center(
               child: TextButton(
                 onPressed: runImageModel,
-                child: Icon(
-                  Icons.add_a_photo,
-                  color: Colors.grey,
+                child: Row(
+                  children: [
+
+                    Icon(
+                      Icons.add_a_photo,
+                      color: Colors.grey,
+                    ),
+                  ],
                 ),
               ),
             ),
-            /*
+            */
+
             TextButton(
-              onPressed: runCustomModel,
+              onPressed: runClassification,
               style: TextButton.styleFrom(
                 backgroundColor: Colors.blue,
               ),
               child: Text(
-                "Run custom model",
+                "Run Classification",
                 style: TextStyle(
                   color: Colors.white,
                 ),
               ),
             ),
-
-             */
+            TextButton(
+              onPressed: runObjectDetection,
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.blue,
+              ),
+              child: Text(
+                "Run object detection with labels",
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: runObjectDetectionWithoutLabels,
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.blue,
+              ),
+              child: Text(
+                "Run object detection without labels",
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
             Center(
               child: Visibility(
                 visible: _prediction != null,
