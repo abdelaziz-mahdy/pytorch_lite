@@ -35,16 +35,17 @@ class _MyAppState extends State<MyApp> {
 
   //load your model
   Future loadModel() async {
-    String pathImageModel = "assets/models/skin classification.ptl";
+    String pathImageModel = "assets/models/model_classification.pt";
     //String pathCustomModel = "assets/models/custom_model.ptl";
-    String pathObjectDetectionModel =
-        "assets/models/Dental objectDetection.torchscript";
+    String pathObjectDetectionModel = "assets/models/yolov5s.torchscript";
     try {
-      _imageModel =
-          await PytorchLite.loadClassificationModel(pathImageModel, 224, 224);
+      _imageModel = await PytorchLite.loadClassificationModel(
+          pathImageModel, 224, 224,
+          labelPath: "assets/labels/label_classification_imageNet.txt");
       //_customModel = await PytorchLite.loadCustomModel(pathCustomModel);
       _objectModel = await PytorchLite.loadObjectDetectionModel(
-          pathObjectDetectionModel, 17, 640, 640);
+          pathObjectDetectionModel, 80, 640, 640,
+          labelPath: "assets/labels/labels_objectDetection_Coco.txt");
     } on PlatformException {
       print("only supported for android and ios so far");
     }
@@ -81,8 +82,7 @@ class _MyAppState extends State<MyApp> {
     //pick a random image
     final PickedFile? image =
         await _picker.getImage(source: ImageSource.gallery);
-    objDetect = await _objectModel.getImagePrediction(
-        File(image!.path), "assets/labels/labelmap_dental.txt",
+    objDetect = await _objectModel.getImagePrediction(File(image!.path),
         minimumScore: 0.1, IOUThershold: 0.3);
     objDetect.forEach((element) {
       print({
@@ -112,11 +112,12 @@ class _MyAppState extends State<MyApp> {
         await _picker.getImage(source: ImageSource.gallery);
     //get prediction
     //labels are 1000 random english words for show purposes
-    _imagePrediction = await _imageModel!
-        .getImagePrediction(File(image!.path), "assets/labels/labels_skin.csv");
-    print(await _imageModel!.getImagePredictionList(
+    _imagePrediction = await _imageModel!.getImagePrediction(File(image!.path));
+
+    List<double?>? predictionList = await _imageModel!.getImagePredictionList(
       File(image.path),
-    ));
+    );
+    print(predictionList);
     setState(() {
       //this.objDetect = objDetect;
       _image = File(image.path);

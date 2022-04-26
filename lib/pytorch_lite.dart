@@ -28,20 +28,40 @@ class PytorchLite {
 
   ///Sets pytorch model path and returns Model
   static Future<ClassificationModel> loadClassificationModel(
-      String path, int imageWidth, int imageHeight) async {
+      String path, int imageWidth, int imageHeight,
+      {String? labelPath}) async {
     String absPathModelPath = await _getAbsolutePath(path);
     int index = await ModelApi()
         .loadModel(absPathModelPath, null, imageWidth, imageHeight);
-    return ClassificationModel(index);
+    List<String> labels = [];
+    if (labelPath != null) {
+      if (labelPath.endsWith(".txt")) {
+        labels = await _getLabelsTxt(labelPath);
+      } else {
+        labels = await _getLabelsCsv(labelPath);
+      }
+    }
+
+    return ClassificationModel(index, labels);
   }
 
   ///Sets pytorch object detection model (path and lables) and returns Model
   static Future<ModelObjectDetection> loadObjectDetectionModel(
-      String path, int numberOfClasses, int imageWidth, int imageHeight) async {
+      String path, int numberOfClasses, int imageWidth, int imageHeight,
+      {String? labelPath}) async {
     String absPathModelPath = await _getAbsolutePath(path);
+
     int index = await ModelApi()
         .loadModel(absPathModelPath, numberOfClasses, imageWidth, imageHeight);
-    return ModelObjectDetection(index, imageWidth, imageHeight);
+    List<String> labels = [];
+    if (labelPath != null) {
+      if (labelPath.endsWith(".txt")) {
+        labels = await _getLabelsTxt(labelPath);
+      } else {
+        labels = await _getLabelsCsv(labelPath);
+      }
+    }
+    return ModelObjectDetection(index, imageWidth, imageHeight, labels);
   }
 
   static Future<String> _getAbsolutePath(String path) async {
@@ -99,23 +119,16 @@ class CustomModel {
 */
 class ClassificationModel {
   final int _index;
-
-  ClassificationModel(this._index);
+  final List<String> labels;
+  ClassificationModel(this._index, this.labels);
 
   ///predicts image and returns the supposed label belonging to it
-  Future<String> getImagePrediction(File image, String labelPath,
+  Future<String> getImagePrediction(File image,
       {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
       List<double> std = TORCHVISION_NORM_STD_RGB}) async {
     // Assert mean std
     assert(mean.length == 3, "mean should have size of 3");
     assert(std.length == 3, "std should have size of 3");
-
-    List<String> labels = [];
-    if (labelPath.endsWith(".txt")) {
-      labels = await _getLabelsTxt(labelPath);
-    } else {
-      labels = await _getLabelsCsv(labelPath);
-    }
 
     Uint8List byteArray = image.readAsBytesSync();
 
@@ -130,18 +143,19 @@ class ClassificationModel {
         maxScoreIndex = i;
       }
     }
+
     return labels[maxScoreIndex];
   }
 
   ///predicts image but returns the raw net output
-  Future<List?> getImagePredictionList(File image,
+  Future<List<double?>?> getImagePredictionList(File image,
       {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
       List<double> std = TORCHVISION_NORM_STD_RGB}) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
     Uint8List byteArray = image.readAsBytesSync();
-    final List? prediction =
+    final List<double?>? prediction =
         await ModelApi().getImagePredictionList(_index, byteArray, mean, std);
     return prediction;
   }
@@ -151,29 +165,26 @@ class ModelObjectDetection {
   final int _index;
   final int imageWidth;
   final int imageHeight;
-  ModelObjectDetection(this._index, this.imageWidth, this.imageHeight);
+  final List<String> labels;
+
+  ModelObjectDetection(
+      this._index, this.imageWidth, this.imageHeight, this.labels);
 
   ///predicts image and returns the supposed label belonging to it
-  Future<List<ResultObjectDetection?>> getImagePrediction(
-      File image, String labelPath,
+  Future<List<ResultObjectDetection?>> getImagePrediction(File image,
       {double minimumScore = 0.5,
       double IOUThershold = 0.5,
       int boxesLimit = 10}) async {
-    List<String> labels = [];
-    if (labelPath.endsWith(".txt")) {
-      labels = await _getLabelsTxt(labelPath);
-    } else {
-      labels = await _getLabelsCsv(labelPath);
-    }
-
     Uint8List byteArray = image.readAsBytesSync();
 
     List<ResultObjectDetection?> prediction = await ModelApi()
         .getImagePredictionListObjectDetection(
             _index, byteArray, minimumScore, IOUThershold, boxesLimit);
+
     for (var element in prediction) {
       element?.className = labels[element.classIndex];
     }
+
     return prediction;
   }
 
