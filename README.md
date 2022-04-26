@@ -13,7 +13,29 @@
 
 
 ## Usage
+## preparing the model 
+- classification
+```python
+import torch
+from torch.utils.mobile_optimizer import optimize_for_mobile
 
+
+model = torch.load('model_scripted.pt',map_location="cpu")
+model.eval()
+example = torch.rand(1, 3, 224, 224)
+traced_script_module = torch.jit.trace(model, example)
+optimized_traced_model = optimize_for_mobile(traced_script_module)
+optimized_traced_model._save_for_lite_interpreter("model.pt")
+```
+
+- object detection (yolov5)
+```python
+!python export.py --weights "the weights of your model" --include torchscript --img 640 --optimize
+```
+example 
+```python
+!python export.py --weights yolov5s.pt --include torchscript --img 640 --optimize
+```
 ### Installation
 
 To use this plugin, add `pytorch_mobile` as a [dependency in your pubspec.yaml file](https://flutter.dev/docs/development/packages-and-plugins/using-packages).
@@ -70,6 +92,11 @@ List<double?>? predictionList = await _imageModel!.getImagePredictionList(
         minimumScore: 0.1, IOUThershold: 0.3);
 ```
 
+### Get render boxes with image
+```dart
+objectModel.renderBoxesOnImage(_image!, objDetect)
+```
+
 ### Image prediction for an image with custom mean and std
 ```dart
 final mean = [0.5, 0.5, 0.5];
@@ -81,5 +108,5 @@ String prediction = await classificationModel
 
 
 #References 
-- code used the samme strucute as the package https://pub.dev/packages/pytorch_mobile
-- while using the updated code from https://github.com/pytorch/android-demo-app
+- Code used the same strucute as the package https://pub.dev/packages/pytorch_mobile
+- While using the updated code from https://github.com/pytorch/android-demo-app
