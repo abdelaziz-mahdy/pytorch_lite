@@ -1,5 +1,8 @@
-## 1.0.1
+
+## 1.0.2
 * initial release
+## 1.0.1
+* Making code run in background to avoid frame drops
 ## 1.0.0
 * Made some optimizations
 ## 0.0.4
