@@ -47,7 +47,7 @@ class _MyAppState extends State<MyApp> {
           pathObjectDetectionModel, 80, 640, 640,
           labelPath: "assets/labels/labels_objectDetection_Coco.txt");
     } on PlatformException {
-      print("only supported for android and ios so far");
+      print("only supported for android");
     }
   }
 

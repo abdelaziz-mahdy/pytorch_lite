@@ -27,20 +27,24 @@ class ResultObjectDetection {
 
 @HostApi()
 abstract class ModelApi {
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   int loadModel(String modelPath, int? numberOfClasses, int? imageWidth,
       int? imageHeight);
 
   ///predicts abstract number input
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   @async
   List? getPredictionCustom(
       int index, List<double> input, List<int> shape, String dtype);
 
   ///predicts image but returns the raw net output
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   @async
   List<double>? getImagePredictionList(
       int index, Uint8List imageData, List<double> mean, List<double> std);
 
   ///predicts image but returns the output detections
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   @async
   List<ResultObjectDetection> getImagePredictionListObjectDetection(
       int index,

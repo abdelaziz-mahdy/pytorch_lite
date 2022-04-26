@@ -291,8 +291,9 @@ public class Pigeon {
     /** Sets up an instance of `ModelApi` to handle messages through the `binaryMessenger`. */
     static void setup(BinaryMessenger binaryMessenger, ModelApi api) {
       {
+        BinaryMessenger.TaskQueue taskQueue = binaryMessenger.makeBackgroundTaskQueue();
         BasicMessageChannel<Object> channel =
-            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ModelApi.loadModel", getCodec());
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ModelApi.loadModel", getCodec(), taskQueue);
         if (api != null) {
           channel.setMessageHandler((message, reply) -> {
             Map<String, Object> wrapped = new HashMap<>();
@@ -318,8 +319,9 @@ public class Pigeon {
         }
       }
       {
+        BinaryMessenger.TaskQueue taskQueue = binaryMessenger.makeBackgroundTaskQueue();
         BasicMessageChannel<Object> channel =
-            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ModelApi.getPredictionCustom", getCodec());
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ModelApi.getPredictionCustom", getCodec(), taskQueue);
         if (api != null) {
           channel.setMessageHandler((message, reply) -> {
             Map<String, Object> wrapped = new HashMap<>();
@@ -364,8 +366,9 @@ public class Pigeon {
         }
       }
       {
+        BinaryMessenger.TaskQueue taskQueue = binaryMessenger.makeBackgroundTaskQueue();
         BasicMessageChannel<Object> channel =
-            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ModelApi.getImagePredictionList", getCodec());
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ModelApi.getImagePredictionList", getCodec(), taskQueue);
         if (api != null) {
           channel.setMessageHandler((message, reply) -> {
             Map<String, Object> wrapped = new HashMap<>();
@@ -410,8 +413,9 @@ public class Pigeon {
         }
       }
       {
+        BinaryMessenger.TaskQueue taskQueue = binaryMessenger.makeBackgroundTaskQueue();
         BasicMessageChannel<Object> channel =
-            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ModelApi.getImagePredictionListObjectDetection", getCodec());
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.ModelApi.getImagePredictionListObjectDetection", getCodec(), taskQueue);
         if (api != null) {
           channel.setMessageHandler((message, reply) -> {
             Map<String, Object> wrapped = new HashMap<>();
