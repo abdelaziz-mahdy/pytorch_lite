@@ -1,7 +1,7 @@
 # pytorch_lite
 
 - flutter package to help run pytorch lite models classification and yolov5
-- ios support (can be added following this ![https://github.com/pytorch/ios-demo-app](https://github.com/pytorch/ios-demo-app)) PR will be appreciated  
+- ios support (can be added following this https://github.com/pytorch/ios-demo-app) PR will be appreciated  
 
 
 # example for Classification
@@ -81,5 +81,5 @@ String prediction = await classificationModel
 
 
 #References 
-- code used the samme strucute as the package ![https://pub.dev/packages/pytorch_mobile](https://pub.dev/packages/pytorch_mobile)
-- while using the updated code from ![https://github.com/pytorch/android-demo-app](https://github.com/pytorch/android-demo-app)
+- code used the samme strucute as the package https://pub.dev/packages/pytorch_mobile
+- while using the updated code from https://github.com/pytorch/android-demo-app
