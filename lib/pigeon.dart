@@ -74,10 +74,11 @@ class ResultObjectDetection {
   static ResultObjectDetection decode(Object message) {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
     return ResultObjectDetection(
-        classIndex: pigeonMap['classIndex']! as int,
-        className: pigeonMap['className'] as String?,
-        score: pigeonMap['score']! as double,
-        rect: Rect.decode(pigeonMap['rect']!));
+      classIndex: pigeonMap['classIndex']! as int,
+      className: pigeonMap['className'] as String?,
+      score: pigeonMap['score']! as double,
+      rect: Rect.decode(pigeonMap['rect']!),
+    );
   }
 }
 
@@ -123,7 +124,7 @@ class ModelApi {
   static const MessageCodec<Object?> codec = _ModelApiCodec();
 
   Future<int> loadModel(String arg_modelPath, int? arg_numberOfClasses,
-      int arg_imageWidth, int arg_imageHeight) async {
+      int? arg_imageWidth, int? arg_imageHeight) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ModelApi.loadModel', codec,
         binaryMessenger: _binaryMessenger);
@@ -185,21 +186,14 @@ class ModelApi {
   Future<List<double?>?> getImagePredictionList(
       int arg_index,
       Uint8List arg_imageData,
-      int arg_width,
-      int arg_height,
       List<double?> arg_mean,
       List<double?> arg_std) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ModelApi.getImagePredictionList', codec,
         binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap = await channel.send(<Object?>[
-      arg_index,
-      arg_imageData,
-      arg_width,
-      arg_height,
-      arg_mean,
-      arg_std
-    ]) as Map<Object?, Object?>?;
+    final Map<Object?, Object?>? replyMap = await channel
+            .send(<Object?>[arg_index, arg_imageData, arg_mean, arg_std])
+        as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',

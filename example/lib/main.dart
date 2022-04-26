@@ -19,7 +19,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   ClassificationModel? _imageModel;
-  CustomModel? _customModel;
+  //CustomModel? _customModel;
   late ModelObjectDetection _objectModel;
   String? _imagePrediction;
   List? _prediction;
@@ -36,11 +36,12 @@ class _MyAppState extends State<MyApp> {
   //load your model
   Future loadModel() async {
     String pathImageModel = "assets/models/model.ptl";
-    String pathCustomModel = "assets/models/custom_model.ptl";
+    //String pathCustomModel = "assets/models/custom_model.ptl";
     String pathObjectDetectionModel = "assets/models/best (2).torchscript";
     try {
-      _imageModel = await PytorchLite.loadClassificationModel(pathImageModel);
-      _customModel = await PytorchLite.loadCustomModel(pathCustomModel);
+      _imageModel =
+          await PytorchLite.loadClassificationModel(pathImageModel, 224, 224);
+      //_customModel = await PytorchLite.loadCustomModel(pathCustomModel);
       _objectModel = await PytorchLite.loadObjectDetectionModel(
           pathObjectDetectionModel, 17, 640, 640);
     } on PlatformException {
@@ -55,10 +56,11 @@ class _MyAppState extends State<MyApp> {
         source: ImageSource.gallery, maxHeight: 512, maxWidth: 512);
     //get prediction
     //labels are 1000 random english words for show purposes
-    _imagePrediction = await _imageModel!.getImagePrediction(
-        File(image!.path), 224, 224, "assets/labels/labels_skin.csv");
-    print(
-        await _imageModel!.getImagePredictionList(File(image.path), 224, 224));
+    _imagePrediction = await _imageModel!
+        .getImagePrediction(File(image!.path), "assets/labels/labels_skin.csv");
+    print(await _imageModel!.getImagePredictionList(
+      File(image.path),
+    ));
 
     List<ResultObjectDetection?> objDetect =
         await _objectModel.getImagePredictionList(File(image.path));
@@ -93,6 +95,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+/*
   //run a custom model with number inputs
   Future runCustomModel() async {
     _prediction = await _customModel!
@@ -100,7 +103,7 @@ class _MyAppState extends State<MyApp> {
 
     setState(() {});
   }
-
+*/
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -135,6 +138,7 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
             ),
+            /*
             TextButton(
               onPressed: runCustomModel,
               style: TextButton.styleFrom(
@@ -147,6 +151,8 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
             ),
+
+             */
             Center(
               child: Visibility(
                 visible: _prediction != null,

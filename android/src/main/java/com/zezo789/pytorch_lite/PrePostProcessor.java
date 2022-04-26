@@ -36,6 +36,10 @@ public class PrePostProcessor {
 
     PrePostProcessor(){
     }
+    PrePostProcessor(int imageWidth,int imageHeight){
+        mImageWidth=imageWidth;
+        mImageHeight=imageHeight;
+    }
     PrePostProcessor(int numberOfClasses,int imageWidth,int imageHeight){
 
         mNumberOfClasses=numberOfClasses;

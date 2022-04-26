@@ -278,9 +278,9 @@ public class Pigeon {
 
   /** Generated interface from Pigeon that represents a handler of messages from Flutter.*/
   public interface ModelApi {
-    @NonNull Long loadModel(@NonNull String modelPath, @Nullable Long numberOfClasses, @NonNull Long imageWidth, @NonNull Long imageHeight);
+    @NonNull Long loadModel(@NonNull String modelPath, @Nullable Long numberOfClasses, @Nullable Long imageWidth, @Nullable Long imageHeight);
     void getPredictionCustom(@NonNull Long index, @NonNull List<Double> input, @NonNull List<Long> shape, @NonNull String dtype, Result<List<Object>> result);
-    void getImagePredictionList(@NonNull Long index, @NonNull byte[] imageData, @NonNull Long width, @NonNull Long height, @NonNull List<Double> mean, @NonNull List<Double> std, Result<List<Double>> result);
+    void getImagePredictionList(@NonNull Long index, @NonNull byte[] imageData, @NonNull List<Double> mean, @NonNull List<Double> std, Result<List<Double>> result);
     void getImagePredictionListObjectDetection(@NonNull Long index, @NonNull byte[] imageData, @NonNull Double minimumScore, @NonNull Double IOUThreshold, @NonNull Long boxesLimit, Result<List<ResultObjectDetection>> result);
 
     /** The codec used by ModelApi. */
@@ -304,13 +304,7 @@ public class Pigeon {
               }
               Number numberOfClassesArg = (Number)args.get(1);
               Number imageWidthArg = (Number)args.get(2);
-              if (imageWidthArg == null) {
-                throw new NullPointerException("imageWidthArg unexpectedly null.");
-              }
               Number imageHeightArg = (Number)args.get(3);
-              if (imageHeightArg == null) {
-                throw new NullPointerException("imageHeightArg unexpectedly null.");
-              }
               Long output = api.loadModel(modelPathArg, (numberOfClassesArg == null) ? null : numberOfClassesArg.longValue(), (imageWidthArg == null) ? null : imageWidthArg.longValue(), (imageHeightArg == null) ? null : imageHeightArg.longValue());
               wrapped.put("result", output);
             }
@@ -385,19 +379,11 @@ public class Pigeon {
               if (imageDataArg == null) {
                 throw new NullPointerException("imageDataArg unexpectedly null.");
               }
-              Number widthArg = (Number)args.get(2);
-              if (widthArg == null) {
-                throw new NullPointerException("widthArg unexpectedly null.");
-              }
-              Number heightArg = (Number)args.get(3);
-              if (heightArg == null) {
-                throw new NullPointerException("heightArg unexpectedly null.");
-              }
-              List<Double> meanArg = (List<Double>)args.get(4);
+              List<Double> meanArg = (List<Double>)args.get(2);
               if (meanArg == null) {
                 throw new NullPointerException("meanArg unexpectedly null.");
               }
-              List<Double> stdArg = (List<Double>)args.get(5);
+              List<Double> stdArg = (List<Double>)args.get(3);
               if (stdArg == null) {
                 throw new NullPointerException("stdArg unexpectedly null.");
               }
@@ -412,7 +398,7 @@ public class Pigeon {
                 }
               };
 
-              api.getImagePredictionList((indexArg == null) ? null : indexArg.longValue(), imageDataArg, (widthArg == null) ? null : widthArg.longValue(), (heightArg == null) ? null : heightArg.longValue(), meanArg, stdArg, resultCallback);
+              api.getImagePredictionList((indexArg == null) ? null : indexArg.longValue(), imageDataArg, meanArg, stdArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));

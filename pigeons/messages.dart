@@ -1,11 +1,11 @@
 import 'package:pigeon/pigeon.dart';
+// Build android only
+// flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart  --java_out android/src/main/java/com/zezo789/pytorch_lite/Pigeon.java --java_package "com.zezo789.pytorch_lite"
 
-/*
-flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart --objc_header_out ios/Runner/pigeon.h --objc_source_out ios/Runner/pigeon.m --java_out android/src/main/java/com/zezo789/pytorch_lite/Pigeon.java --java_package "com.zezo789.pytorch_lite"
+// Build android and ios (it fails)
 
-flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart  --java_out android/src/main/java/com/zezo789/pytorch_lite/Pigeon.java --java_package "com.zezo789.pytorch_lite"
+//flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart --objc_header_out ios/Runner/pigeon.h --objc_source_out ios/Runner/pigeon.m --java_out android/src/main/java/com/zezo789/pytorch_lite/Pigeon.java --java_package "com.zezo789.pytorch_lite"
 
-*/
 class Rect {
   double left;
   double top;
@@ -27,8 +27,8 @@ class ResultObjectDetection {
 
 @HostApi()
 abstract class ModelApi {
-  int loadModel(
-      String modelPath, int? numberOfClasses, int imageWidth, int imageHeight);
+  int loadModel(String modelPath, int? numberOfClasses, int? imageWidth,
+      int? imageHeight);
 
   ///predicts abstract number input
   @async
@@ -37,8 +37,8 @@ abstract class ModelApi {
 
   ///predicts image but returns the raw net output
   @async
-  List<double>? getImagePredictionList(int index, Uint8List imageData,
-      int width, int height, List<double> mean, List<double> std);
+  List<double>? getImagePredictionList(
+      int index, Uint8List imageData, List<double> mean, List<double> std);
 
   ///predicts image but returns the output detections
   @async

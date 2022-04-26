@@ -17,18 +17,19 @@ const TORCHVISION_NORM_MEAN_RGB = [0.485, 0.456, 0.406];
 const TORCHVISION_NORM_STD_RGB = [0.229, 0.224, 0.225];
 
 class PytorchLite {
+  /*
   ///Sets pytorch model path and returns Model
   static Future<CustomModel> loadCustomModel(String path) async {
     String absPathModelPath = await _getAbsolutePath(path);
     int index = await ModelApi().loadModel(absPathModelPath, null, 0, 0);
     return CustomModel(index);
   }
+   */
 
   ///Sets pytorch model path and returns Model
-  static Future<ClassificationModel> loadClassificationModel(
-      String path) async {
+  static Future<ClassificationModel> loadClassificationModel(String path, int imageWidth, int imageHeight) async {
     String absPathModelPath = await _getAbsolutePath(path);
-    int index = await ModelApi().loadModel(absPathModelPath, null, 0, 0);
+    int index = await ModelApi().loadModel(absPathModelPath, null, imageWidth, imageHeight);
     return ClassificationModel(index);
   }
 
@@ -79,6 +80,7 @@ Future<List<String>> _getLabelsTxt(String labelPath) async {
   return labelsData.split("\n");
 }
 
+/*
 class CustomModel {
   final int _index;
 
@@ -92,7 +94,7 @@ class CustomModel {
     return prediction;
   }
 }
-
+*/
 class ClassificationModel {
   final int _index;
 
@@ -100,7 +102,7 @@ class ClassificationModel {
 
   ///predicts image and returns the supposed label belonging to it
   Future<String> getImagePrediction(
-      File image, int width, int height, String labelPath,
+      File image, String labelPath,
       {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
       List<double> std = TORCHVISION_NORM_STD_RGB}) async {
     // Assert mean std
@@ -117,7 +119,7 @@ class ClassificationModel {
     Uint8List byteArray = image.readAsBytesSync();
 
     final List<double?>? prediction = await ModelApi()
-        .getImagePredictionList(_index, byteArray, width, height, mean, std);
+        .getImagePredictionList(_index, byteArray, mean, std);
 
     double maxScore = double.negativeInfinity;
     int maxScoreIndex = -1;
@@ -131,7 +133,7 @@ class ClassificationModel {
   }
 
   ///predicts image but returns the raw net output
-  Future<List?> getImagePredictionList(File image, int width, int height,
+  Future<List?> getImagePredictionList(File image,
       {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
       List<double> std = TORCHVISION_NORM_STD_RGB}) async {
     // Assert mean std
@@ -139,7 +141,7 @@ class ClassificationModel {
     assert(std.length == 3, "STD should have size of 3");
     Uint8List byteArray = image.readAsBytesSync();
     final List? prediction = await ModelApi()
-        .getImagePredictionList(_index, byteArray, width, height, mean, std);
+        .getImagePredictionList(_index, byteArray, mean, std);
     return prediction;
   }
 }

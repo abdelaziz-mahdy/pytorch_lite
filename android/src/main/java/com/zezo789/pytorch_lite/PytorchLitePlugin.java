@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import android.content.Context;
 
+import android.os.Build;
 import android.util.Log;
 
 import org.pytorch.DType;
@@ -26,6 +27,7 @@ import android.graphics.BitmapFactory;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 /** PytorchLitePlugin */
 public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
@@ -65,10 +67,14 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
     int i=-1;
     try {
       modules.add(LiteModuleLoader.load(modelPath));
-      if (numberOfClasses != null) {
+      if (numberOfClasses != null && imageWidth!=null && imageHeight!=null) {
         prePostProcessors.add(new PrePostProcessor(numberOfClasses.intValue(),imageWidth.intValue(),imageHeight.intValue()));
       }else{
+        if(imageWidth!=null && imageHeight!=null){
+          prePostProcessors.add(new PrePostProcessor(imageWidth.intValue(),imageHeight.intValue()));
+        }else{
         prePostProcessors.add(new PrePostProcessor());
+        }
       }
       i= (modules.size() - 1);
     } catch (Exception e) {
@@ -78,68 +84,64 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
     return (long) i;
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.N)
   @java.lang.Override
   public void getPredictionCustom(Long index, List<Double> input, List<Long> shape, String dtype, Pigeon.Result<List<Object>> result) {
     Module module = null;
-    Double[] dataFormatted = new Double[input.size()];
-    Integer[] shapeFormatted = new Integer[shape.size()];
-    DType dtypeEnum = null;
-
-    try{
+    Double[] data = new Double[input.size()];
+    DType dtype_enum = null;
+    long[] shape_primitve=null;
+    try {
       module = modules.get(index.intValue());
-      dtypeEnum = DType.valueOf(dtype.toUpperCase());
 
+      dtype_enum = DType.valueOf(dtype.toUpperCase());
 
-      for (int i = 0; i < dataFormatted.length; i++) {
-        dataFormatted[i] = input.get(i);
-      }
+      Log.i(TAG, "parsed dtype_enum");
 
+      //Long[] l = shape.toArray(new Long[0]);
+      //long[] l = ArrayUtils.toPrimitive(l);
+      //long[] result
 
+      shape_primitve= shape.stream().mapToLong(l -> l).toArray();
 
-        Log.e(TAG, String.valueOf(shape));
+      Log.i(TAG, "parsed shape_formmatted");
+      data = input.toArray(new Double[0]);
+      Log.i(TAG, "parsed data");
 
-      /*
-      for (int i = 0; i < shapeFormatted.length; i++) {
-        Log.e(TAG, shape.get(i).toString());
-        shapeFormatted[i] =(Integer) shape.get(i).intValue();
-      }*/
-
-    }catch(Exception e){
+    } catch (Exception e) {
       Log.e(TAG, "error parsing arguments", e);
     }
 
-
     //prepare input tensor
-    final Tensor inputTensor = getInputTensor(dtypeEnum, dataFormatted, shapeFormatted);
+    final Tensor inputTensor = getInputTensor(dtype_enum, data, shape_primitve);
 
     //run model
     Tensor outputTensor = null;
     try {
       outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
-      //result.success(outputTensor.getDataAsFloatArray());
-    }catch(RuntimeException e){
-      Log.e("PyTorchMobile", "Your input type " + dtypeEnum.toString().toLowerCase()  + " (" + Convert.dtypeAsPrimitive(dtypeEnum.toString()) +") " + "does not match with model input type",e);
-      result.error(e);
+    } catch (RuntimeException e) {
+      Log.e(TAG, "Your input type " + dtype_enum.toString().toLowerCase() + " (" + Convert.dtypeAsPrimitive(dtype.toString()) + ") " + "does not match with model input type", e);
+      result.success(null);
     }
-
-    successResult(result, dtypeEnum, outputTensor);
+    result.success(Collections.singletonList(outputTensor));
   }
 
   @Override
-  public void getImagePredictionList(@NonNull Long index, @NonNull byte[] imageData, @NonNull Long width, @NonNull Long height, @NonNull List<Double> mean, @NonNull List<Double> std, Pigeon.Result<List<Double>> result) {
+  public void getImagePredictionList(Long index, byte[] imageData, List<Double> mean, List<Double> std, Pigeon.Result<List<Double>> result) {
     Module imageModule = null;
     Bitmap bitmap = null;
+    PrePostProcessor prePostProcessor = null;
     float[] meanFormatted=new float[mean.size()];
     float[] stdFormatted=new float[std.size()];
     try {
 
       imageModule = modules.get(index.intValue());
 
-
+      prePostProcessor = prePostProcessors.get(index.intValue());
 
       bitmap = BitmapFactory.decodeByteArray(imageData,0,imageData.length);
 
-      bitmap = Bitmap.createScaledBitmap(bitmap, width.intValue(), height.intValue(), false);
+      bitmap = Bitmap.createScaledBitmap(bitmap,prePostProcessor.mImageWidth, prePostProcessor.mImageHeight, false);
 
 
       for (int i = 0; i < meanFormatted.length; i++) {
@@ -173,6 +175,8 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
       Log.e(TAG, "error classifying image", e);
     }
   }
+
+
 
   @Override
   public void getImagePredictionListObjectDetection(Long index, byte[] imageData, Double minimumScore, Double IOUThreshold, Long boxesLimit, Pigeon.Result<List<Pigeon.ResultObjectDetection>> result) {
@@ -233,20 +237,20 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
 
   //returns input tensor depending on dtype
-  private Tensor getInputTensor(DType dtype, Double[] data, Integer[] shape){
+  private Tensor getInputTensor(DType dtype, Double[] data, long[] shape){
     switch (dtype){
       case FLOAT32:
-        return Tensor.fromBlob(Convert.toFloatPrimitives(data), Convert.toPrimitives(shape));
+        return Tensor.fromBlob(Convert.toFloatPrimitives(data), shape);
       case FLOAT64:
-        return  Tensor.fromBlob(Convert.toDoublePrimitives(data), Convert.toPrimitives(shape));
+        return  Tensor.fromBlob(Convert.toDoublePrimitives(data),shape);
       case INT32:
-        return Tensor.fromBlob(Convert.toIntegerPrimitives(data), Convert.toPrimitives(shape));
+        return Tensor.fromBlob(Convert.toIntegerPrimitives(data),shape);
       case INT64:
-        return Tensor.fromBlob(Convert.toLongPrimitives(data), Convert.toPrimitives(shape));
+        return Tensor.fromBlob(Convert.toLongPrimitives(data), shape);
       case INT8:
-        return Tensor.fromBlob(Convert.toBytePrimitives(data), Convert.toPrimitives(shape));
+        return Tensor.fromBlob(Convert.toBytePrimitives(data), shape);
       case UINT8:
-        return Tensor.fromBlobUnsigned(Convert.toBytePrimitives(data), Convert.toPrimitives(shape));
+        return Tensor.fromBlobUnsigned(Convert.toBytePrimitives(data),shape);
       default:
         return null;
     }
