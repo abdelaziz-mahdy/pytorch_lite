@@ -5,12 +5,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pytorch_lite/pigeon.dart';
-
-import 'enums/dtype.dart';
 
 export 'enums/dtype.dart';
 
@@ -162,6 +159,8 @@ class ClassificationModel {
   }
 
   ///predicts image but returns the output as probabilities
+  ///[image] takes the File of the image
+  ///[mean]
   Future<List<double?>?> getImagePredictionListProbabilities(File image,
       {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
       List<double> std = TORCHVISION_NORM_STD_RGB}) async {
