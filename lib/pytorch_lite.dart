@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -158,6 +159,34 @@ class ClassificationModel {
     final List<double?>? prediction =
         await ModelApi().getImagePredictionList(_index, byteArray, mean, std);
     return prediction;
+  }
+
+  ///predicts image but returns the output as probabilities
+  Future<List<double?>?> getImagePredictionListProbabilities(File image,
+      {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
+      List<double> std = TORCHVISION_NORM_STD_RGB}) async {
+    // Assert mean std
+    assert(mean.length == 3, "Mean should have size of 3");
+    assert(std.length == 3, "STD should have size of 3");
+    Uint8List byteArray = image.readAsBytesSync();
+    List<double?>? prediction =
+        await ModelApi().getImagePredictionList(_index, byteArray, mean, std);
+    List<double?>? predictionProbabilities = [];
+    //getting sum of exp
+    double sumExp = 0;
+    prediction?.forEach((element) {
+      if (element != null) {
+        sumExp = sumExp + exp(element);
+      }
+    });
+    prediction?.forEach((element) {
+      if (element != null) {
+        predictionProbabilities.add(element / sumExp);
+      } else {
+        predictionProbabilities.add(null);
+      }
+    });
+    return predictionProbabilities;
   }
 }
 

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -117,7 +119,24 @@ class _MyAppState extends State<MyApp> {
     List<double?>? predictionList = await _imageModel!.getImagePredictionList(
       File(image.path),
     );
+
     print(predictionList);
+    List<double?>? predictionListProbabilites =
+        await _imageModel!.getImagePredictionListProbabilities(
+      File(image.path),
+    );
+    //Gettting the highest Probability
+    double maxScoreProbability = double.negativeInfinity;
+    int index = 0;
+    for (int i = 0; i < predictionListProbabilites!.length; i++) {
+      if (predictionListProbabilites[i]! > maxScoreProbability) {
+        maxScoreProbability = predictionListProbabilites[i]!;
+        index = i;
+      }
+    }
+    print(index);
+    print(maxScoreProbability);
+
     setState(() {
       //this.objDetect = objDetect;
       _image = File(image.path);

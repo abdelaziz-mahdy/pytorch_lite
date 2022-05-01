@@ -85,7 +85,13 @@ List<double?>? predictionList = await _imageModel!.getImagePredictionList(
       File(image.path),
     );
 ```
+### Get classification prediction as Probabilities (incase model is not using softmax)
 
+```dart
+List<double?>? predictionListProbabilites = await _imageModel!.getImagePredictionListProbabilities(
+      File(image.path),
+    );
+```
 ### Get object detection prediction for an image
 ```dart
  List<ResultObjectDetection?> objDetect = await _objectModel.getImagePrediction(File(image!.path),
