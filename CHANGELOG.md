@@ -1,3 +1,5 @@
+## 1.0.4
+* Fixed a bug (probabilities were wrong)
 ## 1.0.3
 * Added getting classification as probabilities
 ## 1.0.2
