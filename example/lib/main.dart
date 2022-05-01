@@ -122,14 +122,17 @@ class _MyAppState extends State<MyApp> {
     );
     //Gettting the highest Probability
     double maxScoreProbability = double.negativeInfinity;
+    double sumOfProbabilites = 0;
     int index = 0;
     for (int i = 0; i < predictionListProbabilites!.length; i++) {
       if (predictionListProbabilites[i]! > maxScoreProbability) {
         maxScoreProbability = predictionListProbabilites[i]!;
+        sumOfProbabilites = sumOfProbabilites + predictionListProbabilites[i]!;
         index = i;
       }
     }
     print(index);
+    print(sumOfProbabilites);
     print(maxScoreProbability);
 
     setState(() {

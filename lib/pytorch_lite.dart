@@ -160,7 +160,6 @@ class ClassificationModel {
 
   ///predicts image but returns the output as probabilities
   ///[image] takes the File of the image
-  ///[mean]
   Future<List<double?>?> getImagePredictionListProbabilities(File image,
       {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
       List<double> std = TORCHVISION_NORM_STD_RGB}) async {
@@ -171,20 +170,16 @@ class ClassificationModel {
     List<double?>? prediction =
         await ModelApi().getImagePredictionList(_index, byteArray, mean, std);
     List<double?>? predictionProbabilities = [];
-    //getting sum of exp
+
+    //Getting sum of exp
     double sumExp = 0;
-    prediction?.forEach((element) {
-      if (element != null) {
-        sumExp = sumExp + exp(element);
-      }
-    });
-    prediction?.forEach((element) {
-      if (element != null) {
-        predictionProbabilities.add(element / sumExp);
-      } else {
-        predictionProbabilities.add(null);
-      }
-    });
+    for (var element in prediction!) {
+      sumExp = sumExp + exp(element!);
+    }
+    for (var element in prediction) {
+      predictionProbabilities.add(exp(element!) / sumExp);
+    }
+
     return predictionProbabilities;
   }
 }
