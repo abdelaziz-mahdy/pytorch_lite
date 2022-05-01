@@ -1,6 +1,7 @@
-
+## 1.0.3
+* Added getting classification as probabilities
 ## 1.0.2
-* initial release
+* Initial release
 ## 1.0.1
 * Making code run in background to avoid frame drops
 ## 1.0.0
