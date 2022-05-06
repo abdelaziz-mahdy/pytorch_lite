@@ -121,17 +121,15 @@ class ClassificationModel {
   ClassificationModel(this._index, this.labels);
 
   ///predicts image and returns the supposed label belonging to it
-  Future<String> getImagePrediction(File image,
+  Future<String> getImagePrediction(Uint8List imageAsBytes,
       {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
       List<double> std = TORCHVISION_NORM_STD_RGB}) async {
     // Assert mean std
     assert(mean.length == 3, "mean should have size of 3");
     assert(std.length == 3, "std should have size of 3");
 
-    Uint8List byteArray = image.readAsBytesSync();
-
-    final List<double?>? prediction =
-        await ModelApi().getImagePredictionList(_index, byteArray, mean, std);
+    final List<double?>? prediction = await ModelApi()
+        .getImagePredictionList(_index, imageAsBytes, mean, std);
 
     double maxScore = double.negativeInfinity;
     int maxScoreIndex = -1;
@@ -146,38 +144,41 @@ class ClassificationModel {
   }
 
   ///predicts image but returns the raw net output
-  Future<List<double?>?> getImagePredictionList(File image,
+  Future<List<double?>?> getImagePredictionList(Uint8List imageAsBytes,
       {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
       List<double> std = TORCHVISION_NORM_STD_RGB}) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
-    Uint8List byteArray = image.readAsBytesSync();
-    final List<double?>? prediction =
-        await ModelApi().getImagePredictionList(_index, byteArray, mean, std);
+    final List<double?>? prediction = await ModelApi()
+        .getImagePredictionList(_index, imageAsBytes, mean, std);
     return prediction;
   }
 
   ///predicts image but returns the output as probabilities
   ///[image] takes the File of the image
-  Future<List<double?>?> getImagePredictionListProbabilities(File image,
+  Future<List<double?>?> getImagePredictionListProbabilities(
+      Uint8List imageAsBytes,
       {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
       List<double> std = TORCHVISION_NORM_STD_RGB}) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
-    Uint8List byteArray = image.readAsBytesSync();
-    List<double?>? prediction =
-        await ModelApi().getImagePredictionList(_index, byteArray, mean, std);
+    List<double?>? prediction = await ModelApi()
+        .getImagePredictionList(_index, imageAsBytes, mean, std);
     List<double?>? predictionProbabilities = [];
 
     //Getting sum of exp
-    double sumExp = 0;
+    double? sumExp;
     for (var element in prediction!) {
-      sumExp = sumExp + exp(element!);
+      if (sumExp == null) {
+        sumExp = exp(element!);
+      } else {
+        sumExp = sumExp + exp(element!);
+      }
     }
     for (var element in prediction) {
-      predictionProbabilities.add(exp(element!) / sumExp);
+      predictionProbabilities.add(exp(element!) / sumExp!);
     }
 
     return predictionProbabilities;
@@ -194,15 +195,14 @@ class ModelObjectDetection {
       this._index, this.imageWidth, this.imageHeight, this.labels);
 
   ///predicts image and returns the supposed label belonging to it
-  Future<List<ResultObjectDetection?>> getImagePrediction(File image,
+  Future<List<ResultObjectDetection?>> getImagePrediction(
+      Uint8List imageAsBytes,
       {double minimumScore = 0.5,
       double IOUThershold = 0.5,
       int boxesLimit = 10}) async {
-    Uint8List byteArray = image.readAsBytesSync();
-
     List<ResultObjectDetection?> prediction = await ModelApi()
         .getImagePredictionListObjectDetection(
-            _index, byteArray, minimumScore, IOUThershold, boxesLimit);
+            _index, imageAsBytes, minimumScore, IOUThershold, boxesLimit);
 
     for (var element in prediction) {
       element?.className = labels[element.classIndex];
@@ -212,14 +212,14 @@ class ModelObjectDetection {
   }
 
   ///predicts image but returns the raw net output
-  Future<List<ResultObjectDetection?>> getImagePredictionList(File image,
+  Future<List<ResultObjectDetection?>> getImagePredictionList(
+      Uint8List imageAsBytes,
       {double minimumScore = 0.5,
       double IOUThershold = 0.5,
       int boxesLimit = 10}) async {
-    Uint8List byteArray = image.readAsBytesSync();
     final List<ResultObjectDetection?> prediction = await ModelApi()
         .getImagePredictionListObjectDetection(
-            _index, byteArray, minimumScore, IOUThershold, boxesLimit);
+            _index, imageAsBytes, minimumScore, IOUThershold, boxesLimit);
     return prediction;
   }
 

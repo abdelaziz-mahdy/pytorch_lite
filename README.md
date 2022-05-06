@@ -38,7 +38,7 @@ example
 ```
 ### Installation
 
-To use this plugin, add `pytorch_mobile` as a [dependency in your pubspec.yaml file](https://flutter.dev/docs/development/packages-and-plugins/using-packages).
+To use this plugin, add `pytorch_lite` as a [dependency in your pubspec.yaml file](https://flutter.dev/docs/development/packages-and-plugins/using-packages).
 
 Create a `assets` folder with your pytorch model and labels if needed. Modify `pubspec.yaml` accoringly.
 
@@ -76,25 +76,25 @@ ModelObjectDetection objectModel = await PytorchLite.loadObjectDetectionModel(
 ### Get classification prediction as label
 
 ```dart
-String imagePrediction = await classificationModel.getImagePrediction(File(image.path));
+String imagePrediction = await classificationModel.getImagePrediction(await File(image.path).readAsBytes());
 ```
 ### Get classification prediction as raw output layer
 
 ```dart
 List<double?>? predictionList = await _imageModel!.getImagePredictionList(
-      File(image.path),
+      await File(image.path).readAsBytes(),
     );
 ```
 ### Get classification prediction as Probabilities (incase model is not using softmax)
 
 ```dart
 List<double?>? predictionListProbabilites = await _imageModel!.getImagePredictionListProbabilities(
-      File(image.path),
+      await File(image.path).readAsBytes(),
     );
 ```
 ### Get object detection prediction for an image
 ```dart
- List<ResultObjectDetection?> objDetect = await _objectModel.getImagePrediction(File(image!.path),
+ List<ResultObjectDetection?> objDetect = await _objectModel.getImagePrediction(await File(image.path).readAsBytes(),
         minimumScore: 0.1, IOUThershold: 0.3);
 ```
 

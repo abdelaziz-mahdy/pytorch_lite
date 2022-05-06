@@ -53,7 +53,8 @@ class _MyAppState extends State<MyApp> {
     //pick a random image
     final PickedFile? image =
         await _picker.getImage(source: ImageSource.gallery);
-    objDetect = await _objectModel.getImagePredictionList(File(image!.path));
+    objDetect = await _objectModel
+        .getImagePredictionList(await File(image!.path).readAsBytes());
     objDetect.forEach((element) {
       print({
         "score": element?.score,
@@ -79,8 +80,10 @@ class _MyAppState extends State<MyApp> {
     //pick a random image
     final PickedFile? image =
         await _picker.getImage(source: ImageSource.gallery);
-    objDetect = await _objectModel.getImagePrediction(File(image!.path),
-        minimumScore: 0.1, IOUThershold: 0.3);
+    objDetect = await _objectModel.getImagePrediction(
+        await File(image!.path).readAsBytes(),
+        minimumScore: 0.1,
+        IOUThershold: 0.3);
     objDetect.forEach((element) {
       print({
         "score": element?.score,
@@ -109,16 +112,17 @@ class _MyAppState extends State<MyApp> {
         await _picker.getImage(source: ImageSource.gallery);
     //get prediction
     //labels are 1000 random english words for show purposes
-    _imagePrediction = await _imageModel!.getImagePrediction(File(image!.path));
+    _imagePrediction = await _imageModel!
+        .getImagePrediction(await File(image!.path).readAsBytes());
 
     List<double?>? predictionList = await _imageModel!.getImagePredictionList(
-      File(image.path),
+      await File(image.path).readAsBytes(),
     );
 
     print(predictionList);
     List<double?>? predictionListProbabilites =
         await _imageModel!.getImagePredictionListProbabilities(
-      File(image.path),
+      await File(image.path).readAsBytes(),
     );
     //Gettting the highest Probability
     double maxScoreProbability = double.negativeInfinity;
@@ -131,6 +135,7 @@ class _MyAppState extends State<MyApp> {
         index = i;
       }
     }
+    print(predictionListProbabilites);
     print(index);
     print(sumOfProbabilites);
     print(maxScoreProbability);
