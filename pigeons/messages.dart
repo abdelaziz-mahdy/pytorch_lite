@@ -1,10 +1,10 @@
 import 'package:pigeon/pigeon.dart';
 // Build android only
-// flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart  --java_out android/src/main/java/com/zezo789/pytorch_lite/Pigeon.java --java_package "com.zezo357.pytorch_lite"
+// flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart  --java_out android/src/main/java/com/zezo357/pytorch_lite/Pigeon.java --java_package "com.zezo357.pytorch_lite"
 
 // Build android and ios (it fails)
 
-//flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart --objc_header_out ios/Runner/pigeon.h --objc_source_out ios/Runner/pigeon.m --java_out android/src/main/java/com/zezo789/pytorch_lite/Pigeon.java --java_package "com.zezo357.pytorch_lite"
+//flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart --objc_header_out ios/Runner/pigeon.h --objc_source_out ios/Runner/pigeon.m --java_out android/src/main/java/com/zezo357/pytorch_lite/Pigeon.java --java_package "com.zezo357.pytorch_lite"
 
 class Rect {
   double left;
