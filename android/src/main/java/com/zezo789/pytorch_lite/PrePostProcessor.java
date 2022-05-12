@@ -4,7 +4,7 @@
 // This source code is licensed under the BSD-style license found in the
 // LICENSE file in the root directory of this source tree.
 
-package com.zezo789.pytorch_lite;
+package com.zezo357.pytorch_lite;
 
 import android.graphics.Rect;
 import android.util.Log;

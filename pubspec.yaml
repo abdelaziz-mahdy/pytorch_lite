@@ -31,7 +31,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.zezo789.pytorch_lite
+        package: com.zezo357.pytorch_lite
         pluginClass: PytorchLitePlugin
       ios:
         pluginClass: PytorchLitePlugin

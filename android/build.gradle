@@ -1,4 +1,4 @@
-group 'com.zezo789.pytorch_lite'
+group 'com.zezo357.pytorch_lite'
 version '1.0'
 
 buildscript {
