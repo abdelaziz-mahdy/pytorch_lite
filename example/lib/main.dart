@@ -43,16 +43,19 @@ class _MyAppState extends State<MyApp> {
       _objectModel = await PytorchLite.loadObjectDetectionModel(
           pathObjectDetectionModel, 80, 640, 640,
           labelPath: "assets/labels/labels_objectDetection_Coco.txt");
-    } on PlatformException {
-      print("only supported for android");
+    } catch (e) {
+      if (e is PlatformException) {
+        print("only supported for android, Error is $e");
+      } else {
+        print("Error is $e");
+      }
     }
   }
 
   //run an image model
   Future runObjectDetectionWithoutLabels() async {
     //pick a random image
-    final PickedFile? image =
-        await _picker.getImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     objDetect = await _objectModel
         .getImagePredictionList(await File(image!.path).readAsBytes());
     objDetect.forEach((element) {
@@ -78,8 +81,7 @@ class _MyAppState extends State<MyApp> {
 
   Future runObjectDetection() async {
     //pick a random image
-    final PickedFile? image =
-        await _picker.getImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     objDetect = await _objectModel.getImagePrediction(
         await File(image!.path).readAsBytes(),
         minimumScore: 0.1,
@@ -108,10 +110,10 @@ class _MyAppState extends State<MyApp> {
   Future runClassification() async {
     objDetect = [];
     //pick a random image
-    final PickedFile? image =
-        await _picker.getImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     //get prediction
     //labels are 1000 random english words for show purposes
+    print(image!.path);
     _imagePrediction = await _imageModel!
         .getImagePrediction(await File(image!.path).readAsBytes());
 

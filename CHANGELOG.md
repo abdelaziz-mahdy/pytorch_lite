@@ -1,3 +1,6 @@
+## 1.0.6
+* Updated dependencies 
+* Fixed release not working and Added to readme the solution 
 ## 1.0.5
 * Made all functions take image bytes instead of image file (to avoid storing stream in storage)
 ## 1.0.4

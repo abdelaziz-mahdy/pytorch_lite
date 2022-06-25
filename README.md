@@ -40,7 +40,10 @@ example
 
 To use this plugin, add `pytorch_lite` as a [dependency in your pubspec.yaml file](https://flutter.dev/docs/development/packages-and-plugins/using-packages).
 
-Create a `assets` folder with your pytorch model and labels if needed. Modify `pubspec.yaml` accoringly.
+Create a `assets` folder with your pytorch model and labels if needed. Modify `pubspec.yaml` accordingly.
+
+ 
+
 
 ```yaml
 assets:
@@ -51,6 +54,26 @@ assets:
 ```
 
 Run `flutter pub get`
+
+#### For release
+* Go to android/app/build.gradle
+* Add those next lines in the release config
+```
+shrinkResources false
+minifyEnabled false
+```
+example 
+```
+    buildTypes {
+        release {
+            shrinkResources false
+            minifyEnabled false
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig signingConfigs.debug
+        }
+    }
+```
 
 ### Import the library
 

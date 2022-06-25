@@ -29,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+
 /** PytorchLitePlugin */
 public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
@@ -36,10 +37,16 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
   ArrayList<Module> modules = new ArrayList<>();
   ArrayList<PrePostProcessor> prePostProcessors = new ArrayList<>();
 
+
   private FlutterState flutterState;
+
+
+
 
   @Override
   public void onAttachedToEngine(FlutterPluginBinding binding) {
+
+
     this.flutterState =
             new FlutterState(
                     binding.getApplicationContext(),
