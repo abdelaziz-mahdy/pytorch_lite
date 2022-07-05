@@ -41,14 +41,23 @@ abstract class ModelApi {
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   @async
   List<double>? getImagePredictionList(
-      int index, Uint8List imageData, List<double> mean, List<double> std);
+      int index,
+      Uint8List? imageData,
+      List<Uint8List>? imageBytesList,
+      int? imageWidthForBytesList,
+      int? imageHeightForBytesList,
+      List<double> mean,
+      List<double> std);
 
   ///predicts image but returns the output detections
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   @async
   List<ResultObjectDetection> getImagePredictionListObjectDetection(
       int index,
-      Uint8List imageData,
+      Uint8List? imageData,
+      List<Uint8List>? imageBytesList,
+      int? imageWidthForBytesList,
+      int? imageHeightForBytesList,
       double minimumScore,
       double IOUThreshold,
       int boxesLimit);

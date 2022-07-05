@@ -128,8 +128,8 @@ class ClassificationModel {
     assert(mean.length == 3, "mean should have size of 3");
     assert(std.length == 3, "std should have size of 3");
 
-    final List<double?>? prediction = await ModelApi()
-        .getImagePredictionList(_index, imageAsBytes, mean, std);
+    final List<double?>? prediction = await ModelApi().getImagePredictionList(
+        _index, imageAsBytes, null, null, null, mean, std);
 
     double maxScore = double.negativeInfinity;
     int maxScoreIndex = -1;
@@ -150,8 +150,8 @@ class ClassificationModel {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
-    final List<double?>? prediction = await ModelApi()
-        .getImagePredictionList(_index, imageAsBytes, mean, std);
+    final List<double?>? prediction = await ModelApi().getImagePredictionList(
+        _index, imageAsBytes, null, null, null, mean, std);
     return prediction;
   }
 
@@ -164,8 +164,74 @@ class ClassificationModel {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
-    List<double?>? prediction = await ModelApi()
-        .getImagePredictionList(_index, imageAsBytes, mean, std);
+    List<double?>? prediction = await ModelApi().getImagePredictionList(
+        _index, imageAsBytes, null, null, null, mean, std);
+    List<double?>? predictionProbabilities = [];
+
+    //Getting sum of exp
+    double? sumExp;
+    for (var element in prediction!) {
+      if (sumExp == null) {
+        sumExp = exp(element!);
+      } else {
+        sumExp = sumExp + exp(element!);
+      }
+    }
+    for (var element in prediction) {
+      predictionProbabilities.add(exp(element!) / sumExp!);
+    }
+
+    return predictionProbabilities;
+  }
+
+  ///predicts image and returns the supposed label belonging to it
+  Future<String> getImagePredictionFromBytesList(
+      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
+      {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
+      List<double> std = TORCHVISION_NORM_STD_RGB}) async {
+    // Assert mean std
+    assert(mean.length == 3, "mean should have size of 3");
+    assert(std.length == 3, "std should have size of 3");
+
+    final List<double?>? prediction = await ModelApi().getImagePredictionList(
+        _index, null, imageAsBytesList, imageWidth, imageHeight, mean, std);
+
+    double maxScore = double.negativeInfinity;
+    int maxScoreIndex = -1;
+    for (int i = 0; i < prediction!.length; i++) {
+      if (prediction[i]! > maxScore) {
+        maxScore = prediction[i]!;
+        maxScoreIndex = i;
+      }
+    }
+
+    return labels[maxScoreIndex];
+  }
+
+  ///predicts image but returns the raw net output
+  Future<List<double?>?> getImagePredictionListFromBytesList(
+      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
+      {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
+      List<double> std = TORCHVISION_NORM_STD_RGB}) async {
+    // Assert mean std
+    assert(mean.length == 3, "Mean should have size of 3");
+    assert(std.length == 3, "STD should have size of 3");
+    final List<double?>? prediction = await ModelApi().getImagePredictionList(
+        _index, null, imageAsBytesList, imageWidth, imageHeight, mean, std);
+    return prediction;
+  }
+
+  ///predicts image but returns the output as probabilities
+  ///[image] takes the File of the image
+  Future<List<double?>?> getImagePredictionListProbabilitiesFromBytesList(
+      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
+      {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
+      List<double> std = TORCHVISION_NORM_STD_RGB}) async {
+    // Assert mean std
+    assert(mean.length == 3, "Mean should have size of 3");
+    assert(std.length == 3, "STD should have size of 3");
+    List<double?>? prediction = await ModelApi().getImagePredictionList(
+        _index, null, imageAsBytesList, imageWidth, imageHeight, mean, std);
     List<double?>? predictionProbabilities = [];
 
     //Getting sum of exp
@@ -201,8 +267,25 @@ class ModelObjectDetection {
       double IOUThershold = 0.5,
       int boxesLimit = 10}) async {
     List<ResultObjectDetection?> prediction = await ModelApi()
-        .getImagePredictionListObjectDetection(
-            _index, imageAsBytes, minimumScore, IOUThershold, boxesLimit);
+        .getImagePredictionListObjectDetection(_index, imageAsBytes, null, null,
+            null, minimumScore, IOUThershold, boxesLimit);
+
+    for (var element in prediction) {
+      element?.className = labels[element.classIndex];
+    }
+
+    return prediction;
+  }
+
+  ///predicts image and returns the supposed label belonging to it
+  Future<List<ResultObjectDetection?>> getImagePredictionFromBytesList(
+      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
+      {double minimumScore = 0.5,
+      double IOUThershold = 0.5,
+      int boxesLimit = 10}) async {
+    List<ResultObjectDetection?> prediction = await ModelApi()
+        .getImagePredictionListObjectDetection(_index, null, imageAsBytesList,
+            imageWidth, imageHeight, minimumScore, IOUThershold, boxesLimit);
 
     for (var element in prediction) {
       element?.className = labels[element.classIndex];
@@ -218,8 +301,20 @@ class ModelObjectDetection {
       double IOUThershold = 0.5,
       int boxesLimit = 10}) async {
     final List<ResultObjectDetection?> prediction = await ModelApi()
-        .getImagePredictionListObjectDetection(
-            _index, imageAsBytes, minimumScore, IOUThershold, boxesLimit);
+        .getImagePredictionListObjectDetection(_index, imageAsBytes, null, null,
+            null, minimumScore, IOUThershold, boxesLimit);
+    return prediction;
+  }
+
+  ///predicts image but returns the raw net output
+  Future<List<ResultObjectDetection?>> getImagePredictionListFromBytesList(
+      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
+      {double minimumScore = 0.5,
+      double IOUThershold = 0.5,
+      int boxesLimit = 10}) async {
+    final List<ResultObjectDetection?> prediction = await ModelApi()
+        .getImagePredictionListObjectDetection(_index, null, imageAsBytesList,
+            imageWidth, imageHeight, minimumScore, IOUThershold, boxesLimit);
     return prediction;
   }
 

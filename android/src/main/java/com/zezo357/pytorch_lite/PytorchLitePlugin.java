@@ -6,7 +6,12 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin;
 
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.view.TextureRegistry;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
+import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 
+import android.media.Image;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +34,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+import java.util.Arrays;
+import java.util.Comparator;
 /** PytorchLitePlugin */
 public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
@@ -134,7 +144,7 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
   }
 
   @Override
-  public void getImagePredictionList(Long index, byte[] imageData, List<Double> mean, List<Double> std, Pigeon.Result<List<Double>> result) {
+  public void getImagePredictionList(Long index, byte[] imageData, List<byte[]> imageBytesList, Long imageWidthForBytesList, Long imageHeightForBytesList, List<Double> mean, List<Double> std, Pigeon.Result<List<Double>> result) {
     Module imageModule = null;
     Bitmap bitmap = null;
     PrePostProcessor prePostProcessor = null;
@@ -145,9 +155,14 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
       imageModule = modules.get(index.intValue());
 
       prePostProcessor = prePostProcessors.get(index.intValue());
-
-      bitmap = BitmapFactory.decodeByteArray(imageData,0,imageData.length);
-
+      if(imageData!=null) {
+        bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+      }else{
+        bitmap=getBitmapFromBytesList(imageBytesList,imageWidthForBytesList.intValue(),imageHeightForBytesList.intValue());
+      }
+      Matrix matrix = new Matrix();
+      matrix.postRotate(90.0f);
+      bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
       bitmap = Bitmap.createScaledBitmap(bitmap,prePostProcessor.mImageWidth, prePostProcessor.mImageHeight, false);
 
 
@@ -183,10 +198,8 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
     }
   }
 
-
-
   @Override
-  public void getImagePredictionListObjectDetection(Long index, byte[] imageData, Double minimumScore, Double IOUThreshold, Long boxesLimit, Pigeon.Result<List<Pigeon.ResultObjectDetection>> result) {
+  public void getImagePredictionListObjectDetection(Long index, byte[] imageData, List<byte[]> imageBytesList, Long imageWidthForBytesList, Long imageHeightForBytesList, Double minimumScore, Double IOUThreshold, Long boxesLimit, Pigeon.Result<List<Pigeon.ResultObjectDetection>> result) {
     Module imageModule = null;
     PrePostProcessor prePostProcessor = null;
     Bitmap bitmap = null;
@@ -200,7 +213,14 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
       prePostProcessor.mScoreThreshold=minimumScore.floatValue();
       prePostProcessor.mIOUThreshold=IOUThreshold.floatValue();
 
-      bitmap = BitmapFactory.decodeByteArray(imageData,0,imageData.length);
+      if(imageData!=null) {
+        bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+      }else{
+        bitmap=getBitmapFromBytesList(imageBytesList,imageWidthForBytesList.intValue(),imageHeightForBytesList.intValue());
+        Matrix matrix = new Matrix();
+        matrix.postRotate(90.0f);
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+      }
 
       bitmap = Bitmap.createScaledBitmap(bitmap,prePostProcessor.mImageWidth, prePostProcessor.mImageHeight, false);
 
@@ -228,8 +248,51 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
     }catch (Exception e){
       Log.e(TAG, "error classifying image", e);
     }
-
   }
+
+  Bitmap getBitmapFromBytesList(List<byte[]> bytesList, int imageWidth,int imageHeight) throws IOException {
+    ByteBuffer yBuffer = ByteBuffer.wrap(bytesList.get(0));
+    ByteBuffer uBuffer = ByteBuffer.wrap(bytesList.get(1));
+    ByteBuffer vBuffer = ByteBuffer.wrap(bytesList.get(2));
+
+    int ySize = yBuffer.remaining();
+    int uSize = uBuffer.remaining();
+    int vSize = vBuffer.remaining();
+
+    byte[] nv21 = new byte[ySize + uSize + vSize];
+    yBuffer.get(nv21, 0, ySize);
+    vBuffer.get(nv21, ySize, vSize);
+    uBuffer.get(nv21, ySize + vSize, uSize);
+
+    YuvImage yuvImage = new YuvImage(nv21, ImageFormat.NV21, imageWidth, imageHeight, null);
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 75, out);
+
+    byte[] imageBytes = out.toByteArray();
+    return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+  }
+/*
+  public Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21) {
+    // https://stackoverflow.com/a/36409748
+    RenderScript rs = RenderScript.create(context);
+    ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+
+    Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs)).setX(nv21.length);
+    Allocation in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
+
+    Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
+    Allocation out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
+
+    in.copyFrom(nv21);
+
+    yuvToRgbIntrinsic.setInput(in);
+    yuvToRgbIntrinsic.forEach(out);
+    return out;
+  }*/
+
+
+
+
 
 
 

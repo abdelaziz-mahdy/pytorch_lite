@@ -1,3 +1,6 @@
+## 1.1.0
+* Added get prediction from bytes list to run on camera image
+* Added example to camera image prediction (thanks to KingWu)
 ## 1.0.6
 * Updated dependencies 
 * Fixed release not working and Added to readme the solution 
