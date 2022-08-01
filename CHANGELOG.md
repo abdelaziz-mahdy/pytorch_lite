@@ -1,3 +1,5 @@
+## 1.1.1
+* Updated pytorch_android_lite version to 1.11
 ## 1.1.0
 * Added get prediction from bytes list to run on camera image
 * Added example to camera image prediction (thanks to KingWu)
