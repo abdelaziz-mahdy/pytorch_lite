@@ -1,3 +1,5 @@
+## 1.1.2
+* Updated pytorch_android_lite version to 1.12.2
 ## 1.1.1
 * Updated pytorch_android_lite version to 1.11
 ## 1.1.0
