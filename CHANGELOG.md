@@ -1,3 +1,5 @@
+## 2.0.0
+* breaking change: Rect is now PyTorchRect to avoid conflicts in ios (when it is implemented)
 ## 1.1.2
 * Updated pytorch_android_lite version to 1.12.2
 ## 1.1.1

@@ -2,25 +2,25 @@ import 'package:pigeon/pigeon.dart';
 // Build android only
 // flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart  --java_out android/src/main/java/com/zezo357/pytorch_lite/Pigeon.java --java_package "com.zezo357.pytorch_lite"
 
-// Build android and ios (it fails)
+// Build android and ios 
 
 //flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart --objc_header_out ios/Classes/pigeon.h --objc_source_out ios/Classes/pigeon.m --java_out android/src/main/java/com/zezo357/pytorch_lite/Pigeon.java --java_package "com.zezo357.pytorch_lite"
 
-class Rect {
+class PyTorchRect {
   double left;
   double top;
   double right;
   double bottom;
   double width;
   double height;
-  Rect(this.left, this.top, this.width, this.height, this.right, this.bottom);
+  PyTorchRect(this.left, this.top, this.width, this.height, this.right, this.bottom);
 }
 
 class ResultObjectDetection {
   int classIndex;
   String? className;
   double score;
-  Rect rect;
+  PyTorchRect rect;
 
   ResultObjectDetection(this.classIndex, this.score, this.rect);
 }

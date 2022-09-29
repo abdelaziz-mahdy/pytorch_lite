@@ -102,7 +102,7 @@ public class PrePostProcessor {
     /**
      Computes intersection-over-union overlap between two bounding boxes.
      */
-    Double IOU(Pigeon.Rect a, Pigeon.Rect b) {
+    Double IOU(Pigeon.PyTorchRect a, Pigeon.PyTorchRect b) {
         Double areaA = ((a.getRight() - a.getLeft()) * (a.getBottom() - a.getTop()));
         if (areaA <= 0.0) return 0.0;
 
@@ -147,7 +147,7 @@ public class PrePostProcessor {
                 }
 
 
-                Pigeon.Rect rect = new Pigeon.Rect.Builder().setLeft(
+                Pigeon.PyTorchRect rect = new Pigeon.PyTorchRect.Builder().setLeft(
                         getFloatAsDouble(left/mImageWidth)
                 ).setTop(
                         getFloatAsDouble(top/mImageHeight)
