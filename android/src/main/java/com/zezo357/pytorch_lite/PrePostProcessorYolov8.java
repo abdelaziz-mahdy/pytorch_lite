@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 
-public class PrePostProcessor {
+public class PrePostProcessorYolov8 {
     // for yolov5 model, no need to apply MEAN and STD
     float[] NO_MEAN_RGB = new float[] {0.0f, 0.0f, 0.0f};
     float[] NO_STD_RGB = new float[] {1.0f, 1.0f, 1.0f};
@@ -24,8 +24,8 @@ public class PrePostProcessor {
 
 
     // model output is of size 25200*(num_of_class+5)
-    int mOutputRow = 25200; // as decided by the YOLOv5 model for input image of size 640*640
-    int mOutputColumn = (mNumberOfClasses+5); // left, top, right, bottom, score and 80 class probability
+    int mOutputRow = 8400; // as decided by the YOLOv5 model for input image of size 640*640
+    int mOutputColumn = 8; // left, top, right, bottom, score and 80 class probability
     float mScoreThreshold = 0.30f; // score above which a detection is generated
     float mIOUThreshold = 0.30f; // IOU thershold
     int mImageWidth = 640;
@@ -34,14 +34,8 @@ public class PrePostProcessor {
 
     static String[] mClasses;
 
-    PrePostProcessor(){
-    }
-    PrePostProcessor(int imageWidth,int imageHeight){
-        mImageWidth=imageWidth;
-        mImageHeight=imageHeight;
-    }
     
-    PrePostProcessor(int numberOfClasses,int imageWidth,int imageHeight){
+    PrePostProcessorYolov8(int numberOfClasses,int imageWidth,int imageHeight){
         mNumberOfClasses=numberOfClasses;
         mOutputColumn = (mNumberOfClasses+5);
         mImageWidth=imageWidth;
@@ -122,31 +116,27 @@ public class PrePostProcessor {
     }
     ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictions(float[] outputs) {
         ArrayList<Pigeon.ResultObjectDetection> results = new ArrayList<>();
-        for (int i = 0; i< mOutputRow; i++) {
-            //Log.i("PytorchLitePlugin","0:"+outputs[i* mOutputColumn]+"1");
-            if (outputs[i* mOutputColumn +4] > mScoreThreshold) {
-                float x = outputs[i* mOutputColumn];
-                float y = outputs[i* mOutputColumn +1];
-                float w = outputs[i* mOutputColumn +2];
-                float h = outputs[i* mOutputColumn +3];
+        for (int i = 0; i < mOutputRow; i++) {
+            float x = outputs[i];
+            float y = outputs[mOutputRow + i];
+            float w = outputs[2 * mOutputRow + i];
+            float h = outputs[3 * mOutputRow + i];
 
+            float left = imgScaleX * (x - w / 2);
+            float top = imgScaleY * (y - h / 2);
+            float right = imgScaleX * (x + w / 2);
+            float bottom = imgScaleY * (y + h / 2);
 
-                float left =  (x - w/2);
-                float top =  (y - h/2);
-                float right =  (x + w/2);
-                float bottom = (y + h/2);
-
-                //Log.i("PytorchLitePlugin","i* mOutputColumn +4="+outputs[i* mOutputColumn +4]+",outputs[i* mOutputColumn +5] "+outputs[i* mOutputColumn +5]);
-                float max = outputs[i* mOutputColumn +5];
-                int cls = 0;
-                for (int j = 0; j < mOutputColumn -5; j++) {
-                    if (outputs[i* mOutputColumn +5+j] > max) {
-                        max = outputs[i* mOutputColumn +5+j];
-                        cls = j;
-                    }
+            float max = outputs[4 * mOutputRow + i];
+            int cls = 0;
+            for (int j = 4; j < mOutputColumn; j++) {
+                if (outputs[j * mOutputRow + i] > max) {
+                    max = outputs[j * mOutputRow + i];
+                    cls = j - 4;
                 }
+            }
 
-
+            if (max > mThreshold) {
                 Pigeon.PyTorchRect rect = new Pigeon.PyTorchRect.Builder().setLeft(
                         getFloatAsDouble(left/mImageWidth)
                 ).setTop(
@@ -160,10 +150,10 @@ public class PrePostProcessor {
                 ).setRight(
                         getFloatAsDouble(right/mImageWidth)
                 ).build();
-                Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder().setClassIndex((long) cls).setScore(getFloatAsDouble(outputs[i* mOutputColumn +4])).setRect(rect).build();
+                Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder().setClassIndex((long) cls).setScore(getFloatAsDouble(max)).setRect(rect).build();
 
                 results.add(result);
-
+                
             }
         }
 

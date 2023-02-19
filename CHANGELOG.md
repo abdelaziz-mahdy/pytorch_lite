@@ -1,3 +1,6 @@
+## 2.0.1
+* upgraded to pigeon 9.0.0
+* adding yolov8 support
 ## 2.0.0
 * breaking change: Rect is now PyTorchRect to avoid conflicts in ios (when it is implemented)
 * upgraded to pigeon 4.2.0

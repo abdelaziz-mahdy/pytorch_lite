@@ -25,7 +25,6 @@ import org.pytorch.IValue;
 import org.pytorch.Module;
 import org.pytorch.Tensor;
 import org.pytorch.torchvision.TensorImageUtils;
-import org.pytorch.LiteModuleLoader;
 import java.util.ArrayList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -40,7 +39,9 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 import java.util.Comparator;
+
 /** PytorchLitePlugin */
+
 public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
   private static final String TAG = "PytorchLitePlugin";
@@ -79,27 +80,27 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
 
 
-  @Override
-  public Long loadModel(String modelPath, Long numberOfClasses, Long imageWidth, Long imageHeight) {
-    int i=-1;
-    try {
-      modules.add(LiteModuleLoader.load(modelPath));
-      if (numberOfClasses != null && imageWidth!=null && imageHeight!=null) {
-        prePostProcessors.add(new PrePostProcessor(numberOfClasses.intValue(),imageWidth.intValue(),imageHeight.intValue()));
-      }else{
-        if(imageWidth!=null && imageHeight!=null){
-          prePostProcessors.add(new PrePostProcessor(imageWidth.intValue(),imageHeight.intValue()));
-        }else{
-        prePostProcessors.add(new PrePostProcessor());
-        }
-      }
-      i= (modules.size() - 1);
-    } catch (Exception e) {
-      Log.e(TAG, modelPath + " is not a proper model", e);
-    }
+   @Override
+   public Long loadModel(String modelPath, Long numberOfClasses, Long imageWidth, Long imageHeight) {
+     int i=-1;
+     try {
+       modules.add(Module.load(modelPath));
+       if (numberOfClasses != null && imageWidth!=null && imageHeight!=null) {
+         prePostProcessors.add(new PrePostProcessor(numberOfClasses.intValue(),imageWidth.intValue(),imageHeight.intValue()));
+       }else{
+         if(imageWidth!=null && imageHeight!=null){
+           prePostProcessors.add(new PrePostProcessor(imageWidth.intValue(),imageHeight.intValue()));
+         }else{
+         prePostProcessors.add(new PrePostProcessor());
+         }
+       }
+       i= (modules.size() - 1);
+     } catch (Exception e) {
+       Log.e(TAG, modelPath + " is not a proper model", e);
+     }
 
-    return (long) i;
-  }
+     return (long) i;
+   }
 
   @RequiresApi(api = Build.VERSION_CODES.N)
   @java.lang.Override

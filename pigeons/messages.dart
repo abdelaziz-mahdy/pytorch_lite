@@ -24,12 +24,14 @@ class ResultObjectDetection {
 
   ResultObjectDetection(this.classIndex, this.score, this.rect);
 }
-
+enum ObjectDetectionModelType{
+  yolov5, yolov8
+}
 @HostApi()
 abstract class ModelApi {
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   int loadModel(String modelPath, int? numberOfClasses, int? imageWidth,
-      int? imageHeight);
+      int? imageHeight,ObjectDetectionModelType? objectDetectionModelType);
 
   ///predicts abstract number input
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
