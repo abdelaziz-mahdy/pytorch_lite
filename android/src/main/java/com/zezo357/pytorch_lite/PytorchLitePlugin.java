@@ -80,27 +80,34 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
 
 
-   @Override
-   public Long loadModel(String modelPath, Long numberOfClasses, Long imageWidth, Long imageHeight) {
-     int i=-1;
-     try {
-       modules.add(Module.load(modelPath));
-       if (numberOfClasses != null && imageWidth!=null && imageHeight!=null) {
-         prePostProcessors.add(new PrePostProcessor(numberOfClasses.intValue(),imageWidth.intValue(),imageHeight.intValue()));
-       }else{
-         if(imageWidth!=null && imageHeight!=null){
-           prePostProcessors.add(new PrePostProcessor(imageWidth.intValue(),imageHeight.intValue()));
-         }else{
-         prePostProcessors.add(new PrePostProcessor());
-         }
-       }
-       i= (modules.size() - 1);
-     } catch (Exception e) {
-       Log.e(TAG, modelPath + " is not a proper model", e);
-     }
 
-     return (long) i;
-   }
+
+  @Override
+  public Long loadModel(String modelPath, Long numberOfClasses, Long imageWidth, Long imageHeight, Pigeon.ObjectDetectionModelType objectDetectionModelType) {
+    int i=-1;
+    try {
+      modules.add(Module.load(modelPath));
+      if (numberOfClasses != null && imageWidth!=null && imageHeight!=null) {
+        if(objectDetectionModelType==Pigeon.ObjectDetectionModelType.YOLOV5){
+                  prePostProcessors.add(new PrePostProcessor(numberOfClasses.intValue(),imageWidth.intValue(),imageHeight.intValue()));
+        }else{
+          prePostProcessors.add(new PrePostProcessorYolov8(numberOfClasses.intValue(),imageWidth.intValue(),imageHeight.intValue()));
+
+        }
+      }else{
+        if(imageWidth!=null && imageHeight!=null){
+          prePostProcessors.add(new PrePostProcessor(imageWidth.intValue(),imageHeight.intValue()));
+        }else{
+          prePostProcessors.add(new PrePostProcessor());
+        }
+      }
+      i= (modules.size() - 1);
+    } catch (Exception e) {
+      Log.e(TAG, modelPath + " is not a proper model", e);
+    }
+
+    return (long) i;
+  }
 
   @RequiresApi(api = Build.VERSION_CODES.N)
   @java.lang.Override
