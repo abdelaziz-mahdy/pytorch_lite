@@ -1,6 +1,5 @@
 package com.zezo357.pytorch_lite;
 
-
 public class Convert {
 
     public static String dtypeAsPrimitive(String dtype) {

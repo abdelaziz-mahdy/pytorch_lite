@@ -15,8 +15,8 @@ import java.util.Collections;
 public class PrePostProcessor {
     static String[] mClasses;
     // for yolov5 model, no need to apply MEAN and STD
-    float[] NO_MEAN_RGB = new float[]{0.0f, 0.0f, 0.0f};
-    float[] NO_STD_RGB = new float[]{1.0f, 1.0f, 1.0f};
+    float[] NO_MEAN_RGB = new float[] { 0.0f, 0.0f, 0.0f };
+    float[] NO_STD_RGB = new float[] { 1.0f, 1.0f, 1.0f };
     int mNumberOfClasses = 17;
     // model output is of size 25200*(num_of_class+5)
     int mOutputRow = 25200; // as decided by the YOLOv5 model for input image of size 640*640
@@ -27,6 +27,7 @@ public class PrePostProcessor {
     int mImageHeight = 640;
     int mNmsLimit = 15;
     Pigeon.ObjectDetectionModelType mObjectDetectionModelType;
+
     PrePostProcessor() {
     }
 
@@ -35,22 +36,24 @@ public class PrePostProcessor {
         mImageHeight = imageHeight;
     }
 
-    PrePostProcessor(int numberOfClasses, int imageWidth, int imageHeight,Pigeon.ObjectDetectionModelType objectDetectionModelType) {
+    PrePostProcessor(int numberOfClasses, int imageWidth, int imageHeight,
+            Pigeon.ObjectDetectionModelType objectDetectionModelType) {
         mNumberOfClasses = numberOfClasses;
         mImageWidth = imageWidth;
         mImageHeight = imageHeight;
-        mObjectDetectionModelType=objectDetectionModelType;
-        if(objectDetectionModelType == Pigeon.ObjectDetectionModelType.YOLOV5){
+        mObjectDetectionModelType = objectDetectionModelType;
+        if (objectDetectionModelType == Pigeon.ObjectDetectionModelType.YOLOV5) {
             mOutputRow = 25200; // as decided by the YOLOv5 model for input image of size 640*640
             mOutputColumn = (mNumberOfClasses + 5); // left, top, right, bottom, score and 80 class probability
-        }else{
+        } else {
             mOutputRow = 8400; // as decided by the YOLOv5 model for input image of size 640*640
             mOutputColumn = 8; // left, top, right, bottom, score and 80 class probability
         }
 
     }
 
-    // The two methods nonMaxSuppression and IOU below are ported from https://github.com/hollance/YOLO-CoreML-MPSNNGraph/blob/master/Common/Helpers.swift
+    // The two methods nonMaxSuppression and IOU below are ported from
+    // https://github.com/hollance/YOLO-CoreML-MPSNNGraph/blob/master/Common/Helpers.swift
 
     public static Double getFloatAsDouble(Float fValue) {
         return Double.valueOf(fValue.toString());
@@ -65,11 +68,13 @@ public class PrePostProcessor {
      * - threshold: used to decide whether boxes overlap too much
      */
     ArrayList<Pigeon.ResultObjectDetection> nonMaxSuppression(ArrayList<Pigeon.ResultObjectDetection> boxes) {
-        //Log.i("PytorchLitePlugin","first score before sorting  "+boxes.get(0).getScore());
+        // Log.i("PytorchLitePlugin","first score before sorting
+        // "+boxes.get(0).getScore());
         // Do an argsort on the confidence scores, from high to low.
         Collections.sort(boxes,
                 (o2, o1) -> o1.getScore().compareTo(o2.getScore()));
-        //Log.i("PytorchLitePlugin","first score after sorting  "+boxes.get(0).getScore());
+        // Log.i("PytorchLitePlugin","first score after sorting
+        // "+boxes.get(0).getScore());
         ArrayList<Pigeon.ResultObjectDetection> selected = new ArrayList<>();
         boolean[] active = new boolean[boxes.size()];
         Arrays.fill(active, true);
@@ -85,7 +90,8 @@ public class PrePostProcessor {
             if (active[i]) {
                 Pigeon.ResultObjectDetection boxA = boxes.get(i);
                 selected.add(boxA);
-                if (selected.size() >= mNmsLimit) break;
+                if (selected.size() >= mNmsLimit)
+                    break;
 
                 for (int j = i + 1; j < boxes.size(); j++) {
                     if (active[j]) {
@@ -112,10 +118,12 @@ public class PrePostProcessor {
      */
     Double IOU(Pigeon.PyTorchRect a, Pigeon.PyTorchRect b) {
         Double areaA = ((a.getRight() - a.getLeft()) * (a.getBottom() - a.getTop()));
-        if (areaA <= 0.0) return 0.0;
+        if (areaA <= 0.0)
+            return 0.0;
 
         Double areaB = ((b.getRight() - b.getLeft()) * (b.getBottom() - b.getTop()));
-        if (areaB <= 0.0) return 0.0;
+        if (areaB <= 0.0)
+            return 0.0;
 
         Double intersectionMinX = Math.max(a.getLeft(), b.getLeft());
         Double intersectionMinY = Math.max(a.getTop(), b.getTop());
@@ -125,7 +133,8 @@ public class PrePostProcessor {
                 Math.max(intersectionMaxX - intersectionMinX, 0);
         return intersectionArea / (areaA + areaB - intersectionArea);
     }
-    ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictionsYoloV8(float[] outputs){
+
+    ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictionsYoloV8(float[] outputs) {
         ArrayList<Pigeon.ResultObjectDetection> results = new ArrayList<>();
         for (int i = 0; i < mOutputRow; i++) {
             float x = outputs[i];
@@ -149,19 +158,19 @@ public class PrePostProcessor {
 
             if (max > mScoreThreshold) {
                 Pigeon.PyTorchRect rect = new Pigeon.PyTorchRect.Builder().setLeft(
-                        getFloatAsDouble(left / mImageWidth)
-                ).setTop(
-                        getFloatAsDouble(top / mImageHeight)
-                ).setWidth(
-                        getFloatAsDouble(w / mImageWidth)
-                ).setHeight(
-                        getFloatAsDouble(h / mImageHeight)
-                ).setBottom(
-                        getFloatAsDouble(bottom / mImageHeight)
-                ).setRight(
-                        getFloatAsDouble(right / mImageWidth)
-                ).build();
-                Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder().setClassIndex((long) cls).setScore(getFloatAsDouble(max)).setRect(rect).build();
+                        getFloatAsDouble(left / mImageWidth)).setTop(
+                                getFloatAsDouble(top / mImageHeight))
+                        .setWidth(
+                                getFloatAsDouble(w / mImageWidth))
+                        .setHeight(
+                                getFloatAsDouble(h / mImageHeight))
+                        .setBottom(
+                                getFloatAsDouble(bottom / mImageHeight))
+                        .setRight(
+                                getFloatAsDouble(right / mImageWidth))
+                        .build();
+                Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder()
+                        .setClassIndex((long) cls).setScore(getFloatAsDouble(max)).setRect(rect).build();
 
                 results.add(result);
 
@@ -171,23 +180,24 @@ public class PrePostProcessor {
         Log.i("PytorchLitePlugin", "result length before processing " + results.size());
         return nonMaxSuppression(results);
     }
+
     ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictionsYolov5(float[] outputs) {
         ArrayList<Pigeon.ResultObjectDetection> results = new ArrayList<>();
         for (int i = 0; i < mOutputRow; i++) {
-            //Log.i("PytorchLitePlugin","0:"+outputs[i* mOutputColumn]+"1");
+            // Log.i("PytorchLitePlugin","0:"+outputs[i* mOutputColumn]+"1");
             if (outputs[i * mOutputColumn + 4] > mScoreThreshold) {
                 float x = outputs[i * mOutputColumn];
                 float y = outputs[i * mOutputColumn + 1];
                 float w = outputs[i * mOutputColumn + 2];
                 float h = outputs[i * mOutputColumn + 3];
 
-
                 float left = (x - w / 2);
                 float top = (y - h / 2);
                 float right = (x + w / 2);
                 float bottom = (y + h / 2);
 
-                //Log.i("PytorchLitePlugin","i* mOutputColumn +4="+outputs[i* mOutputColumn +4]+",outputs[i* mOutputColumn +5] "+outputs[i* mOutputColumn +5]);
+                // Log.i("PytorchLitePlugin","i* mOutputColumn +4="+outputs[i* mOutputColumn
+                // +4]+",outputs[i* mOutputColumn +5] "+outputs[i* mOutputColumn +5]);
                 float max = outputs[i * mOutputColumn + 5];
                 int cls = 0;
                 for (int j = 0; j < mOutputColumn - 5; j++) {
@@ -197,21 +207,21 @@ public class PrePostProcessor {
                     }
                 }
 
-
                 Pigeon.PyTorchRect rect = new Pigeon.PyTorchRect.Builder().setLeft(
-                        getFloatAsDouble(left / mImageWidth)
-                ).setTop(
-                        getFloatAsDouble(top / mImageHeight)
-                ).setWidth(
-                        getFloatAsDouble(w / mImageWidth)
-                ).setHeight(
-                        getFloatAsDouble(h / mImageHeight)
-                ).setBottom(
-                        getFloatAsDouble(bottom / mImageHeight)
-                ).setRight(
-                        getFloatAsDouble(right / mImageWidth)
-                ).build();
-                Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder().setClassIndex((long) cls).setScore(getFloatAsDouble(outputs[i * mOutputColumn + 4])).setRect(rect).build();
+                        getFloatAsDouble(left / mImageWidth)).setTop(
+                                getFloatAsDouble(top / mImageHeight))
+                        .setWidth(
+                                getFloatAsDouble(w / mImageWidth))
+                        .setHeight(
+                                getFloatAsDouble(h / mImageHeight))
+                        .setBottom(
+                                getFloatAsDouble(bottom / mImageHeight))
+                        .setRight(
+                                getFloatAsDouble(right / mImageWidth))
+                        .build();
+                Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder()
+                        .setClassIndex((long) cls).setScore(getFloatAsDouble(outputs[i * mOutputColumn + 4]))
+                        .setRect(rect).build();
 
                 results.add(result);
 
@@ -221,11 +231,12 @@ public class PrePostProcessor {
         Log.i("PytorchLitePlugin", "result length before processing " + results.size());
         return nonMaxSuppression(results);
     }
+
     ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictions(float[] outputs) {
-        //passed  on model return value
-        if(mObjectDetectionModelType == Pigeon.ObjectDetectionModelType.YOLOV5){
+        // passed on model return value
+        if (mObjectDetectionModelType == Pigeon.ObjectDetectionModelType.YOLOV5) {
             return outputsToNMSPredictionsYolov5(outputs);
-        }else{
+        } else {
             return outputsToNMSPredictionsYoloV8(outputs);
         }
     }

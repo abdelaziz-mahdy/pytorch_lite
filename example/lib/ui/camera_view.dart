@@ -30,7 +30,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   CameraController? cameraController;
 
   /// true when inference is ongoing
-   bool predicting=false;
+  bool predicting = false;
 
   ModelObjectDetection? _objectModel;
   ClassificationModel? _imageModel;
@@ -152,15 +152,14 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     if (predicting) {
       return;
     }
-      predicting = true;
+    predicting = true;
 
     var futures = <Future>[];
     futures.add(runClassification(cameraImage));
     futures.add(runObjectDetection(cameraImage));
     await Future.wait(futures);
-   
-      predicting = false;
-   
+
+    predicting = false;
   }
 
   @override

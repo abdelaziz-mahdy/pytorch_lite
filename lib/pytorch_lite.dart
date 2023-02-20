@@ -30,7 +30,7 @@ class PytorchLite {
       {String? labelPath}) async {
     String absPathModelPath = await _getAbsolutePath(path);
     int index = await ModelApi()
-        .loadModel(absPathModelPath, null, imageWidth, imageHeight,null);
+        .loadModel(absPathModelPath, null, imageWidth, imageHeight, null);
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {
@@ -46,11 +46,13 @@ class PytorchLite {
   ///Sets pytorch object detection model (path and lables) and returns Model
   static Future<ModelObjectDetection> loadObjectDetectionModel(
       String path, int numberOfClasses, int imageWidth, int imageHeight,
-      {String? labelPath,ObjectDetectionModelType objectDetectionModelType=ObjectDetectionModelType.yolov5}) async {
+      {String? labelPath,
+      ObjectDetectionModelType objectDetectionModelType =
+          ObjectDetectionModelType.yolov5}) async {
     String absPathModelPath = await _getAbsolutePath(path);
 
-    int index = await ModelApi()
-        .loadModel(absPathModelPath, numberOfClasses, imageWidth, imageHeight,objectDetectionModelType);
+    int index = await ModelApi().loadModel(absPathModelPath, numberOfClasses,
+        imageWidth, imageHeight, objectDetectionModelType);
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {
@@ -59,7 +61,8 @@ class PytorchLite {
         labels = await _getLabelsCsv(labelPath);
       }
     }
-    return ModelObjectDetection(index, imageWidth, imageHeight, labels,modelType: objectDetectionModelType);
+    return ModelObjectDetection(index, imageWidth, imageHeight, labels,
+        modelType: objectDetectionModelType);
   }
 
   static Future<String> _getAbsolutePath(String path) async {
@@ -258,7 +261,8 @@ class ModelObjectDetection {
   final List<String> labels;
   final ObjectDetectionModelType modelType;
   ModelObjectDetection(
-      this._index, this.imageWidth, this.imageHeight, this.labels,{this.modelType=ObjectDetectionModelType.yolov5});
+      this._index, this.imageWidth, this.imageHeight, this.labels,
+      {this.modelType = ObjectDetectionModelType.yolov5});
 
   ///predicts image and returns the supposed label belonging to it
   Future<List<ResultObjectDetection?>> getImagePrediction(

@@ -40,19 +40,15 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
     ArrayList<Module> modules = new ArrayList<>();
     ArrayList<PrePostProcessor> prePostProcessors = new ArrayList<>();
 
-
     private FlutterState flutterState;
-
 
     @Override
     public void onAttachedToEngine(FlutterPluginBinding binding) {
 
-
-        this.flutterState =
-                new FlutterState(
-                        binding.getApplicationContext(),
-                        binding.getBinaryMessenger(),
-                        binding.getTextureRegistry());
+        this.flutterState = new FlutterState(
+                binding.getApplicationContext(),
+                binding.getBinaryMessenger(),
+                binding.getTextureRegistry());
         flutterState.startListening(this, binding.getBinaryMessenger());
     }
 
@@ -65,15 +61,16 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
         flutterState = null;
     }
 
-
     @Override
-    public Long loadModel(String modelPath, Long numberOfClasses, Long imageWidth, Long imageHeight, Pigeon.ObjectDetectionModelType objectDetectionModelType) {
+    public Long loadModel(String modelPath, Long numberOfClasses, Long imageWidth, Long imageHeight,
+            Pigeon.ObjectDetectionModelType objectDetectionModelType) {
         int i = -1;
         try {
             // modules.add(LiteModuleLoader.load(modelPath));
             modules.add(Module.load(modelPath));
             if (numberOfClasses != null && imageWidth != null && imageHeight != null) {
-                prePostProcessors.add(new PrePostProcessor(numberOfClasses.intValue(), imageWidth.intValue(), imageHeight.intValue(),objectDetectionModelType));
+                prePostProcessors.add(new PrePostProcessor(numberOfClasses.intValue(), imageWidth.intValue(),
+                        imageHeight.intValue(), objectDetectionModelType));
             } else {
                 if (imageWidth != null && imageHeight != null) {
                     prePostProcessors.add(new PrePostProcessor(imageWidth.intValue(), imageHeight.intValue()));
@@ -91,7 +88,8 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @java.lang.Override
-    public void getPredictionCustom(Long index, List<Double> input, List<Long> shape, String dtype, Pigeon.Result<List<Object>> result) {
+    public void getPredictionCustom(Long index, List<Double> input, List<Long> shape, String dtype,
+            Pigeon.Result<List<Object>> result) {
         Module module = null;
         Double[] data = new Double[input.size()];
         DType dtype_enum = null;
@@ -103,9 +101,9 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
             Log.i(TAG, "parsed dtype_enum");
 
-            //Long[] l = shape.toArray(new Long[0]);
-            //long[] l = ArrayUtils.toPrimitive(l);
-            //long[] result
+            // Long[] l = shape.toArray(new Long[0]);
+            // long[] l = ArrayUtils.toPrimitive(l);
+            // long[] result
 
             shape_primitve = shape.stream().mapToLong(l -> l).toArray();
 
@@ -117,22 +115,25 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
             Log.e(TAG, "error parsing arguments", e);
         }
 
-        //prepare input tensor
+        // prepare input tensor
         final Tensor inputTensor = getInputTensor(dtype_enum, data, shape_primitve);
 
-        //run model
+        // run model
         Tensor outputTensor = null;
         try {
             outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
         } catch (RuntimeException e) {
-            Log.e(TAG, "Your input type " + dtype_enum.toString().toLowerCase() + " (" + Convert.dtypeAsPrimitive(dtype) + ") " + "does not match with model input type", e);
+            Log.e(TAG, "Your input type " + dtype_enum.toString().toLowerCase() + " (" + Convert.dtypeAsPrimitive(dtype)
+                    + ") " + "does not match with model input type", e);
             result.success(null);
         }
         result.success(Collections.singletonList(outputTensor));
     }
 
     @Override
-    public void getImagePredictionList(Long index, byte[] imageData, List<byte[]> imageBytesList, Long imageWidthForBytesList, Long imageHeightForBytesList, List<Double> mean, List<Double> std, Pigeon.Result<List<Double>> result) {
+    public void getImagePredictionList(Long index, byte[] imageData, List<byte[]> imageBytesList,
+            Long imageWidthForBytesList, Long imageHeightForBytesList, List<Double> mean, List<Double> std,
+            Pigeon.Result<List<Double>> result) {
         Module imageModule = null;
         Bitmap bitmap = null;
         PrePostProcessor prePostProcessor = null;
@@ -146,13 +147,14 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
             if (imageData != null) {
                 bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
             } else {
-                bitmap = getBitmapFromBytesList(imageBytesList, imageWidthForBytesList.intValue(), imageHeightForBytesList.intValue());
+                bitmap = getBitmapFromBytesList(imageBytesList, imageWidthForBytesList.intValue(),
+                        imageHeightForBytesList.intValue());
             }
             Matrix matrix = new Matrix();
             matrix.postRotate(90.0f);
             bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-            bitmap = Bitmap.createScaledBitmap(bitmap, prePostProcessor.mImageWidth, prePostProcessor.mImageHeight, false);
-
+            bitmap = Bitmap.createScaledBitmap(bitmap, prePostProcessor.mImageWidth, prePostProcessor.mImageHeight,
+                    false);
 
             for (int i = 0; i < meanFormatted.length; i++) {
                 meanFormatted[i] = mean.get(i).floatValue();
@@ -161,7 +163,6 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
             for (int i = 0; i < stdFormatted.length; i++) {
                 stdFormatted[i] = std.get(i).floatValue();
             }
-
 
         } catch (Exception e) {
             Log.e(TAG, "error reading image", e);
@@ -187,7 +188,9 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
     }
 
     @Override
-    public void getImagePredictionListObjectDetection(Long index, byte[] imageData, List<byte[]> imageBytesList, Long imageWidthForBytesList, Long imageHeightForBytesList, Double minimumScore, Double IOUThreshold, Long boxesLimit, Pigeon.Result<List<Pigeon.ResultObjectDetection>> result) {
+    public void getImagePredictionListObjectDetection(Long index, byte[] imageData, List<byte[]> imageBytesList,
+            Long imageWidthForBytesList, Long imageHeightForBytesList, Double minimumScore, Double IOUThreshold,
+            Long boxesLimit, Pigeon.Result<List<Pigeon.ResultObjectDetection>> result) {
         Module imageModule = null;
         PrePostProcessor prePostProcessor = null;
         Bitmap bitmap = null;
@@ -204,33 +207,33 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
             if (imageData != null) {
                 bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
             } else {
-                bitmap = getBitmapFromBytesList(imageBytesList, imageWidthForBytesList.intValue(), imageHeightForBytesList.intValue());
+                bitmap = getBitmapFromBytesList(imageBytesList, imageWidthForBytesList.intValue(),
+                        imageHeightForBytesList.intValue());
                 Matrix matrix = new Matrix();
                 matrix.postRotate(90.0f);
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             }
 
-            bitmap = Bitmap.createScaledBitmap(bitmap, prePostProcessor.mImageWidth, prePostProcessor.mImageHeight, false);
-
+            bitmap = Bitmap.createScaledBitmap(bitmap, prePostProcessor.mImageWidth, prePostProcessor.mImageHeight,
+                    false);
 
         } catch (Exception e) {
             Log.e(TAG, "error reading image", e);
         }
 
         try {
-    
-            final Tensor imageInputTensor = TensorImageUtils.bitmapToFloat32Tensor(bitmap, prePostProcessor.NO_MEAN_RGB, prePostProcessor.NO_STD_RGB);
+
+            final Tensor imageInputTensor = TensorImageUtils.bitmapToFloat32Tensor(bitmap, prePostProcessor.NO_MEAN_RGB,
+                    prePostProcessor.NO_STD_RGB);
             Tensor outputTensor = null;
-            if(prePostProcessor.mObjectDetectionModelType==Pigeon.ObjectDetectionModelType.YOLOV5){
-            IValue[] outputTuple = imageModule.forward(IValue.from(imageInputTensor)).toTuple();
-            outputTensor = outputTuple[0].toTensor();
-            }else{
-            outputTensor = imageModule.forward(IValue.from(imageInputTensor)).toTensor();
+            if (prePostProcessor.mObjectDetectionModelType == Pigeon.ObjectDetectionModelType.YOLOV5) {
+                IValue[] outputTuple = imageModule.forward(IValue.from(imageInputTensor)).toTuple();
+                outputTensor = outputTuple[0].toTensor();
+            } else {
+                outputTensor = imageModule.forward(IValue.from(imageInputTensor)).toTensor();
             }
-            
 
             final float[] outputs = outputTensor.getDataAsFloatArray();
-
 
             final ArrayList<Pigeon.ResultObjectDetection> results = prePostProcessor.outputsToNMSPredictions(outputs);
 
@@ -261,27 +264,33 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
         byte[] imageBytes = out.toByteArray();
         return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
     }
-/*
-  public Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21) {
-    // https://stackoverflow.com/a/36409748
-    RenderScript rs = RenderScript.create(context);
-    ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+    /*
+     * public Allocation renderScriptNV21ToRGBA888(Context context, int width, int
+     * height, byte[] nv21) {
+     * // https://stackoverflow.com/a/36409748
+     * RenderScript rs = RenderScript.create(context);
+     * ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic =
+     * ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+     * 
+     * Type.Builder yuvType = new Type.Builder(rs,
+     * Element.U8(rs)).setX(nv21.length);
+     * Allocation in = Allocation.createTyped(rs, yuvType.create(),
+     * Allocation.USAGE_SCRIPT);
+     * 
+     * Type.Builder rgbaType = new Type.Builder(rs,
+     * Element.RGBA_8888(rs)).setX(width).setY(height);
+     * Allocation out = Allocation.createTyped(rs, rgbaType.create(),
+     * Allocation.USAGE_SCRIPT);
+     * 
+     * in.copyFrom(nv21);
+     * 
+     * yuvToRgbIntrinsic.setInput(in);
+     * yuvToRgbIntrinsic.forEach(out);
+     * return out;
+     * }
+     */
 
-    Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs)).setX(nv21.length);
-    Allocation in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
-
-    Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
-    Allocation out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
-
-    in.copyFrom(nv21);
-
-    yuvToRgbIntrinsic.setInput(in);
-    yuvToRgbIntrinsic.forEach(out);
-    return out;
-  }*/
-
-
-    //returns input tensor depending on dtype
+    // returns input tensor depending on dtype
     private Tensor getInputTensor(DType dtype, Double[] data, long[] shape) {
         switch (dtype) {
             case FLOAT32:
@@ -301,7 +310,8 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
         }
     }
 
-    //gets tensor depending on dtype and creates list of it, which is being returned
+    // gets tensor depending on dtype and creates list of it, which is being
+    // returned
     private void successResult(Pigeon.Result result, DType dtype, Tensor outputTensor) {
         switch (dtype) {
             case FLOAT32:
@@ -358,13 +368,12 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
         private final TextureRegistry textureRegistry;
 
         FlutterState(Context applicationContext,
-                     BinaryMessenger messenger,
-                     TextureRegistry textureRegistry) {
+                BinaryMessenger messenger,
+                TextureRegistry textureRegistry) {
             this.applicationContext = applicationContext;
             this.binaryMessenger = messenger;
             this.textureRegistry = textureRegistry;
         }
-
 
         void startListening(PytorchLitePlugin methodCallHandler, BinaryMessenger messenger) {
             Pigeon.ModelApi.setup(messenger, methodCallHandler);

@@ -2,7 +2,7 @@ import 'package:pigeon/pigeon.dart';
 // Build android only
 // flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart  --java_out android/src/main/java/com/zezo357/pytorch_lite/Pigeon.java --java_package "com.zezo357.pytorch_lite"
 
-// Build android and ios 
+// Build android and ios
 
 //flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart --objc_header_out ios/Classes/pigeon.h --objc_source_out ios/Classes/pigeon.m --java_out android/src/main/java/com/zezo357/pytorch_lite/Pigeon.java --java_package "com.zezo357.pytorch_lite"
 
@@ -13,7 +13,8 @@ class PyTorchRect {
   double bottom;
   double width;
   double height;
-  PyTorchRect(this.left, this.top, this.width, this.height, this.right, this.bottom);
+  PyTorchRect(
+      this.left, this.top, this.width, this.height, this.right, this.bottom);
 }
 
 class ResultObjectDetection {
@@ -24,14 +25,14 @@ class ResultObjectDetection {
 
   ResultObjectDetection(this.classIndex, this.score, this.rect);
 }
-enum ObjectDetectionModelType{
-  yolov5, yolov8
-}
+
+enum ObjectDetectionModelType { yolov5, yolov8 }
+
 @HostApi()
 abstract class ModelApi {
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   int loadModel(String modelPath, int? numberOfClasses, int? imageWidth,
-      int? imageHeight,ObjectDetectionModelType? objectDetectionModelType);
+      int? imageHeight, ObjectDetectionModelType? objectDetectionModelType);
 
   ///predicts abstract number input
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)

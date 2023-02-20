@@ -113,9 +113,9 @@ class _ModelApiCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128: 
+      case 128:
         return PyTorchRect.decode(readValue(buffer)!);
-      case 129: 
+      case 129:
         return ResultObjectDetection.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -133,12 +133,22 @@ class ModelApi {
 
   static const MessageCodec<Object?> codec = _ModelApiCodec();
 
-  Future<int> loadModel(String arg_modelPath, int? arg_numberOfClasses, int? arg_imageWidth, int? arg_imageHeight, ObjectDetectionModelType? arg_objectDetectionModelType) async {
+  Future<int> loadModel(
+      String arg_modelPath,
+      int? arg_numberOfClasses,
+      int? arg_imageWidth,
+      int? arg_imageHeight,
+      ObjectDetectionModelType? arg_objectDetectionModelType) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ModelApi.loadModel', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_modelPath, arg_numberOfClasses, arg_imageWidth, arg_imageHeight, arg_objectDetectionModelType?.index]) as List<Object?>?;
+    final List<Object?>? replyList = await channel.send(<Object?>[
+      arg_modelPath,
+      arg_numberOfClasses,
+      arg_imageWidth,
+      arg_imageHeight,
+      arg_objectDetectionModelType?.index
+    ]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -161,12 +171,14 @@ class ModelApi {
   }
 
   ///predicts abstract number input
-  Future<List<Object?>?> getPredictionCustom(int arg_index, List<double?> arg_input, List<int?> arg_shape, String arg_dtype) async {
+  Future<List<Object?>?> getPredictionCustom(int arg_index,
+      List<double?> arg_input, List<int?> arg_shape, String arg_dtype) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ModelApi.getPredictionCustom', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_index, arg_input, arg_shape, arg_dtype]) as List<Object?>?;
+    final List<Object?>? replyList = await channel
+            .send(<Object?>[arg_index, arg_input, arg_shape, arg_dtype])
+        as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -184,12 +196,26 @@ class ModelApi {
   }
 
   ///predicts image but returns the raw net output
-  Future<List<double?>?> getImagePredictionList(int arg_index, Uint8List? arg_imageData, List<Uint8List?>? arg_imageBytesList, int? arg_imageWidthForBytesList, int? arg_imageHeightForBytesList, List<double?> arg_mean, List<double?> arg_std) async {
+  Future<List<double?>?> getImagePredictionList(
+      int arg_index,
+      Uint8List? arg_imageData,
+      List<Uint8List?>? arg_imageBytesList,
+      int? arg_imageWidthForBytesList,
+      int? arg_imageHeightForBytesList,
+      List<double?> arg_mean,
+      List<double?> arg_std) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.ModelApi.getImagePredictionList', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_index, arg_imageData, arg_imageBytesList, arg_imageWidthForBytesList, arg_imageHeightForBytesList, arg_mean, arg_std]) as List<Object?>?;
+    final List<Object?>? replyList = await channel.send(<Object?>[
+      arg_index,
+      arg_imageData,
+      arg_imageBytesList,
+      arg_imageWidthForBytesList,
+      arg_imageHeightForBytesList,
+      arg_mean,
+      arg_std
+    ]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -207,12 +233,29 @@ class ModelApi {
   }
 
   ///predicts image but returns the output detections
-  Future<List<ResultObjectDetection?>> getImagePredictionListObjectDetection(int arg_index, Uint8List? arg_imageData, List<Uint8List?>? arg_imageBytesList, int? arg_imageWidthForBytesList, int? arg_imageHeightForBytesList, double arg_minimumScore, double arg_IOUThreshold, int arg_boxesLimit) async {
+  Future<List<ResultObjectDetection?>> getImagePredictionListObjectDetection(
+      int arg_index,
+      Uint8List? arg_imageData,
+      List<Uint8List?>? arg_imageBytesList,
+      int? arg_imageWidthForBytesList,
+      int? arg_imageHeightForBytesList,
+      double arg_minimumScore,
+      double arg_IOUThreshold,
+      int arg_boxesLimit) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.ModelApi.getImagePredictionListObjectDetection', codec,
+        'dev.flutter.pigeon.ModelApi.getImagePredictionListObjectDetection',
+        codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_index, arg_imageData, arg_imageBytesList, arg_imageWidthForBytesList, arg_imageHeightForBytesList, arg_minimumScore, arg_IOUThreshold, arg_boxesLimit]) as List<Object?>?;
+    final List<Object?>? replyList = await channel.send(<Object?>[
+      arg_index,
+      arg_imageData,
+      arg_imageBytesList,
+      arg_imageWidthForBytesList,
+      arg_imageHeightForBytesList,
+      arg_minimumScore,
+      arg_IOUThreshold,
+      arg_boxesLimit
+    ]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
