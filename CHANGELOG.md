@@ -1,6 +1,8 @@
 ## 2.0.1
 * upgraded to pigeon 9.0.0
 * adding yolov8 support
+* updated camera,image to latest version in example
+* converted to using pytorch_android version to 1.12
 ## 2.0.0
 * breaking change: Rect is now PyTorchRect to avoid conflicts in ios (when it is implemented)
 * upgraded to pigeon 4.2.0

@@ -1,12 +1,9 @@
-import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image/image.dart';
 import 'package:pytorch_lite/pigeon.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
-import 'package:pytorch_lite_example/utils/image_utils.dart';
 
 import 'camera_view_singleton.dart';
 
@@ -17,7 +14,7 @@ class CameraView extends StatefulWidget {
   final Function(String classification) resultsCallbackClassification;
 
   /// Constructor
-  const CameraView(this.resultsCallback, this.resultsCallbackClassification);
+  const CameraView(this.resultsCallback, this.resultsCallbackClassification, {Key? key}) : super(key: key);
   @override
   _CameraViewState createState() => _CameraViewState();
 }

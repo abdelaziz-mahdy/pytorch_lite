@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pytorch_lite/pigeon.dart';
 import 'package:pytorch_lite_example/ui/box_widget.dart';
@@ -7,6 +6,8 @@ import 'ui/camera_view.dart';
 
 /// [RunModelByCameraDemo] stacks [CameraView] and [BoxWidget]s with bottom sheet for stats
 class RunModelByCameraDemo extends StatefulWidget {
+  const RunModelByCameraDemo({Key? key}) : super(key: key);
+
   @override
   _RunModelByCameraDemoState createState() => _RunModelByCameraDemoState();
 }
@@ -66,7 +67,7 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.keyboard_arrow_up,
+                        const Icon(Icons.keyboard_arrow_up,
                             size: 48, color: Colors.orange),
                         (classification != null)
                             ? Padding(
@@ -74,7 +75,7 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
                                 child: Column(
                                   children: [
                                     StatsRow(
-                                        'Classification:', '${classification}'),
+                                        'Classification:', '$classification'),
                                   ],
                                 ),
                               )
@@ -104,7 +105,7 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
   void resultsCallback(List<ResultObjectDetection?> results) {
     setState(() {
       this.results = results;
-      results.forEach((element) {
+      for (var element in results) {
         print({
           "rect": {
             "left": element?.rect.left,
@@ -115,7 +116,7 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
             "bottom": element?.rect.bottom,
           },
         });
-      });
+      }
     });
   }
 
@@ -135,7 +136,7 @@ class StatsRow extends StatelessWidget {
   final String left;
   final String right;
 
-  StatsRow(this.left, this.right);
+  const StatsRow(this.left, this.right, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

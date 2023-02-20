@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -326,7 +325,7 @@ class ModelObjectDetection {
 
    */
   Widget renderBoxesOnImage(
-      File _image, List<ResultObjectDetection?> _recognitions,
+      File image, List<ResultObjectDetection?> recognitions,
       {Color? boxesColor, bool showPercentage = true}) {
     //if (_recognitions == null) return Cont;
     //if (_imageHeight == null || _imageWidth == null) return [];
@@ -335,7 +334,7 @@ class ModelObjectDetection {
     //double factorY = _imageHeight / _imageWidth * screen.width;
     //boxesColor ??= Color.fromRGBO(37, 213, 253, 1.0);
 
-    print(_recognitions.length);
+    print(recognitions.length);
     return LayoutBuilder(builder: (context, constraints) {
       debugPrint(
           'Max height: ${constraints.maxHeight}, max width: ${constraints.maxWidth}');
@@ -350,11 +349,11 @@ class ModelObjectDetection {
             height: factorY,
             child: Container(
                 child: Image.file(
-              _image,
+              image,
               fit: BoxFit.fill,
             )),
           ),
-          ..._recognitions.map((re) {
+          ...recognitions.map((re) {
             if (re == null) {
               return Container();
             }
@@ -397,11 +396,9 @@ class ModelObjectDetection {
                     alignment: Alignment.centerRight,
                     color: usedColor,
                     child: Text(
-                      (re.className ?? re.classIndex.toString()) +
-                          "_" +
-                          (showPercentage
-                              ? (re.score * 100).toStringAsFixed(2) + "%"
-                              : ""),
+                      "${re.className ?? re.classIndex.toString()}_${showPercentage
+                              ? "${(re.score * 100).toStringAsFixed(2)}%"
+                              : ""}",
                     ),
                   ),
                   Container(
@@ -409,7 +406,7 @@ class ModelObjectDetection {
                     height: re.rect.height.toDouble() * factorY,
                     decoration: BoxDecoration(
                         border: Border.all(color: usedColor, width: 3),
-                        borderRadius: BorderRadius.all(Radius.circular(2))),
+                        borderRadius: const BorderRadius.all(Radius.circular(2))),
                     child: Container(),
                   ),
                 ],

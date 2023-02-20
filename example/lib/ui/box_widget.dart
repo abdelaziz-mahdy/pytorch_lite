@@ -56,11 +56,9 @@ class BoxWidget extends StatelessWidget {
             alignment: Alignment.centerRight,
             color: usedColor,
             child: Text(
-              (result.className ?? result.classIndex.toString()) +
-                  "_" +
-                  (showPercentage
-                      ? (result.score * 100).toStringAsFixed(2) + "%"
-                      : ""),
+              "${result.className ?? result.classIndex.toString()}_${showPercentage
+                      ? "${(result.score * 100).toStringAsFixed(2)}%"
+                      : ""}",
             ),
           ),
           Container(
@@ -68,7 +66,7 @@ class BoxWidget extends StatelessWidget {
             height: result.rect.height.toDouble() * factorY,
             decoration: BoxDecoration(
                 border: Border.all(color: usedColor!, width: 3),
-                borderRadius: BorderRadius.all(Radius.circular(2))),
+                borderRadius: const BorderRadius.all(Radius.circular(2))),
             child: Container(),
           ),
         ],
