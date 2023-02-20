@@ -7,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pytorch_lite/pigeon.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
-
 class RunModelByImageDemo extends StatefulWidget {
   @override
   _RunModelByImageDemoState createState() => _RunModelByImageDemoState();
@@ -17,6 +16,8 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
   ClassificationModel? _imageModel;
   //CustomModel? _customModel;
   late ModelObjectDetection _objectModel;
+  late ModelObjectDetection _objectModelYolov8;
+
   String? _imagePrediction;
   List? _prediction;
   File? _image;
@@ -34,6 +35,7 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
     String pathImageModel = "assets/models/model_classification.pt";
     //String pathCustomModel = "assets/models/custom_model.ptl";
     String pathObjectDetectionModel = "assets/models/yolov5s.torchscript";
+    String pathObjectDetectionModelYolov8 = "assets/models/yolov8s.torchscript";
     try {
       _imageModel = await PytorchLite.loadClassificationModel(
           pathImageModel, 224, 224,
@@ -42,6 +44,10 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
       _objectModel = await PytorchLite.loadObjectDetectionModel(
           pathObjectDetectionModel, 80, 640, 640,
           labelPath: "assets/labels/labels_objectDetection_Coco.txt");
+      _objectModelYolov8 = await PytorchLite.loadObjectDetectionModel(
+          pathObjectDetectionModelYolov8, 80, 640, 640,
+          labelPath: "assets/labels/labels_objectDetection_Coco.txt",
+          objectDetectionModelType: ObjectDetectionModelType.yolov8);
     } catch (e) {
       if (e is PlatformException) {
         print("only supported for android, Error is $e");
@@ -80,6 +86,8 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
 
   Future runObjectDetection() async {
     //pick a random image
+    Stopwatch stopwatch = new Stopwatch()..start();
+
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     objDetect = await _objectModel.getImagePrediction(
         await File(image!.path).readAsBytes(),
@@ -100,6 +108,38 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
         },
       });
     });
+    print('object executed in ${stopwatch.elapsed.inMilliseconds}');
+    setState(() {
+      //this.objDetect = objDetect;
+      _image = File(image.path);
+    });
+  }
+
+  Future runObjectDetectionYolov8() async {
+    //pick a random image
+    Stopwatch stopwatch = new Stopwatch()..start();
+
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    objDetect = await _objectModelYolov8.getImagePrediction(
+        await File(image!.path).readAsBytes(),
+        minimumScore: 0.1,
+        IOUThershold: 0.3);
+    objDetect.forEach((element) {
+      print({
+        "score": element?.score,
+        "className": element?.className,
+        "class": element?.classIndex,
+        "rect": {
+          "left": element?.rect.left,
+          "top": element?.rect.top,
+          "width": element?.rect.width,
+          "height": element?.rect.height,
+          "right": element?.rect.right,
+          "bottom": element?.rect.bottom,
+        },
+      });
+    });
+    print('object executed in ${stopwatch.elapsed.inMilliseconds}');
     setState(() {
       //this.objDetect = objDetect;
       _image = File(image.path);
@@ -122,7 +162,7 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
 
     print(predictionList);
     List<double?>? predictionListProbabilites =
-    await _imageModel!.getImagePredictionListProbabilities(
+        await _imageModel!.getImagePredictionListProbabilities(
       await File(image.path).readAsBytes(),
     );
     //Gettting the highest Probability
@@ -169,11 +209,11 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
             Expanded(
               child: objDetect.isNotEmpty
                   ? _image == null
-                  ? Text('No image selected.')
-                  : _objectModel.renderBoxesOnImage(_image!, objDetect)
+                      ? Text('No image selected.')
+                      : _objectModel.renderBoxesOnImage(_image!, objDetect)
                   : _image == null
-                  ? Text('No image selected.')
-                  : Image.file(_image!),
+                      ? Text('No image selected.')
+                      : Image.file(_image!),
             ),
             Center(
               child: Visibility(
@@ -217,6 +257,18 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
               ),
               child: Text(
                 "Run object detection with labels",
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: runObjectDetectionYolov8,
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.blue,
+              ),
+              child: Text(
+                "Run object detection yolov8 with labels",
                 style: TextStyle(
                   color: Colors.white,
                 ),

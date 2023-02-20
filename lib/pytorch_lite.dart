@@ -59,7 +59,7 @@ class PytorchLite {
         labels = await _getLabelsCsv(labelPath);
       }
     }
-    return ModelObjectDetection(index, imageWidth, imageHeight, labels);
+    return ModelObjectDetection(index, imageWidth, imageHeight, labels,modelType: objectDetectionModelType);
   }
 
   static Future<String> _getAbsolutePath(String path) async {
@@ -256,9 +256,9 @@ class ModelObjectDetection {
   final int imageWidth;
   final int imageHeight;
   final List<String> labels;
-
+  final ObjectDetectionModelType modelType;
   ModelObjectDetection(
-      this._index, this.imageWidth, this.imageHeight, this.labels);
+      this._index, this.imageWidth, this.imageHeight, this.labels,{this.modelType=ObjectDetectionModelType.yolov5});
 
   ///predicts image and returns the supposed label belonging to it
   Future<List<ResultObjectDetection?>> getImagePrediction(

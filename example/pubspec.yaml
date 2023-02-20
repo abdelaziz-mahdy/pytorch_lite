@@ -19,8 +19,8 @@ dependencies:
     sdk: flutter
   image_picker: ^0.8.5+3
   path_provider: ^2.0.2
-  camera: ^0.9.8+1
-  image: ^3.0.2
+  camera: ^0.10.3
+  image: ^4.0.15
   pytorch_lite:
     # When depending on this package from a real application you should use:
     #   pytorch_lite: ^x.y.z

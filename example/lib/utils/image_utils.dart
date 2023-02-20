@@ -16,9 +16,9 @@ class ImageUtils {
     for (var i = 0; i < width; i++) {
       for (var j = 0; j < height; j++) {
         var pixel = image.getPixel(i, j);
-        buffer[pixelIndex++] = imageLib.getRed(pixel);
-        buffer[pixelIndex++] = imageLib.getGreen(pixel);
-        buffer[pixelIndex++] = imageLib.getBlue(pixel);
+        buffer[pixelIndex++] = pixel.r.toInt();
+        buffer[pixelIndex++] = pixel.g.toInt();
+        buffer[pixelIndex++] = pixel.b.toInt();
       }
     }
     return convertedBytes.buffer.asUint8List();
@@ -37,9 +37,13 @@ class ImageUtils {
 
   /// Converts a [CameraImage] in BGRA888 format to [imageLib.Image] in RGB format
   static imageLib.Image convertBGRA8888ToImage(CameraImage cameraImage) {
-    imageLib.Image img = imageLib.Image.fromBytes(cameraImage.planes[0].width!,
-        cameraImage.planes[0].height!, cameraImage.planes[0].bytes,
-        format: imageLib.Format.bgra);
+    imageLib.Image img = imageLib.Image.fromBytes(
+      width: cameraImage.planes[0].width!,
+      height: cameraImage.planes[0].height!,
+      bytes: cameraImage.planes[0].bytes.buffer,
+      order: imageLib.ChannelOrder.bgra,
+      // format: imageLib.Format.bgra
+    );
     return img;
   }
 
@@ -51,8 +55,8 @@ class ImageUtils {
     final int uvRowStride = cameraImage.planes[1].bytesPerRow;
     final int? uvPixelStride = cameraImage.planes[1].bytesPerPixel;
 
-    final image = imageLib.Image(width, height);
-
+    imageLib.Image image = imageLib.Image(width: width, height: height);
+    Uint8List bytes = image.toUint8List();
     for (int w = 0; w < width; w++) {
       for (int h = 0; h < height; h++) {
         final int uvIndex =
@@ -63,9 +67,13 @@ class ImageUtils {
         final u = cameraImage.planes[1].bytes[uvIndex];
         final v = cameraImage.planes[2].bytes[uvIndex];
 
-        image.data[index] = ImageUtils.yuv2rgb(y, u, v);
+        if (image.data != null) {
+          bytes[index] = ImageUtils.yuv2rgb(y, u, v);
+        }
       }
     }
+    image = imageLib.Image.fromBytes(
+        width: width, height: height, bytes: bytes.buffer);
     return image;
   }
 
@@ -88,7 +96,7 @@ class ImageUtils {
   }
 
   static void saveImage(imageLib.Image image, [int i = 0]) async {
-    List<int> jpeg = imageLib.JpegEncoder().encodeImage(image);
+    List<int> jpeg = imageLib.JpegEncoder().encode(image);
     final appDir = await getTemporaryDirectory();
     final appPath = appDir.path;
     final fileOnDevice = File('$appPath/out$i.jpg');

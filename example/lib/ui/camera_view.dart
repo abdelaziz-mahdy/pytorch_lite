@@ -29,8 +29,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   /// Controller
   CameraController? cameraController;
 
-  /// true when inference is ongoing
-  late bool predicting;
+  // /// true when inference is ongoing
+  // late bool predicting;
 
   ModelObjectDetection? _objectModel;
   ClassificationModel? _imageModel;
@@ -72,7 +72,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     initializeCamera();
 
     // Initially predicting = false
-    predicting = false;
+    // predicting = false;
   }
 
   /// Initializes the camera by setting [cameraController]
@@ -118,31 +118,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     //     child: CameraPreview(cameraController));
   }
 
-  /// Callback to receive each frame [CameraImage] perform inference on it
-  onLatestImageAvailable(CameraImage cameraImage) async {
-    // if (classifier.interpreter != null && classifier.labels != null) {
-
-    // If previous inference has not completed then return
-    if (predicting) {
-      //print("here processing");
-      return;
-    }
-
-    setState(() {
-      predicting = true;
-    });
-    if (_objectModel != null) {
-      List<ResultObjectDetection?> objDetect = await _objectModel!
-          .getImagePredictionFromBytesList(
-              cameraImage.planes.map((e) => e.bytes).toList(),
-              cameraImage.width,
-              cameraImage.height,
-              minimumScore: 0.3,
-              IOUThershold: 0.3);
-
-      print("data outputted $objDetect");
-      widget.resultsCallback(objDetect);
-    }
+  runClassification(CameraImage cameraImage) async {
+    setState(() {});
     if (_imageModel != null) {
       String imageClassifaction =
           await _imageModel!.getImagePredictionFromBytesList(
@@ -155,10 +132,30 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       widget.resultsCallbackClassification(imageClassifaction);
     }
     // set predicting to false to allow new frames
-    setState(() {
-      predicting = false;
-    });
-    // }
+    setState(() {});
+  }
+
+  runObjectDetection(CameraImage cameraImage) async {
+    setState(() {});
+    if (_objectModel != null) {
+      List<ResultObjectDetection?> objDetect = await _objectModel!
+          .getImagePredictionFromBytesList(
+              cameraImage.planes.map((e) => e.bytes).toList(),
+              cameraImage.width,
+              cameraImage.height,
+              minimumScore: 0.3,
+              IOUThershold: 0.3);
+
+      print("data outputted $objDetect");
+      widget.resultsCallback(objDetect);
+    }
+    setState(() {});
+  }
+
+  /// Callback to receive each frame [CameraImage] perform inference on it
+  onLatestImageAvailable(CameraImage cameraImage) async {
+    runClassification(cameraImage);
+    runObjectDetection(cameraImage);
   }
 
   @override
