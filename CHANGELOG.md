@@ -1,6 +1,6 @@
 ## 2.0.1
 * upgraded to pigeon 9.0.0
-* adding yolov8 support
+* adding yolov8 support, thanks to https://github.com/atanasko/android-demo-app
 * updated camera,image to latest version in example
 * converted to using pytorch_android version to 1.12
 ## 2.0.0
