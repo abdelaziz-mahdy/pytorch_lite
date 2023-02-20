@@ -36,6 +36,14 @@ example
 ```python
 !python export.py --weights yolov5s.pt --include torchscript --img 640 --optimize
 ```
+- object detection (yolov8)
+```python
+!yolo mode=export model="your model" format=torchscript optimize
+```
+example 
+```python
+!yolo mode=export model=yolov8s.pt format=torchscript optimize
+```
 ### Installation
 
 To use this plugin, add `pytorch_lite` as a [dependency in your pubspec.yaml file](https://flutter.dev/docs/development/packages-and-plugins/using-packages).
@@ -93,7 +101,8 @@ Or objectDetection model:
 ```dart
 ModelObjectDetection objectModel = await PytorchLite.loadObjectDetectionModel(
           "assets/models/yolov5s.torchscript", 80, 640, 640,
-          labelPath: "assets/labels/labels_objectDetection_Coco.txt");
+          labelPath: "assets/labels/labels_objectDetection_Coco.txt",
+          objectDetectionModelType: ObjectDetectionModelType.yolov5);
 ```
 
 ### Get classification prediction as label
