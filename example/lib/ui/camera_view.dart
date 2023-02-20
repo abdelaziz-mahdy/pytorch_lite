@@ -29,8 +29,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   /// Controller
   CameraController? cameraController;
 
-  // /// true when inference is ongoing
-  // late bool predicting;
+  /// true when inference is ongoing
+   bool predicting=false;
 
   ModelObjectDetection? _objectModel;
   ClassificationModel? _imageModel;
@@ -119,7 +119,6 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   }
 
   runClassification(CameraImage cameraImage) async {
-    setState(() {});
     if (_imageModel != null) {
       String imageClassifaction =
           await _imageModel!.getImagePredictionFromBytesList(
@@ -131,12 +130,9 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       print("imageClassifaction $imageClassifaction");
       widget.resultsCallbackClassification(imageClassifaction);
     }
-    // set predicting to false to allow new frames
-    setState(() {});
   }
 
   runObjectDetection(CameraImage cameraImage) async {
-    setState(() {});
     if (_objectModel != null) {
       List<ResultObjectDetection?> objDetect = await _objectModel!
           .getImagePredictionFromBytesList(
@@ -149,13 +145,22 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       print("data outputted $objDetect");
       widget.resultsCallback(objDetect);
     }
-    setState(() {});
   }
 
   /// Callback to receive each frame [CameraImage] perform inference on it
   onLatestImageAvailable(CameraImage cameraImage) async {
-    runClassification(cameraImage);
-    runObjectDetection(cameraImage);
+    if (predicting) {
+      return;
+    }
+      predicting = true;
+
+    var futures = <Future>[];
+    futures.add(runClassification(cameraImage));
+    futures.add(runObjectDetection(cameraImage));
+    await Future.wait(futures);
+   
+      predicting = false;
+   
   }
 
   @override
