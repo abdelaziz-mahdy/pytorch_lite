@@ -1,3 +1,5 @@
+## 2.0.2
+* com.facebook.soloader:nativeloader from 0.8.0 to 0.10.5
 ## 2.0.1
 * upgraded to pigeon 9.0.0
 * adding yolov8 support, thanks to https://github.com/atanasko/android-demo-app
