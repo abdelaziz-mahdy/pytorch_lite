@@ -1,3 +1,5 @@
+## 2.0.3
+* fixed yolov8 bad performance
 ## 2.0.2
 * com.facebook.soloader:nativeloader from 0.8.0 to 0.10.5
 ## 2.0.1

@@ -47,7 +47,7 @@ public class PrePostProcessor {
             mOutputColumn = (mNumberOfClasses + 5); // left, top, right, bottom, score and 80 class probability
         } else {
             mOutputRow = 8400; // as decided by the YOLOv5 model for input image of size 640*640
-            mOutputColumn = 8; // left, top, right, bottom, score and 80 class probability
+            mOutputColumn = (mNumberOfClasses + 4); // left, top, right, bottom, score and 80 class probability
         }
 
     }
@@ -137,6 +137,7 @@ public class PrePostProcessor {
     ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictionsYoloV8(float[] outputs) {
         ArrayList<Pigeon.ResultObjectDetection> results = new ArrayList<>();
         for (int i = 0; i < mOutputRow; i++) {
+
             float x = outputs[i];
             float y = outputs[mOutputRow + i];
             float w = outputs[2 * mOutputRow + i];
@@ -155,6 +156,7 @@ public class PrePostProcessor {
                     cls = j - 4;
                 }
             }
+            Log.i("PytorchLitePlugin", "max" + max);
 
             if (max > mScoreThreshold) {
                 Pigeon.PyTorchRect rect = new Pigeon.PyTorchRect.Builder().setLeft(
