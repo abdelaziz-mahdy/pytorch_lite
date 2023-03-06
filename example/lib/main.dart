@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pytorch_lite_example/RunModelByCameraDemo.dart';
-import 'package:pytorch_lite_example/RunModelByImageDemo.dart';
+import 'package:pytorch_lite_example/run_model_by_camera_demo.dart';
+import 'package:pytorch_lite_example/run_model_by_image_demo.dart';
 
 void main() => runApp(const ChooseDemo());
 

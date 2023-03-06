@@ -94,7 +94,7 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
     objDetect = await _objectModel.getImagePrediction(
         await File(image!.path).readAsBytes(),
         minimumScore: 0.1,
-        IOUThershold: 0.3);
+        iOUThreshold: 0.3);
     for (var element in objDetect) {
       print({
         "score": element?.score,
@@ -125,7 +125,7 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
     objDetect = await _objectModelYolov8.getImagePrediction(
         await File(image!.path).readAsBytes(),
         minimumScore: 0.1,
-        IOUThershold: 0.3);
+        iOUThreshold: 0.3);
     for (var element in objDetect) {
       print({
         "score": element?.score,
@@ -163,24 +163,24 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
     );
 
     print(predictionList);
-    List<double?>? predictionListProbabilites =
+    List<double?>? predictionListProbabilities =
         await _imageModel!.getImagePredictionListProbabilities(
       await File(image.path).readAsBytes(),
     );
     //Gettting the highest Probability
     double maxScoreProbability = double.negativeInfinity;
-    double sumOfProbabilites = 0;
+    double sumOfProbabilities = 0;
     int index = 0;
-    for (int i = 0; i < predictionListProbabilites!.length; i++) {
-      if (predictionListProbabilites[i]! > maxScoreProbability) {
-        maxScoreProbability = predictionListProbabilites[i]!;
-        sumOfProbabilites = sumOfProbabilites + predictionListProbabilites[i]!;
+    for (int i = 0; i < predictionListProbabilities!.length; i++) {
+      if (predictionListProbabilities[i]! > maxScoreProbability) {
+        maxScoreProbability = predictionListProbabilities[i]!;
+        sumOfProbabilities = sumOfProbabilities + predictionListProbabilities[i]!;
         index = i;
       }
     }
-    print(predictionListProbabilites);
+    print(predictionListProbabilities);
     print(index);
-    print(sumOfProbabilites);
+    print(sumOfProbabilities);
     print(maxScoreProbability);
 
     setState(() {

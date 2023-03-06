@@ -10,8 +10,8 @@ import 'package:pytorch_lite/pigeon.dart';
 
 export 'enums/dtype.dart';
 
-const TORCHVISION_NORM_MEAN_RGB = [0.485, 0.456, 0.406];
-const TORCHVISION_NORM_STD_RGB = [0.229, 0.224, 0.225];
+const torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
+const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
 
 class PytorchLite {
   /*
@@ -124,8 +124,8 @@ class ClassificationModel {
 
   ///predicts image and returns the supposed label belonging to it
   Future<String> getImagePrediction(Uint8List imageAsBytes,
-      {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
-      List<double> std = TORCHVISION_NORM_STD_RGB}) async {
+      {List<double> mean = torchVisionNormMeanRGB,
+      List<double> std = torchVisionNormSTDRGB}) async {
     // Assert mean std
     assert(mean.length == 3, "mean should have size of 3");
     assert(std.length == 3, "std should have size of 3");
@@ -147,8 +147,8 @@ class ClassificationModel {
 
   ///predicts image but returns the raw net output
   Future<List<double?>?> getImagePredictionList(Uint8List imageAsBytes,
-      {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
-      List<double> std = TORCHVISION_NORM_STD_RGB}) async {
+      {List<double> mean = torchVisionNormMeanRGB,
+      List<double> std = torchVisionNormSTDRGB}) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
@@ -161,8 +161,8 @@ class ClassificationModel {
   ///[image] takes the File of the image
   Future<List<double?>?> getImagePredictionListProbabilities(
       Uint8List imageAsBytes,
-      {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
-      List<double> std = TORCHVISION_NORM_STD_RGB}) async {
+      {List<double> mean = torchVisionNormMeanRGB,
+      List<double> std = torchVisionNormSTDRGB}) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
@@ -189,8 +189,8 @@ class ClassificationModel {
   ///predicts image and returns the supposed label belonging to it
   Future<String> getImagePredictionFromBytesList(
       List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
-      List<double> std = TORCHVISION_NORM_STD_RGB}) async {
+      {List<double> mean = torchVisionNormMeanRGB,
+      List<double> std = torchVisionNormSTDRGB}) async {
     // Assert mean std
     assert(mean.length == 3, "mean should have size of 3");
     assert(std.length == 3, "std should have size of 3");
@@ -213,8 +213,8 @@ class ClassificationModel {
   ///predicts image but returns the raw net output
   Future<List<double?>?> getImagePredictionListFromBytesList(
       List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
-      List<double> std = TORCHVISION_NORM_STD_RGB}) async {
+      {List<double> mean = torchVisionNormMeanRGB,
+      List<double> std = torchVisionNormSTDRGB}) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
@@ -227,8 +227,8 @@ class ClassificationModel {
   ///[image] takes the File of the image
   Future<List<double?>?> getImagePredictionListProbabilitiesFromBytesList(
       List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {List<double> mean = TORCHVISION_NORM_MEAN_RGB,
-      List<double> std = TORCHVISION_NORM_STD_RGB}) async {
+      {List<double> mean = torchVisionNormMeanRGB,
+      List<double> std = torchVisionNormSTDRGB}) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
@@ -267,11 +267,11 @@ class ModelObjectDetection {
   Future<List<ResultObjectDetection?>> getImagePrediction(
       Uint8List imageAsBytes,
       {double minimumScore = 0.5,
-      double IOUThershold = 0.5,
+      double iOUThreshold = 0.5,
       int boxesLimit = 10}) async {
     List<ResultObjectDetection?> prediction = await ModelApi()
         .getImagePredictionListObjectDetection(_index, imageAsBytes, null, null,
-            null, minimumScore, IOUThershold, boxesLimit);
+            null, minimumScore, iOUThreshold, boxesLimit);
 
     for (var element in prediction) {
       element?.className = labels[element.classIndex];
@@ -284,11 +284,11 @@ class ModelObjectDetection {
   Future<List<ResultObjectDetection?>> getImagePredictionFromBytesList(
       List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
       {double minimumScore = 0.5,
-      double IOUThershold = 0.5,
+      double iOUThreshold = 0.5,
       int boxesLimit = 10}) async {
     List<ResultObjectDetection?> prediction = await ModelApi()
         .getImagePredictionListObjectDetection(_index, null, imageAsBytesList,
-            imageWidth, imageHeight, minimumScore, IOUThershold, boxesLimit);
+            imageWidth, imageHeight, minimumScore, iOUThreshold, boxesLimit);
 
     for (var element in prediction) {
       element?.className = labels[element.classIndex];
@@ -301,11 +301,11 @@ class ModelObjectDetection {
   Future<List<ResultObjectDetection?>> getImagePredictionList(
       Uint8List imageAsBytes,
       {double minimumScore = 0.5,
-      double IOUThershold = 0.5,
+      double iOUThreshold = 0.5,
       int boxesLimit = 10}) async {
     final List<ResultObjectDetection?> prediction = await ModelApi()
         .getImagePredictionListObjectDetection(_index, imageAsBytes, null, null,
-            null, minimumScore, IOUThershold, boxesLimit);
+            null, minimumScore, iOUThreshold, boxesLimit);
     return prediction;
   }
 
@@ -313,11 +313,11 @@ class ModelObjectDetection {
   Future<List<ResultObjectDetection?>> getImagePredictionListFromBytesList(
       List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
       {double minimumScore = 0.5,
-      double IOUThershold = 0.5,
+      double iOUThreshold = 0.5,
       int boxesLimit = 10}) async {
     final List<ResultObjectDetection?> prediction = await ModelApi()
         .getImagePredictionListObjectDetection(_index, null, imageAsBytesList,
-            imageWidth, imageHeight, minimumScore, IOUThershold, boxesLimit);
+            imageWidth, imageHeight, minimumScore, iOUThreshold, boxesLimit);
     return prediction;
   }
 
@@ -334,7 +334,7 @@ class ModelObjectDetection {
     //double factorY = _imageHeight / _imageWidth * screen.width;
     //boxesColor ??= Color.fromRGBO(37, 213, 253, 1.0);
 
-    print(recognitions.length);
+    // print(recognitions.length);
     return LayoutBuilder(builder: (context, constraints) {
       debugPrint(
           'Max height: ${constraints.maxHeight}, max width: ${constraints.maxWidth}');
@@ -347,11 +347,10 @@ class ModelObjectDetection {
             top: 0,
             width: factorX,
             height: factorY,
-            child: Container(
-                child: Image.file(
+            child: Image.file(
               image,
               fit: BoxFit.fill,
-            )),
+            ),
           ),
           ...recognitions.map((re) {
             if (re == null) {
@@ -370,12 +369,12 @@ class ModelObjectDetection {
               usedColor = boxesColor;
             }
 
-            print({
-              "left": re.rect.left.toDouble() * factorX,
-              "top": re.rect.top.toDouble() * factorY,
-              "width": re.rect.width.toDouble() * factorX,
-              "height": re.rect.height.toDouble() * factorY,
-            });
+            // print({
+            //   "left": re.rect.left.toDouble() * factorX,
+            //   "top": re.rect.top.toDouble() * factorY,
+            //   "width": re.rect.width.toDouble() * factorX,
+            //   "height": re.rect.height.toDouble() * factorY,
+            // });
             return Positioned(
               left: re.rect.left * factorX,
               top: re.rect.top * factorY - 20,
@@ -396,9 +395,7 @@ class ModelObjectDetection {
                     alignment: Alignment.centerRight,
                     color: usedColor,
                     child: Text(
-                      "${re.className ?? re.classIndex.toString()}_${showPercentage
-                              ? "${(re.score * 100).toStringAsFixed(2)}%"
-                              : ""}",
+                      "${re.className ?? re.classIndex.toString()}_${showPercentage ? "${(re.score * 100).toStringAsFixed(2)}%" : ""}",
                     ),
                   ),
                   Container(
@@ -406,7 +403,8 @@ class ModelObjectDetection {
                     height: re.rect.height.toDouble() * factorY,
                     decoration: BoxDecoration(
                         border: Border.all(color: usedColor, width: 3),
-                        borderRadius: const BorderRadius.all(Radius.circular(2))),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(2))),
                     child: Container(),
                   ),
                 ],

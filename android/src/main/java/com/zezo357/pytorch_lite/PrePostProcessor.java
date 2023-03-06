@@ -156,7 +156,6 @@ public class PrePostProcessor {
                     cls = j - 4;
                 }
             }
-            Log.i("PytorchLitePlugin", "max" + max);
 
             if (max > mScoreThreshold) {
                 Pigeon.PyTorchRect rect = new Pigeon.PyTorchRect.Builder().setLeft(

@@ -60,7 +60,9 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
                 width: double.maxFinite,
                 decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.9),
-                    borderRadius: BORDER_RADIUS_BOTTOM_SHEET),
+                    borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(24.0),
+                        topRight: Radius.circular(24.0))),
                 child: SingleChildScrollView(
                   controller: scrollController,
                   child: Center(
@@ -126,9 +128,9 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
     });
   }
 
-  static const BOTTOM_SHEET_RADIUS = Radius.circular(24.0);
-  static const BORDER_RADIUS_BOTTOM_SHEET = BorderRadius.only(
-      topLeft: BOTTOM_SHEET_RADIUS, topRight: BOTTOM_SHEET_RADIUS);
+  // static const BOTTOM_SHEET_RADIUS = Radius.circular(24.0);
+  // static const BORDER_RADIUS_BOTTOM_SHEET = BorderRadius.only(
+  //     topLeft: BOTTOM_SHEET_RADIUS, topRight: BOTTOM_SHEET_RADIUS);
 }
 
 /// Row for one Stats field

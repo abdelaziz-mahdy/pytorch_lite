@@ -1,3 +1,7 @@
+## 2.0.5
+* fixed dart analyses problems (renamed some variables to follow convention)
+## 2.0.4
+* removed unnecessary prints
 ## 2.0.3
 * fixed yolov8 bad performance
 ## 2.0.2
