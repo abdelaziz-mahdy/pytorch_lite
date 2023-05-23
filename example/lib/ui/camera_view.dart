@@ -137,7 +137,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
               cameraImage.width,
               cameraImage.height,
               minimumScore: 0.3,
-              IOUThreshold: 0.3);
+              iOUThreshold: 0.3);
 
       print("data outputted $objDetect");
       widget.resultsCallback(objDetect);
