@@ -1,14 +1,19 @@
 import Flutter
 import UIKit
 
-public class SwiftPytorchLitePlugin: NSObject, FlutterPlugin {
+public class PytorchLitePlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "pytorch_lite", binaryMessenger: registrar.messenger())
-    let instance = SwiftPytorchLitePlugin()
+    let instance = PytorchLitePlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    result("iOS " + UIDevice.current.systemVersion)
+    switch call.method {
+    case "getPlatformVersion":
+      result("iOS " + UIDevice.current.systemVersion)
+    default:
+      result(FlutterMethodNotImplemented)
+    }
   }
 }
