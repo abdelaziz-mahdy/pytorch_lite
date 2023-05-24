@@ -22,9 +22,5 @@
   <string>1.0</string>
   <key>MinimumOSVersion</key>
   <string>11.0</string>
-  <key>NSCameraUsageDescription</key>
-  <string>to get images</string>
-  <key>NSMicrophoneUsageDescription</key>
-  <string>to get audio</string>
 </dict>
 </plist>
