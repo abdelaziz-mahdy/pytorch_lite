@@ -16,11 +16,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   flutter:
-    sdk: flutter
-  image_picker: ^0.8.5+3
-  path_provider: ^2.0.2
-  camera: ^0.10.5
-  image: ^4.0.15
+    sdk: flutter  
   pytorch_lite:
     # When depending on this package from a real application you should use:
     #   pytorch_lite: ^x.y.z
@@ -28,6 +24,11 @@ dependencies:
     # The example app is bundled with the plugin so we use a path dependency on
     # the parent directory to use the current plugin's version.
     path: ../
+  image_picker: ^0.8.5+3
+  path_provider: ^2.0.2
+  camera: ^0.10.5
+  image: ^4.0.15
+
 
 
   # The following adds the Cupertino Icons font to your application.
