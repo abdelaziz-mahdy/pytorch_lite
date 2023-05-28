@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pytorch_lite/generated_bindings.dart';
 import 'package:pytorch_lite/pigeon.dart';
 
 export 'enums/dtype.dart';
@@ -28,6 +31,7 @@ class PytorchLite {
       String path, int imageWidth, int imageHeight,
       {String? labelPath}) async {
     String absPathModelPath = await _getAbsolutePath(path);
+    print(NativeLibrary(DynamicLibrary.process()).load_ml_model(absPathModelPath.toNativeUtf8()));
     int index = await ModelApi()
         .loadModel(absPathModelPath, null, imageWidth, imageHeight, null);
     List<String> labels = [];
