@@ -10,11 +10,17 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pytorch_lite/generated_bindings.dart';
 import 'package:pytorch_lite/pigeon.dart';
+import 'package:image/image.dart' as imageLib;
+
+import 'native_locator.dart';
 
 export 'enums/dtype.dart';
 
 const torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
 const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
+
+/// The bindings to the native functions in [dylib].
+final NativeLibrary _bindings = NativeLibrary(dylib);
 
 class PytorchLite {
   /*
@@ -31,9 +37,8 @@ class PytorchLite {
       String path, int imageWidth, int imageHeight,
       {String? labelPath}) async {
     String absPathModelPath = await _getAbsolutePath(path);
-    print(NativeLibrary(DynamicLibrary.process()).load_ml_model(absPathModelPath.toNativeUtf8()));
-    int index = await ModelApi()
-        .loadModel(absPathModelPath, null, imageWidth, imageHeight, null);
+
+    int index = _bindings.load_ml_model(absPathModelPath.toNativeUtf8());
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {
@@ -43,7 +48,7 @@ class PytorchLite {
       }
     }
 
-    return ClassificationModel(index, labels);
+    return ClassificationModel(index, labels, imageWidth, imageHeight);
   }
 
   ///Sets pytorch object detection model (path and lables) and returns Model
@@ -53,9 +58,10 @@ class PytorchLite {
       ObjectDetectionModelType objectDetectionModelType =
           ObjectDetectionModelType.yolov5}) async {
     String absPathModelPath = await _getAbsolutePath(path);
+    int index = _bindings.load_ml_model(absPathModelPath.toNativeUtf8());
 
-    int index = await ModelApi().loadModel(absPathModelPath, numberOfClasses,
-        imageWidth, imageHeight, objectDetectionModelType);
+    // int index = await ModelApi().loadModel(absPathModelPath, numberOfClasses,
+    //     imageWidth, imageHeight, objectDetectionModelType);
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {
@@ -121,10 +127,49 @@ class CustomModel {
   }
 }
 */
+Pointer<Uint8> convertUint8ListToPointer(Uint8List data) {
+  int length = data.length;
+  Pointer<Uint8> dataPtr = calloc<Uint8>(length);
+
+  for (int i = 0; i < length; i++) {
+    dataPtr.elementAt(i).value = data[i];
+  }
+
+  return dataPtr;
+}
+
+Pointer<UnsignedChar> convertUint8ListToPointerChar(Uint8List data) {
+  int length = data.length;
+  Pointer<UnsignedChar> dataPtr = calloc<UnsignedChar>(length);
+
+  for (int i = 0; i < length; i++) {
+    dataPtr.elementAt(i).value = data[i];
+  }
+
+  return dataPtr;
+}
+Pointer<Float> convertListToPointer(List<double> floatList) {
+  // Create a native array to hold the double values
+  final nativeArray = calloc<Double>(floatList.length);
+
+  // Copy the values from the list to the native array
+  for (var i = 0; i < floatList.length; i++) {
+    nativeArray[i] = floatList[i];
+  }
+
+  // Obtain the pointer to the native array
+  final nativePointer = nativeArray.cast<Float>();
+
+  return nativePointer;
+}
+
 class ClassificationModel {
   final int _index;
   final List<String> labels;
-  ClassificationModel(this._index, this.labels);
+  final int imageWidth;
+  final int imageHeight;
+  ClassificationModel(
+      this._index, this.labels, this.imageWidth, this.imageHeight);
 
   ///predicts image and returns the supposed label belonging to it
   Future<String> getImagePrediction(Uint8List imageAsBytes,
@@ -134,30 +179,44 @@ class ClassificationModel {
     assert(mean.length == 3, "mean should have size of 3");
     assert(std.length == 3, "std should have size of 3");
 
-    final List<double?>? prediction = await ModelApi().getImagePredictionList(
-        _index, imageAsBytes, null, null, null, mean, std);
+    final List<double?> prediction =
+        await getImagePredictionList(imageAsBytes, mean: mean, std: std);
 
     double maxScore = double.negativeInfinity;
     int maxScoreIndex = -1;
-    for (int i = 0; i < prediction!.length; i++) {
+    for (int i = 0; i < prediction.length; i++) {
       if (prediction[i]! > maxScore) {
         maxScore = prediction[i]!;
         maxScoreIndex = i;
       }
     }
-
+    // free(dataPointer);
     return labels[maxScoreIndex];
   }
 
   ///predicts image but returns the raw net output
-  Future<List<double?>?> getImagePredictionList(Uint8List imageAsBytes,
+  Future<List<double?>> getImagePredictionList(Uint8List imageAsBytes,
       {List<double> mean = torchVisionNormMeanRGB,
       List<double> std = torchVisionNormSTDRGB}) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
-    final List<double?>? prediction = await ModelApi().getImagePredictionList(
-        _index, imageAsBytes, null, null, null, mean, std);
+    imageLib.Image? img = imageLib.decodeImage(imageAsBytes);
+    Uint8List scaledImageBytes=imageLib.encodePng(
+            imageLib.copyResize(img!, width: imageWidth, height: imageHeight));
+    Pointer<UnsignedChar> dataPointer = convertUint8ListToPointerChar(
+        scaledImageBytes);
+    Pointer<Float> meanPointer=convertListToPointer(mean);
+        Pointer<Float> stdPointer=convertListToPointer(std);
+
+    OutputData outputData = _bindings.image_model_inference(
+        _index, dataPointer,scaledImageBytes.length, imageWidth, imageHeight,meanPointer,stdPointer);
+
+    final List<double?> prediction =
+        outputData.values.asTypedList(outputData.length);
+    
+    // final List<double?>? prediction = await ModelApi().getImagePredictionList(
+    //     _index, imageAsBytes, null, null, null, mean, std);
     return prediction;
   }
 
@@ -170,13 +229,13 @@ class ClassificationModel {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
-    List<double?>? prediction = await ModelApi().getImagePredictionList(
-        _index, imageAsBytes, null, null, null, mean, std);
-    List<double?>? predictionProbabilities = [];
+    List<double?> prediction =
+        await getImagePredictionList(imageAsBytes, mean: mean, std: std);
+    List<double?> predictionProbabilities = [];
 
     //Getting sum of exp
     double? sumExp;
-    for (var element in prediction!) {
+    for (var element in prediction) {
       if (sumExp == null) {
         sumExp = exp(element!);
       } else {
