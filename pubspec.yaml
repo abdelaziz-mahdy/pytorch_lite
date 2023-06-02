@@ -69,6 +69,8 @@ flutter:
   #
   # For details regarding fonts in packages, see
   # https://flutter.dev/custom-fonts/#from-packages
+
+# dart run ffigen
 ffigen:
   name: NativeLibrary
   description: Bindings to `headers/example.h`.

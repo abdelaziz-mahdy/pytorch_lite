@@ -95,6 +95,7 @@ class NativeLibrary {
           ffi.Pointer<ffi.Float>, ffi.Pointer<ffi.Float>)>();
 }
 
+
  class OutputData extends ffi.Struct {
   external ffi.Pointer<ffi.Float> values;
 

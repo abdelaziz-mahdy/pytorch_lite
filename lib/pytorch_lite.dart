@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
@@ -148,6 +149,58 @@ Pointer<UnsignedChar> convertUint8ListToPointerChar(Uint8List data) {
 
   return dataPtr;
 }
+
+void normalizeImage(List<List<List<num>>> imageMatrix,
+    {List<double> mean = torchVisionNormMeanRGB,
+    List<double> std = torchVisionNormSTDRGB}) {
+  print("mean: $mean");
+  print("std: $std");
+  print("before $imageMatrix");
+  for (var row in imageMatrix) {
+    for (var pixel in row) {
+      for (var i = 0; i < 3; i++) {
+        pixel[i] = ((pixel[i] / 255) - mean[i]) / std[i];
+      }
+    }
+  }
+  print("after $imageMatrix");
+}
+
+Uint8List _imageToUint8List(imageLib.Image image,
+    {List<double> mean = torchVisionNormMeanRGB,
+    List<double> std = torchVisionNormSTDRGB,
+    bool contiguous = true}) {
+  var bytes = Float32List(1 * image.height * image.width * 3);
+  var buffer = Float32List.view(bytes.buffer);
+
+  if (contiguous) {
+    int offset_g = image.height * image.width;
+    int offset_b = 2 * image.height * image.width;
+    int i = 0;
+    for (var y = 0; y < image.height; y++) {
+      for (var x = 0; x < image.width; x++) {
+        imageLib.Pixel pixel = image.getPixel(x, y);
+        buffer[i] = ((pixel.r / 255) - mean[0]) / std[0];
+        buffer[offset_g + i] = ((pixel.g / 255) - mean[1]) / std[1];
+        buffer[offset_b + i] = ((pixel.b / 255) - mean[2]) / std[2];
+        i++;
+      }
+    }
+  } else {
+    int i = 0;
+    for (var y = 0; y < image.height; y++) {
+      for (var x = 0; x < image.width; x++) {
+        imageLib.Pixel pixel = image.getPixel(x, y);
+        buffer[i++] = ((pixel.r / 255) - mean[0]) / std[0];
+        buffer[i++] = ((pixel.g / 255) - mean[1]) / std[1];
+        buffer[i++] = ((pixel.b / 255) - mean[2]) / std[2];
+      }
+    }
+  }
+
+  return bytes.buffer.asUint8List();
+}
+
 Pointer<Float> convertListToPointer(List<double> floatList) {
   // Create a native array to hold the double values
   final nativeArray = calloc<Double>(floatList.length);
@@ -202,19 +255,43 @@ class ClassificationModel {
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
     imageLib.Image? img = imageLib.decodeImage(imageAsBytes);
-    Uint8List scaledImageBytes=imageLib.encodePng(
-            imageLib.copyResize(img!, width: imageWidth, height: imageHeight));
+    imageLib.Image scaledImageBytes =
+        imageLib.copyResize(img!, width: imageWidth, height: imageHeight);
+    // // Creating matrix representation, [height, width, 3]
+    // List<List<List<num>>> imageMatrix = List.generate(
+    //   scaledImageBytes.height,
+    //   (y) => List.generate(
+    //     scaledImageBytes.width,
+    //     (x) {
+    //       final pixel = scaledImageBytes.getPixel(x, y);
+    //       return [pixel.r, pixel.g, pixel.b];
+    //     },
+    //   ),
+    // );
+    // normalizeImage(imageMatrix, mean: mean, std: std);
+    // // Flatten the matrix into a single list
+    // List<double> flattenedList = imageMatrix
+    //     .expand((row) => row)
+    //     .expand((pixel) => pixel.map((e) => e.toDouble()))
+    //     .toList();
+
     Pointer<UnsignedChar> dataPointer = convertUint8ListToPointerChar(
-        scaledImageBytes);
-    Pointer<Float> meanPointer=convertListToPointer(mean);
-        Pointer<Float> stdPointer=convertListToPointer(std);
+        _imageToUint8List(scaledImageBytes, mean: mean, std: std));
+    Pointer<Float> meanPointer = convertListToPointer(mean);
+    Pointer<Float> stdPointer = convertListToPointer(std);
 
     OutputData outputData = _bindings.image_model_inference(
-        _index, dataPointer,scaledImageBytes.length, imageWidth, imageHeight,meanPointer,stdPointer);
+        _index,
+        dataPointer,
+        scaledImageBytes.length,
+        imageWidth,
+        imageHeight,
+        meanPointer,
+        stdPointer);
 
     final List<double?> prediction =
         outputData.values.asTypedList(outputData.length);
-    
+
     // final List<double?>? prediction = await ModelApi().getImagePredictionList(
     //     _index, imageAsBytes, null, null, null, mean, std);
     return prediction;

@@ -23,8 +23,8 @@ std::stringstream printing_buffer;
 
 std::vector<torch::jit::Module> models;
 
-extern "C" __attribute__((visibility("default"))) __attribute__((used)) int
-load_ml_model(const char* model_path) {
+extern "C" __attribute__((visibility("default"))) __attribute__((used))
+int load_ml_model(const char* model_path) {
     torch::jit::Module model = torch::jit::load(model_path);
     models.push_back(model);
     return models.size() - 1;
@@ -83,17 +83,23 @@ image_model_inference(int index, unsigned char* data,int length, int width, int 
 //    tensor_image[0][2] = tensor_image[0][2].sub_(mean[2]).div_(std[2]);
 //    auto tensor_image=torch::ones({1, 3, 224, 224});
     // Load data into a torch::Tensor.
-    torch::Tensor tensor_image = torch::from_blob(data, {height, width, 3}, torch::kByte);
+    torch::Tensor tensor_image = torch::from_blob(data, {1,3,height, width}, torch::kFloat32);
+//    tensor_image = tensor_image.permute({0, 3, 1, 2});
 
     // Convert the tensor to float.
-    tensor_image = tensor_image.to(torch::kFloat32);
+//    tensor_image = tensor_image.to(torch::kFloat32);  // Convert to float data type
 //
 //    // Normalize the data to the range [0, 1] by dividing by 255.
 //    tensor_image /= 255.0;
 //
     // Add batch dimension.
-    tensor_image = tensor_image.unsqueeze(0);
+    // tensor_image = tensor_image.unsqueeze(0);
     
+    // Print the shape of tensor_image.
+    // std::cout << "Shape: " << tensor_image.sizes() << std::endl;
+
+    // // Print the values of tensor_image.
+    // std::cout << "Values: " << tensor_image << std::endl;
     // Normalize each color channel.
 //    for (int i = 0; i < 3; ++i) {
 //
@@ -110,17 +116,17 @@ image_model_inference(int index, unsigned char* data,int length, int width, int 
     // Note that here I'm only allowing the output to be tensor, but this can be easily changed
     // Also for simplicity I only assume that output tensor has only one dimension
     
-    auto results = output_tensor.sort(-1, true);
-    auto softmaxs = std::get<0>(results)[0].softmax(0);
-    auto indexs = std::get<1>(results)[0];
+    // auto results = output_tensor.sort(-1, true);
+    // auto softmaxs = std::get<0>(results)[0].softmax(0);
+    // auto indexs = std::get<1>(results)[0];
 
-    // int tensor_length = output_tensor.sizes()[0];
-    for (int i = 0; i < 20; ++i) {
-      std::cout << "    ============= Top-" << i + 1
-                << " =============" << std::endl;
-      std::cout << "    With Probability:  "
-                << softmaxs[i].item<float>() << "%" << std::endl;
-    }
+    // // int tensor_length = output_tensor.sizes()[0];
+    // for (int i = 0; i < 20; ++i) {
+    //   std::cout << "    ============= Top-" << i + 1
+    //             << " =============" << std::endl;
+    //   std::cout << "    With Probability:  "
+    //             << softmaxs[i].item<float>() << "%" << std::endl;
+    // }
     // Copy the output tensor data to a new array
     int tensor_length = output_tensor.numel();
 
