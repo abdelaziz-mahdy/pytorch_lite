@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pytorch_lite/generated_bindings.dart';
+import 'package:pytorch_lite/native_wrapper.dart';
 import 'package:pytorch_lite/pigeon.dart';
 import 'package:image/image.dart' as imageLib;
 
@@ -19,9 +20,6 @@ export 'enums/dtype.dart';
 
 const torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
 const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
-
-/// The bindings to the native functions in [dylib].
-final NativeLibrary _bindings = NativeLibrary(dylib);
 
 class PytorchLite {
   /*
@@ -37,9 +35,8 @@ class PytorchLite {
   static Future<ClassificationModel> loadClassificationModel(
       String path, int imageWidth, int imageHeight,
       {String? labelPath}) async {
-    String absPathModelPath = await _getAbsolutePath(path);
+    int index = await PytorchFfi.loadModel(path);
 
-    int index = _bindings.load_ml_model(absPathModelPath.toNativeUtf8());
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {
@@ -58,8 +55,7 @@ class PytorchLite {
       {String? labelPath,
       ObjectDetectionModelType objectDetectionModelType =
           ObjectDetectionModelType.yolov5}) async {
-    String absPathModelPath = await _getAbsolutePath(path);
-    int index = _bindings.load_ml_model(absPathModelPath.toNativeUtf8());
+    int index = await PytorchFfi.loadModel(path);
 
     // int index = await ModelApi().loadModel(absPathModelPath, numberOfClasses,
     //     imageWidth, imageHeight, objectDetectionModelType);
@@ -73,29 +69,6 @@ class PytorchLite {
     }
     return ModelObjectDetection(index, imageWidth, imageHeight, labels,
         modelType: objectDetectionModelType);
-  }
-
-  static Future<String> _getAbsolutePath(String path) async {
-    Directory dir = await getApplicationDocumentsDirectory();
-    String dirPath = join(dir.path, path);
-    ByteData data = await rootBundle.load(path);
-    //copy asset to documents directory
-    List<int> bytes =
-        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-
-    //create non existant directories
-    List split = path.split("/");
-    String nextDir = "";
-    for (int i = 0; i < split.length; i++) {
-      if (i != split.length - 1) {
-        nextDir += split[i];
-        await Directory(join(dir.path, nextDir)).create();
-        nextDir += "/";
-      }
-    }
-    await File(dirPath).writeAsBytes(bytes);
-
-    return dirPath;
   }
 }
 
@@ -128,93 +101,6 @@ class CustomModel {
   }
 }
 */
-Pointer<Uint8> convertUint8ListToPointer(Uint8List data) {
-  int length = data.length;
-  Pointer<Uint8> dataPtr = calloc<Uint8>(length);
-
-  for (int i = 0; i < length; i++) {
-    dataPtr.elementAt(i).value = data[i];
-  }
-
-  return dataPtr;
-}
-
-Pointer<UnsignedChar> convertUint8ListToPointerChar(Uint8List data) {
-  int length = data.length;
-  Pointer<UnsignedChar> dataPtr = calloc<UnsignedChar>(length);
-
-  for (int i = 0; i < length; i++) {
-    dataPtr.elementAt(i).value = data[i];
-  }
-
-  return dataPtr;
-}
-
-void normalizeImage(List<List<List<num>>> imageMatrix,
-    {List<double> mean = torchVisionNormMeanRGB,
-    List<double> std = torchVisionNormSTDRGB}) {
-  print("mean: $mean");
-  print("std: $std");
-  print("before $imageMatrix");
-  for (var row in imageMatrix) {
-    for (var pixel in row) {
-      for (var i = 0; i < 3; i++) {
-        pixel[i] = ((pixel[i] / 255) - mean[i]) / std[i];
-      }
-    }
-  }
-  print("after $imageMatrix");
-}
-
-Uint8List _imageToUint8List(imageLib.Image image,
-    {List<double> mean = torchVisionNormMeanRGB,
-    List<double> std = torchVisionNormSTDRGB,
-    bool contiguous = true}) {
-  var bytes = Float32List(1 * image.height * image.width * 3);
-  var buffer = Float32List.view(bytes.buffer);
-
-  if (contiguous) {
-    int offset_g = image.height * image.width;
-    int offset_b = 2 * image.height * image.width;
-    int i = 0;
-    for (var y = 0; y < image.height; y++) {
-      for (var x = 0; x < image.width; x++) {
-        imageLib.Pixel pixel = image.getPixel(x, y);
-        buffer[i] = ((pixel.r / 255) - mean[0]) / std[0];
-        buffer[offset_g + i] = ((pixel.g / 255) - mean[1]) / std[1];
-        buffer[offset_b + i] = ((pixel.b / 255) - mean[2]) / std[2];
-        i++;
-      }
-    }
-  } else {
-    int i = 0;
-    for (var y = 0; y < image.height; y++) {
-      for (var x = 0; x < image.width; x++) {
-        imageLib.Pixel pixel = image.getPixel(x, y);
-        buffer[i++] = ((pixel.r / 255) - mean[0]) / std[0];
-        buffer[i++] = ((pixel.g / 255) - mean[1]) / std[1];
-        buffer[i++] = ((pixel.b / 255) - mean[2]) / std[2];
-      }
-    }
-  }
-
-  return bytes.buffer.asUint8List();
-}
-
-Pointer<Float> convertListToPointer(List<double> floatList) {
-  // Create a native array to hold the double values
-  final nativeArray = calloc<Double>(floatList.length);
-
-  // Copy the values from the list to the native array
-  for (var i = 0; i < floatList.length; i++) {
-    nativeArray[i] = floatList[i];
-  }
-
-  // Obtain the pointer to the native array
-  final nativePointer = nativeArray.cast<Float>();
-
-  return nativePointer;
-}
 
 class ClassificationModel {
   final int _index;
@@ -248,53 +134,17 @@ class ClassificationModel {
   }
 
   ///predicts image but returns the raw net output
-  Future<List<double?>> getImagePredictionList(Uint8List imageAsBytes,
+  Future<List<double>> getImagePredictionList(Uint8List imageAsBytes,
       {List<double> mean = torchVisionNormMeanRGB,
       List<double> std = torchVisionNormSTDRGB}) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
-    imageLib.Image? img = imageLib.decodeImage(imageAsBytes);
-    imageLib.Image scaledImageBytes =
-        imageLib.copyResize(img!, width: imageWidth, height: imageHeight);
-    // // Creating matrix representation, [height, width, 3]
-    // List<List<List<num>>> imageMatrix = List.generate(
-    //   scaledImageBytes.height,
-    //   (y) => List.generate(
-    //     scaledImageBytes.width,
-    //     (x) {
-    //       final pixel = scaledImageBytes.getPixel(x, y);
-    //       return [pixel.r, pixel.g, pixel.b];
-    //     },
-    //   ),
-    // );
-    // normalizeImage(imageMatrix, mean: mean, std: std);
-    // // Flatten the matrix into a single list
-    // List<double> flattenedList = imageMatrix
-    //     .expand((row) => row)
-    //     .expand((pixel) => pixel.map((e) => e.toDouble()))
-    //     .toList();
 
-    Pointer<UnsignedChar> dataPointer = convertUint8ListToPointerChar(
-        _imageToUint8List(scaledImageBytes, mean: mean, std: std));
-    Pointer<Float> meanPointer = convertListToPointer(mean);
-    Pointer<Float> stdPointer = convertListToPointer(std);
-
-    OutputData outputData = _bindings.image_model_inference(
-        _index,
-        dataPointer,
-        scaledImageBytes.length,
-        imageWidth,
-        imageHeight,
-        meanPointer,
-        stdPointer);
-
-    final List<double?> prediction =
-        outputData.values.asTypedList(outputData.length);
-
-    // final List<double?>? prediction = await ModelApi().getImagePredictionList(
-    //     _index, imageAsBytes, null, null, null, mean, std);
-    return prediction;
+    
+    return await PytorchFfi.imageModelInference(
+        _index, imageAsBytes, imageHeight, imageWidth, mean, std);
+    
   }
 
   ///predicts image but returns the output as probabilities
@@ -306,7 +156,7 @@ class ClassificationModel {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
-    List<double?> prediction =
+    List<double> prediction =
         await getImagePredictionList(imageAsBytes, mean: mean, std: std);
     List<double?> predictionProbabilities = [];
 
@@ -314,7 +164,7 @@ class ClassificationModel {
     double? sumExp;
     for (var element in prediction) {
       if (sumExp == null) {
-        sumExp = exp(element!);
+        sumExp = exp(element);
       } else {
         sumExp = sumExp + exp(element!);
       }

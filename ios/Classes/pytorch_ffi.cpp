@@ -10,132 +10,161 @@
 #include <iostream> 
 #include <sstream>   
 #include <cstddef>
+#include <exception>
+#include <string>
 
 #include <vector>
 // #include "pytorch_ffi.h"
 
+/* OutputData Structure
+ * values: An array that holds the output values from the model.
+ * length: The length of the values array.
+ * exception: If any exception occurs during inference, the description is stored here.
+ */
 struct OutputData {
     float* values;
     int length;
+    const char* exception;
 };
 
-std::stringstream printing_buffer;
 
+
+/* Struct: ModelLoadResult
+ * Description: Holds the result of loading a ML model.
+ *    - index: Index of the loaded model in the models vector.
+ *    - exception: Exception message if an error occurred during loading, otherwise null.
+ */
+struct ModelLoadResult {
+    int index;
+    const char* exception;
+};
+
+/* Variable: models
+ * Description: Vector to store loaded ML models.
+ */
 std::vector<torch::jit::Module> models;
 
+/* Function: load_ml_model
+ * Input: model_path - Path to the model file
+ * Output: ModelLoadResult structure
+ * Description: Loads a ML model from the specified file and adds it to the models vector.
+ * Returns the index of the loaded model or -1 if an error occurred, along with an exception message.
+ */
 extern "C" __attribute__((visibility("default"))) __attribute__((used))
-int load_ml_model(const char* model_path) {
-    torch::jit::Module model = torch::jit::load(model_path);
-    models.push_back(model);
-    return models.size() - 1;
+ModelLoadResult load_ml_model(const char* model_path) {
+    struct ModelLoadResult result;
+    try {
+        // Load the model using torch::jit::load
+        torch::jit::Module model = torch::jit::load(model_path);
+
+        // Add the loaded model to the models vector
+        models.push_back(model);
+
+        // Store the index of the loaded model
+        result.index = models.size() - 1;
+        result.exception = "";  // Empty string indicates no exception occurred
+    } catch (const std::exception& e) {
+        // Set the index to -1 to indicate an error occurred
+        result.index = -1;
+                
+        std::string exceptionMessage = e.what();
+        
+        // Allocate memory for the exception message
+        result.exception = strdup(exceptionMessage.c_str());
+    }
+    return result;
 }
 
-
-// extern "C" __attribute__((visibility("default"))) __attribute__((used)) float **
-// model_inference(float *input_data_ptr) {
-//     std::vector<torch::jit::IValue> inputs;
-
-//     auto options = torch::TensorOptions().dtype(torch::kFloat32);
-//     auto in_tensor = torch::from_blob(input_data_ptr, {17}, options);
-//     inputs.push_back(in_tensor);
-
-//     auto forward_output = model.forward(inputs);
-
-//     printing_buffer << "forward_output.tagKind(): " << forward_output.tagKind()  << std::endl;
-
-//     // Note that here I'm only allowing the output to be tensor, but this can be easily changed
-//     // Also for simplicity I only assume that output tensor has only one dimension
-//     auto out_tensor = forward_output.toTensor();
-//     int tensor_lenght = out_tensor.sizes()[0];
-
-//     printing_buffer << "out_tensor.sizes(): " << out_tensor.sizes()  << std::endl;
-
-//     delete[] temp_out_data_ptr;
-//     temp_out_data_ptr = new float [tensor_lenght];
-//     std::memcpy(temp_out_data_ptr, out_tensor.data_ptr<float>(), sizeof(float) *  tensor_lenght );
-
-//     // Maybe not so pretty, but you need to somehow return the array with information about number of elements
-//     float **out_data_with_length = new float *[2];
-//     float *out_data_length = new float[1];
-//     out_data_length[0] = tensor_lenght;
-//     out_data_with_length[0] = temp_out_data_ptr;
-//     out_data_with_length[1] = out_data_length;
-
-//     return out_data_with_length;
-// }
-
-
+/* Function: model_inference
+ * Input: 
+ *    - input_data_ptr: pointer to the input data
+ *    - input_length: the number of elements in the input data
+ * Output: OutputData structure
+ * Description: This function runs inference on the given input data and returns output data.
+ * It also captures any exception that might occur during inference and records it in OutputData.
+ */
 extern "C" __attribute__((visibility("default"))) __attribute__((used)) OutputData
-image_model_inference(int index, unsigned char* data,int length, int width, int height,float* mean,float* std) {
-    torch::jit::Module model = models.at(index);
-
-    // Assuming your model takes a 1x3xHxW tensor as input
-    // You should replace these dimensions with your actual model's input dimensions
-
-//    auto options = torch::TensorOptions().dtype(torch::kFloat32);
-//    auto tensor_image = torch::from_blob(data, {1, height, width, 3});
-//    tensor_image = tensor_image.permute({0, 3, 1, 2});
-//    torch::Tensor tensor_image = torch::from_blob(data, {length}, torch::kByte);
-
-//    torch::Tensor tensor_image = torch::from_blob(data, {1, 3, height, width});
-//    tensor_image[0][0] = tensor_image[0][0].sub_(mean[0]).div_(std[0]);
-//    tensor_image[0][1] = tensor_image[0][1].sub_(mean[1]).div_(std[1]);
-//    tensor_image[0][2] = tensor_image[0][2].sub_(mean[2]).div_(std[2]);
-//    auto tensor_image=torch::ones({1, 3, 224, 224});
-    // Load data into a torch::Tensor.
-    torch::Tensor tensor_image = torch::from_blob(data, {1,3,height, width}, torch::kFloat32);
-//    tensor_image = tensor_image.permute({0, 3, 1, 2});
-
-    // Convert the tensor to float.
-//    tensor_image = tensor_image.to(torch::kFloat32);  // Convert to float data type
-//
-//    // Normalize the data to the range [0, 1] by dividing by 255.
-//    tensor_image /= 255.0;
-//
-    // Add batch dimension.
-    // tensor_image = tensor_image.unsqueeze(0);
-    
-    // Print the shape of tensor_image.
-    // std::cout << "Shape: " << tensor_image.sizes() << std::endl;
-
-    // // Print the values of tensor_image.
-    // std::cout << "Values: " << tensor_image << std::endl;
-    // Normalize each color channel.
-//    for (int i = 0; i < 3; ++i) {
-//
-//        tensor_image[0][i] = (tensor_image[0][i] - mean[i]) / std[i];
-//    }
-    
-//    tensor_image.permute({0, 3, 1, 2});
-//    auto input_tensor =tensor_image.data_ptr<float>();
-    auto output_tensor = model.forward({tensor_image}).toTensor();
-
-    std::cout << output_tensor.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
-    // printing_buffer << "forward_output.tagKind(): " << forward_output.tagKind()  << std::endl;
-
-    // Note that here I'm only allowing the output to be tensor, but this can be easily changed
-    // Also for simplicity I only assume that output tensor has only one dimension
-    
-    // auto results = output_tensor.sort(-1, true);
-    // auto softmaxs = std::get<0>(results)[0].softmax(0);
-    // auto indexs = std::get<1>(results)[0];
-
-    // // int tensor_length = output_tensor.sizes()[0];
-    // for (int i = 0; i < 20; ++i) {
-    //   std::cout << "    ============= Top-" << i + 1
-    //             << " =============" << std::endl;
-    //   std::cout << "    With Probability:  "
-    //             << softmaxs[i].item<float>() << "%" << std::endl;
-    // }
-    // Copy the output tensor data to a new array
-    int tensor_length = output_tensor.numel();
-
-    float *output_data = static_cast<float*>(malloc(sizeof(float) * tensor_length));
-    memcpy(output_data, output_tensor.data_ptr<float>(), sizeof(float) * tensor_length);
-
+model_inference(int index,float *input_data_ptr,int input_length) {
+    // Define the output data structure
     struct OutputData output;
-    output.values = output_data;
-    output.length = tensor_length;
+    try {
+        // Load the PyTorch model
+        torch::jit::Module model = models.at(index);
+        // Convert input data into PyTorch tensor
+        auto in_tensor = torch::from_blob(input_data_ptr, {input_length}, torch::kFloat32);
+        // Run the model with the input tensor and get output tensor
+        auto output_tensor = model.forward({in_tensor}).toTensor();
 
+        // Get the number of elements in the output tensor
+        int tensor_length = output_tensor.numel();
+    throw std::runtime_error("An error occurred");
+
+        // Allocate memory for output data and copy data from the output tensor
+        float *output_data = static_cast<float*>(malloc(sizeof(float) * tensor_length));
+        memcpy(output_data, output_tensor.data_ptr<float>(), sizeof(float) * tensor_length);
+
+        // Store the output data and length in the output data structure
+        output.values = output_data;
+        output.length = tensor_length;
+        output.exception = "";  // Empty string indicates no exception occurred
+    }
+    catch (const std::exception& e) {
+        
+        // If any exception occurs, record it in the output data structure  
+        std::string exceptionMessage = e.what();
+        
+        // Allocate memory for the exception message
+        output.exception = strdup(exceptionMessage.c_str());
+    }
+    // Return the output data structure
+    return output;
+}
+
+/* Function: image_model_inference
+ * Input: 
+ *    - index: index of the model to be used for inference
+ *    - data: pointer to the image data
+ *    - height: the height of the image
+ *    - width: the width of the image
+ * Output: OutputData structure
+ * Description: This function runs inference on the given image data and returns output data.
+ * It also captures any exception that might occur during inference and records it in OutputData.
+ */
+extern "C" __attribute__((visibility("default"))) __attribute__((used)) OutputData
+image_model_inference(int index, unsigned char* data, int height, int width) {
+    // Define the output data structure
+    struct OutputData output;
+    try {
+        // Load the PyTorch model
+        torch::jit::Module model = models.at(index);
+
+        // Convert image data into PyTorch tensor
+        torch::Tensor tensor_image = torch::from_blob(data, {1,3,height, width}, torch::kFloat32);
+
+        // Run the model with the input tensor and get the output tensor
+        auto output_tensor = model.forward({tensor_image}).toTensor();
+
+        // Get the number of elements in the output tensor
+        int tensor_length = output_tensor.numel();
+    throw std::runtime_error("An error occurred");
+
+        // Allocate memory for output data and copy data from the output tensor
+        float *output_data = static_cast<float*>(malloc(sizeof(float) * tensor_length));
+        memcpy(output_data, output_tensor.data_ptr<float>(), sizeof(float) * tensor_length);
+
+        // Store the output data and length in the output data structure
+        output.values = output_data;
+        output.length = tensor_length;
+        output.exception = "";  // Empty string indicates no exception occurred
+
+    }
+    catch (const std::exception& e) {
+        // If any exception occurs, record it in the output data structure  
+        std::string exceptionMessage = e.what();
+        
+        // Allocate memory for the exception message
+        output.exception = strdup(exceptionMessage.c_str());
+    }
+    // Return the output data structure
     return output;
 }
