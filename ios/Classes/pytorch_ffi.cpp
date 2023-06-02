@@ -97,7 +97,6 @@ model_inference(int index,float *input_data_ptr,int input_length) {
 
         // Get the number of elements in the output tensor
         int tensor_length = output_tensor.numel();
-    throw std::runtime_error("An error occurred");
 
         // Allocate memory for output data and copy data from the output tensor
         float *output_data = static_cast<float*>(malloc(sizeof(float) * tensor_length));
@@ -146,7 +145,6 @@ image_model_inference(int index, unsigned char* data, int height, int width) {
 
         // Get the number of elements in the output tensor
         int tensor_length = output_tensor.numel();
-    throw std::runtime_error("An error occurred");
 
         // Allocate memory for output data and copy data from the output tensor
         float *output_data = static_cast<float*>(malloc(sizeof(float) * tensor_length));
