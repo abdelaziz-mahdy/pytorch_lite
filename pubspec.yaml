@@ -1,6 +1,6 @@
 name: pytorch_lite
 description: Flutter package to help run pytorch lite models classification and yolov5
-version: 2.0.5
+version: 3.0.0
 homepage: https://github.com/zezo357/pytorch_lite
 
 environment:
@@ -14,6 +14,7 @@ dependencies:
   path: ^1.8.0
   ffi: ^2.0.1
   image: ^4.0.15
+  camera: ^0.10.3
 
 dev_dependencies:
   flutter_test:
@@ -33,12 +34,16 @@ flutter:
   # adding or updating assets for this project.
   plugin:
     platforms:
+      # android:
+      #   ffiPlugin: true
+      ios:
+        ffiPlugin: true
+
       android:
         package: com.zezo357.pytorch_lite
         pluginClass: PytorchLitePlugin
-      ios:
-        pluginClass: PytorchLitePlugin
-
+      # ios:
+      #   pluginClass: PytorchLitePlugin
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

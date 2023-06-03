@@ -17,7 +17,7 @@ import 'package:image/image.dart' as imageLib;
 import 'native_locator.dart';
 
 export 'enums/dtype.dart';
-
+export 'utils.dart';
 const torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
 const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
 
@@ -141,10 +141,8 @@ class ClassificationModel {
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
 
-    
     return await PytorchFfi.imageModelInference(
         _index, imageAsBytes, imageHeight, imageWidth, mean, std);
-    
   }
 
   ///predicts image but returns the output as probabilities
@@ -166,11 +164,11 @@ class ClassificationModel {
       if (sumExp == null) {
         sumExp = exp(element);
       } else {
-        sumExp = sumExp + exp(element!);
+        sumExp = sumExp + exp(element);
       }
     }
     for (var element in prediction) {
-      predictionProbabilities.add(exp(element!) / sumExp!);
+      predictionProbabilities.add(exp(element) / sumExp!);
     }
 
     return predictionProbabilities;
@@ -185,13 +183,12 @@ class ClassificationModel {
     assert(mean.length == 3, "mean should have size of 3");
     assert(std.length == 3, "std should have size of 3");
 
-    final List<double?>? prediction = await ModelApi().getImagePredictionList(
-        _index, null, imageAsBytesList, imageWidth, imageHeight, mean, std);
+    final List<double> prediction = await getImagePredictionListFromBytesList(imageAsBytesList, imageWidth, imageHeight,mean: mean,std: std);
 
     double maxScore = double.negativeInfinity;
     int maxScoreIndex = -1;
     for (int i = 0; i < prediction!.length; i++) {
-      if (prediction[i]! > maxScore) {
+      if (prediction[i] > maxScore) {
         maxScore = prediction[i]!;
         maxScoreIndex = i;
       }
@@ -201,42 +198,46 @@ class ClassificationModel {
   }
 
   ///predicts image but returns the raw net output
-  Future<List<double?>?> getImagePredictionListFromBytesList(
+  Future<List<double>> getImagePredictionListFromBytesList(
       List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
       {List<double> mean = torchVisionNormMeanRGB,
       List<double> std = torchVisionNormSTDRGB}) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
-    final List<double?>? prediction = await ModelApi().getImagePredictionList(
-        _index, null, imageAsBytesList, imageWidth, imageHeight, mean, std);
+    Uint8List combinedUint8List = Uint8List.fromList(
+        imageAsBytesList.expand((Uint8List uint8List) => uint8List).toList());
+    final List<double> prediction = await PytorchFfi.imageModelInference(
+        _index, combinedUint8List, imageWidth, imageHeight, mean, std);
+
     return prediction;
   }
 
   ///predicts image but returns the output as probabilities
   ///[image] takes the File of the image
-  Future<List<double?>?> getImagePredictionListProbabilitiesFromBytesList(
+  Future<List<double>> getImagePredictionListProbabilitiesFromBytesList(
       List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
       {List<double> mean = torchVisionNormMeanRGB,
       List<double> std = torchVisionNormSTDRGB}) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
-    List<double?>? prediction = await ModelApi().getImagePredictionList(
-        _index, null, imageAsBytesList, imageWidth, imageHeight, mean, std);
-    List<double?>? predictionProbabilities = [];
+
+    final List<double> prediction = await getImagePredictionListFromBytesList(imageAsBytesList, imageWidth, imageHeight,mean: mean,std: std);
+
+    List<double> predictionProbabilities = [];
 
     //Getting sum of exp
     double? sumExp;
-    for (var element in prediction!) {
+    for (var element in prediction) {
       if (sumExp == null) {
-        sumExp = exp(element!);
+        sumExp = exp(element);
       } else {
-        sumExp = sumExp + exp(element!);
+        sumExp = sumExp + exp(element);
       }
     }
     for (var element in prediction) {
-      predictionProbabilities.add(exp(element!) / sumExp!);
+      predictionProbabilities.add(exp(element) / sumExp!);
     }
 
     return predictionProbabilities;

@@ -1,7 +1,7 @@
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image/image.dart';
 import 'package:pytorch_lite/pigeon.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
@@ -14,7 +14,9 @@ class CameraView extends StatefulWidget {
   final Function(String classification) resultsCallbackClassification;
 
   /// Constructor
-  const CameraView(this.resultsCallback, this.resultsCallbackClassification, {Key? key}) : super(key: key);
+  const CameraView(this.resultsCallback, this.resultsCallbackClassification,
+      {Key? key})
+      : super(key: key);
   @override
   _CameraViewState createState() => _CameraViewState();
 }
@@ -117,11 +119,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
 
   runClassification(CameraImage cameraImage) async {
     if (_imageModel != null) {
-      String imageClassifaction =
-          await _imageModel!.getImagePredictionFromBytesList(
-        cameraImage.planes.map((e) => e.bytes).toList(),
-        cameraImage.width,
-        cameraImage.height,
+      String imageClassifaction = await _imageModel!.getImagePrediction(
+        encodePng(ImageUtils.convertCameraImage(cameraImage)!),
       );
 
       print("imageClassifaction $imageClassifaction");
@@ -153,7 +152,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
 
     var futures = <Future>[];
     futures.add(runClassification(cameraImage));
-    futures.add(runObjectDetection(cameraImage));
+    // futures.add(runObjectDetection(cameraImage));
     await Future.wait(futures);
 
     predicting = false;

@@ -33,9 +33,10 @@ const String _libName = 'pytorch_lite';
 
 /// The dynamic library in which the symbols for [FfigenAppBindings] can be found.
 final DynamicLibrary dylib = () {
-  return DynamicLibrary.executable();
+  // return DynamicLibrary.executable();
   // print(Directory.current.listSync());
   if (Platform.isMacOS || Platform.isIOS) {
+    return DynamicLibrary.executable();
     // Add from here...
     if (Platform.environment.containsKey('FLUTTER_TEST')) {
       return DynamicLibrary.open('build/macos/Build/Products/Debug'

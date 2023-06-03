@@ -1,5 +1,7 @@
   import 'dart:ffi';
+import 'dart:io';
 import 'dart:typed_data';
+import 'package:camera/camera.dart';
 
 import 'package:ffi/ffi.dart';
 import 'package:image/image.dart';
@@ -26,7 +28,28 @@ Pointer<Uint8> convertUint8ListToPointer(Uint8List data) {
     return dataPtr;
   }
 
-  Uint8List imageToUint8List(Image image, List<double> mean, List<double> std,
+
+
+  Pointer<Float> convertListToPointer(List<double> floatList) {
+    // Create a native array to hold the double values
+    final nativeArray = calloc<Double>(floatList.length);
+
+    // Copy the values from the list to the native array
+    for (var i = 0; i < floatList.length; i++) {
+      nativeArray[i] = floatList[i];
+    }
+
+    // Obtain the pointer to the native array
+    final nativePointer = nativeArray.cast<Float>();
+
+    return nativePointer;
+  }
+
+
+
+class ImageUtils {
+
+  static Uint8List imageToUint8List(Image image, List<double> mean, List<double> std,
       {bool contiguous = true}) {
     var bytes = Float32List(1 * image.height * image.width * 3);
     var buffer = Float32List.view(bytes.buffer);
@@ -58,18 +81,76 @@ Pointer<Uint8> convertUint8ListToPointer(Uint8List data) {
 
     return bytes.buffer.asUint8List();
   }
-
-  Pointer<Float> convertListToPointer(List<double> floatList) {
-    // Create a native array to hold the double values
-    final nativeArray = calloc<Double>(floatList.length);
-
-    // Copy the values from the list to the native array
-    for (var i = 0; i < floatList.length; i++) {
-      nativeArray[i] = floatList[i];
+  /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format
+  static Image? convertCameraImage(CameraImage cameraImage) {
+    if (cameraImage.format.group == ImageFormatGroup.yuv420) {
+      return convertYUV420ToImage(cameraImage);
+    } else if (cameraImage.format.group == ImageFormatGroup.bgra8888) {
+      return convertBGRA8888ToImage(cameraImage);
+    } else {
+      return null;
     }
-
-    // Obtain the pointer to the native array
-    final nativePointer = nativeArray.cast<Float>();
-
-    return nativePointer;
   }
+
+  /// Converts a [CameraImage] in BGRA888 format to [Image] in RGB format
+  static Image convertBGRA8888ToImage(CameraImage cameraImage) {
+    Image img = Image.fromBytes(
+      width: cameraImage.planes[0].width!,
+      height: cameraImage.planes[0].height!,
+      bytes: cameraImage.planes[0].bytes.buffer,
+      order: ChannelOrder.bgra,
+      // format: Format.bgra
+    );
+    return img;
+  }
+
+  /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format
+  static Image convertYUV420ToImage(CameraImage cameraImage) {
+    final int width = cameraImage.width;
+    final int height = cameraImage.height;
+
+    final int uvRowStride = cameraImage.planes[1].bytesPerRow;
+    final int? uvPixelStride = cameraImage.planes[1].bytesPerPixel;
+
+    Image image = Image(width: width, height: height);
+    Uint8List bytes = image.toUint8List();
+    for (int w = 0; w < width; w++) {
+      for (int h = 0; h < height; h++) {
+        final int uvIndex =
+            uvPixelStride! * (w / 2).floor() + uvRowStride * (h / 2).floor();
+        final int index = h * width + w;
+
+        final y = cameraImage.planes[0].bytes[index];
+        final u = cameraImage.planes[1].bytes[uvIndex];
+        final v = cameraImage.planes[2].bytes[uvIndex];
+
+        if (image.data != null) {
+          bytes[index] = ImageUtils.yuv2rgb(y, u, v);
+        }
+      }
+    }
+    image = Image.fromBytes(
+        width: width, height: height, bytes: bytes.buffer);
+    return image;
+  }
+
+  /// Convert a single YUV pixel to RGB
+  static int yuv2rgb(int y, int u, int v) {
+    // Convert yuv pixel to rgb
+    int r = (y + v * 1436 / 1024 - 179).round();
+    int g = (y - u * 46549 / 131072 + 44 - v * 93604 / 131072 + 91).round();
+    int b = (y + u * 1814 / 1024 - 227).round();
+
+    // Clipping RGB values to be inside boundaries [ 0 , 255 ]
+    r = r.clamp(0, 255);
+    g = g.clamp(0, 255);
+    b = b.clamp(0, 255);
+
+    return 0xff000000 |
+        ((b << 16) & 0xff0000) |
+        ((g << 8) & 0xff00) |
+        (r & 0xff);
+  }
+
+
+}

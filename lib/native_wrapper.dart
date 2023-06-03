@@ -58,12 +58,16 @@ class PytorchFfi {
       int imageWidth,
       List<double> mean,
       List<double> std) {
+        
     Image? img = decodeImage(imageAsBytes);
+    if (img == null) {
+      throw Exception("Failed to decode image");
+    }
     Image scaledImageBytes =
-        copyResize(img!, width: imageWidth, height: imageHeight);
+        copyResize(img, width: imageWidth, height: imageHeight);
 
     Pointer<UnsignedChar> dataPointer = convertUint8ListToPointerChar(
-        imageToUint8List(scaledImageBytes, mean, std));
+        ImageUtils.imageToUint8List(scaledImageBytes, mean, std));
     OutputData outputData = _bindings.image_model_inference(
         modelIndex, dataPointer, imageWidth, imageHeight);
     if (outputData.exception.toDartString().isNotEmpty) {
