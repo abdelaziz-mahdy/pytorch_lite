@@ -2,8 +2,8 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:ffi/ffi.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:isolate_manager/isolate_manager.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pytorch_lite/generated_bindings.dart';
@@ -16,34 +16,34 @@ import 'native_locator.dart';
 final NativeLibrary _bindings = NativeLibrary(dylib);
 
 class PytorchFfi {
-  static Future<String> _getAbsolutePath(String path) async {
-    Directory dir = await getApplicationDocumentsDirectory();
-    String dirPath = join(dir.path, path);
-    ByteData data = await rootBundle.load(path);
-    //copy asset to documents directory
-    List<int> bytes =
-        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  static bool initiated = false;
+  static late IsolateManager loadModelManager;
+  static late IsolateManager imageModelInferenceManager;
 
-    //create non existant directories
-    List split = path.split("/");
-    String nextDir = "";
-    for (int i = 0; i < split.length; i++) {
-      if (i != split.length - 1) {
-        nextDir += split[i];
-        await Directory(join(dir.path, nextDir)).create();
-        nextDir += "/";
-      }
+  static void init() {
+    if (PytorchFfi.initiated) {
+      return;
     }
-    await File(dirPath).writeAsBytes(bytes);
-
-    return dirPath;
+    print("PytorchFfi initialization");
+    PytorchFfi.initiated = true;
+    PytorchFfi.loadModelManager = IsolateManager.create(_loadModel, isDebug: true);
+    PytorchFfi.imageModelInferenceManager =
+        IsolateManager.create(_imageModelInference, isDebug: true);
   }
 
-  static Future<int> loadModel(String modelPath) async {
-    String absPathModelPath = await _getAbsolutePath(modelPath);
+
+
+  @pragma('vm:entry-point')
+  static Future<int> loadModel(dynamic modelPath) async {
+    PytorchFfi.init();
+    return await loadModelManager.compute(modelPath);
+  }
+
+  @pragma('vm:entry-point')
+  static Future<int> _loadModel(dynamic modelPath) async {
 
     ModelLoadResult result =
-        _bindings.load_ml_model(absPathModelPath.toNativeUtf8());
+        _bindings.load_ml_model((modelPath as String).toNativeUtf8());
 
     if (result.exception.toDartString().isNotEmpty) {
       throw Exception(result.exception.toDartString());
@@ -51,14 +51,27 @@ class PytorchFfi {
     return result.index;
   }
 
-  static List<double> imageModelInference(
+  static Future<List<double>> imageModelInference(
       int modelIndex,
       Uint8List imageAsBytes,
       int imageHeight,
       int imageWidth,
       List<double> mean,
-      List<double> std) {
-        
+      List<double> std) async {
+    PytorchFfi.init();
+
+    return await imageModelInferenceManager.compute(
+        [modelIndex, imageAsBytes, imageHeight, imageWidth, mean, std]);
+  }
+
+  @pragma('vm:entry-point')
+  static List<double> _imageModelInference(dynamic values) {
+    int modelIndex = values[0];
+    Uint8List imageAsBytes = values[1];
+    int imageHeight = values[2];
+    int imageWidth = values[3];
+    List<double> mean = values[4];
+    List<double> std = values[5];
     Image? img = decodeImage(imageAsBytes);
     if (img == null) {
       throw Exception("Failed to decode image");

@@ -31,20 +31,36 @@ const List<double> noMeanRgb = [0, 0, 0];
 const List<double> noStdRgb = [1, 1, 1];
 
 class PytorchLite {
-  /*
-  ///Sets pytorch model path and returns Model
-  static Future<CustomModel> loadCustomModel(String path) async {
-    String absPathModelPath = await _getAbsolutePath(path);
-    int index = await ModelApi().loadModel(absPathModelPath, null, 0, 0);
-    return CustomModel(index);
+  static Future<String> _getAbsolutePath(String path) async {
+    Directory dir = await getApplicationDocumentsDirectory();
+    String dirPath = join(dir.path, path);
+    ByteData data = await rootBundle.load(path);
+    //copy asset to documents directory
+    List<int> bytes =
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+
+    //create non existant directories
+    List split = path.split("/");
+    String nextDir = "";
+    for (int i = 0; i < split.length; i++) {
+      if (i != split.length - 1) {
+        nextDir += split[i];
+        await Directory(join(dir.path, nextDir)).create();
+        nextDir += "/";
+      }
+    }
+    await File(dirPath).writeAsBytes(bytes);
+
+    return dirPath;
   }
-   */
 
   ///Sets pytorch model path and returns Model
   static Future<ClassificationModel> loadClassificationModel(
       String path, int imageWidth, int imageHeight,
       {String? labelPath}) async {
-    int index = await PytorchFfi.loadModel(path);
+    String absPathModelPath = await _getAbsolutePath(path);
+
+    int index = await PytorchFfi.loadModel(absPathModelPath);
 
     List<String> labels = [];
     if (labelPath != null) {
@@ -64,8 +80,9 @@ class PytorchLite {
       {String? labelPath,
       ObjectDetectionModelType objectDetectionModelType =
           ObjectDetectionModelType.yolov5}) async {
-    int index = await PytorchFfi.loadModel(path);
+    String absPathModelPath = await _getAbsolutePath(path);
 
+    int index = await PytorchFfi.loadModel(absPathModelPath);
     // int index = await ModelApi().loadModel(absPathModelPath, numberOfClasses,
     //     imageWidth, imageHeight, objectDetectionModelType);
     List<String> labels = [];
