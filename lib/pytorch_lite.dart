@@ -206,78 +206,9 @@ class ClassificationModel {
     return predictionProbabilities;
   }
 
-  ///predicts image and returns the supposed label belonging to it
-  Future<String> getImagePredictionFromBytesList(
-      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB}) async {
-    // Assert mean std
-    assert(mean.length == 3, "mean should have size of 3");
-    assert(std.length == 3, "std should have size of 3");
 
-    final List<double> prediction = await getImagePredictionListFromBytesList(
-        imageAsBytesList, imageWidth, imageHeight,
-        mean: mean, std: std);
+ 
 
-    double maxScore = double.negativeInfinity;
-    int maxScoreIndex = -1;
-    for (int i = 0; i < prediction!.length; i++) {
-      if (prediction[i] > maxScore) {
-        maxScore = prediction[i]!;
-        maxScoreIndex = i;
-      }
-    }
-
-    return labels[maxScoreIndex];
-  }
-
-  ///predicts image but returns the raw net output
-  Future<List<double>> getImagePredictionListFromBytesList(
-      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB}) async {
-    // Assert mean std
-    assert(mean.length == 3, "Mean should have size of 3");
-    assert(std.length == 3, "STD should have size of 3");
-    Uint8List combinedUint8List = Uint8List.fromList(
-        imageAsBytesList.expand((Uint8List uint8List) => uint8List).toList());
-    final List<double> prediction = await PytorchFfi.imageModelInference(
-        _index, combinedUint8List, imageWidth, imageHeight, mean, std,false);
-
-    return prediction;
-  }
-
-  ///predicts image but returns the output as probabilities
-  ///[image] takes the File of the image
-  Future<List<double>> getImagePredictionListProbabilitiesFromBytesList(
-      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB}) async {
-    // Assert mean std
-    assert(mean.length == 3, "Mean should have size of 3");
-    assert(std.length == 3, "STD should have size of 3");
-
-    final List<double> prediction = await getImagePredictionListFromBytesList(
-        imageAsBytesList, imageWidth, imageHeight,
-        mean: mean, std: std);
-
-    List<double> predictionProbabilities = [];
-
-    //Getting sum of exp
-    double? sumExp;
-    for (var element in prediction) {
-      if (sumExp == null) {
-        sumExp = exp(element);
-      } else {
-        sumExp = sumExp + exp(element);
-      }
-    }
-    for (var element in prediction) {
-      predictionProbabilities.add(exp(element) / sumExp!);
-    }
-
-    return predictionProbabilities;
-  }
 }
 
 class ModelObjectDetection {
@@ -314,28 +245,7 @@ class ModelObjectDetection {
     return prediction;
   }
 
-  ///predicts image and returns the supposed label belonging to it
-  Future<List<ResultObjectDetection?>> getImagePredictionFromBytesList(
-      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {double minimumScore = 0.5,
-      double iOUThreshold = 0.5,
-      int boxesLimit = 10,
-      List<double> mean = noMeanRgb,
-      List<double> std = noStdRgb}) async {
-    List<ResultObjectDetection?> prediction =
-        await getImagePredictionListFromBytesList(
-            imageAsBytesList, imageWidth, imageHeight,
-            minimumScore: minimumScore,
-            iOUThreshold: iOUThreshold,
-            mean: mean,
-            std: std);
 
-    for (var element in prediction) {
-      element?.className = labels[element.classIndex];
-    }
-
-    return prediction;
-  }
 
   ///predicts image but returns the raw net output
   Future<List<ResultObjectDetection?>> getImagePredictionList(
@@ -351,22 +261,6 @@ class ModelObjectDetection {
     return prediction;
   }
 
-  ///predicts image but returns the raw net output
-  Future<List<ResultObjectDetection?>> getImagePredictionListFromBytesList(
-      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {double minimumScore = 0.5,
-      double iOUThreshold = 0.5,
-      int boxesLimit = 10,
-      List<double> mean = noMeanRgb,
-      List<double> std = noStdRgb}) async {
-    Uint8List combinedUint8List = Uint8List.fromList(
-        imageAsBytesList.expand((Uint8List uint8List) => uint8List).toList());
-    List<ResultObjectDetection?> prediction = postProcessorObjectDetection
-        .outputsToNMSPredictions(await PytorchFfi.imageModelInference(
-            _index, combinedUint8List, imageHeight, imageWidth, mean, std,modelType==ObjectDetectionModelType.yolov5));
-
-    return prediction;
-  }
 
   /*
 

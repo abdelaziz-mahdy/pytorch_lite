@@ -130,10 +130,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   runObjectDetection(CameraImage cameraImage) async {
     if (_objectModel != null) {
       List<ResultObjectDetection?> objDetect = await _objectModel!
-          .getImagePredictionFromBytesList(
-              cameraImage.planes.map((e) => e.bytes).toList(),
-              cameraImage.width,
-              cameraImage.height,
+          .getImagePredictionList(
+              encodePng(ImageUtils.convertCameraImage(cameraImage)!),
               minimumScore: 0.3,
               iOUThreshold: 0.3);
 

@@ -27,9 +27,11 @@ class PytorchFfi {
     print("PytorchFfi initialization");
     PytorchFfi.initiated = true;
     PytorchFfi.loadModelManager =
-        IsolateManager.create(_loadModel, isDebug: true);
-    PytorchFfi.imageModelInferenceManager =
-        IsolateManager.create(_imageModelInference, isDebug: true);
+        IsolateManager.create(_loadModel, concurrent: 3, isDebug: true);
+    PytorchFfi.imageModelInferenceManager = IsolateManager.create(
+        _imageModelInference,
+        concurrent: 3,
+        isDebug: true);
   }
 
   @pragma('vm:entry-point')
@@ -68,6 +70,17 @@ class PytorchFfi {
       std,
       objectDetectionYolov5
     ]);
+    // return _imageModelInference(
+    //   [
+    //   modelIndex,
+    //   imageAsBytes,
+    //   imageHeight,
+    //   imageWidth,
+    //   mean,
+    //   std,
+    //   objectDetectionYolov5
+    // ]
+    // );
   }
 
   @pragma('vm:entry-point')
@@ -79,6 +92,7 @@ class PytorchFfi {
     List<double> mean = values[4];
     List<double> std = values[5];
     bool objectDetection = values[6];
+
     Image? img = decodeImage(imageAsBytes);
     if (img == null) {
       throw Exception("Failed to decode image");

@@ -7,49 +7,45 @@ import 'package:ffi/ffi.dart';
 import 'package:image/image.dart';
 
 Pointer<Uint8> convertUint8ListToPointer(Uint8List data) {
-    int length = data.length;
-    Pointer<Uint8> dataPtr = calloc<Uint8>(length);
+  int length = data.length;
+  Pointer<Uint8> dataPtr = calloc<Uint8>(length);
 
-    for (int i = 0; i < length; i++) {
-      dataPtr.elementAt(i).value = data[i];
-    }
-
-    return dataPtr;
+  for (int i = 0; i < length; i++) {
+    dataPtr.elementAt(i).value = data[i];
   }
 
-  Pointer<UnsignedChar> convertUint8ListToPointerChar(Uint8List data) {
-    int length = data.length;
-    Pointer<UnsignedChar> dataPtr = calloc<UnsignedChar>(length);
+  return dataPtr;
+}
 
-    for (int i = 0; i < length; i++) {
-      dataPtr.elementAt(i).value = data[i];
-    }
+Pointer<UnsignedChar> convertUint8ListToPointerChar(Uint8List data) {
+  int length = data.length;
+  Pointer<UnsignedChar> dataPtr = calloc<UnsignedChar>(length);
 
-    return dataPtr;
+  for (int i = 0; i < length; i++) {
+    dataPtr.elementAt(i).value = data[i];
   }
 
+  return dataPtr;
+}
 
+Pointer<Float> convertListToPointer(List<double> floatList) {
+  // Create a native array to hold the double values
+  final nativeArray = calloc<Double>(floatList.length);
 
-  Pointer<Float> convertListToPointer(List<double> floatList) {
-    // Create a native array to hold the double values
-    final nativeArray = calloc<Double>(floatList.length);
-
-    // Copy the values from the list to the native array
-    for (var i = 0; i < floatList.length; i++) {
-      nativeArray[i] = floatList[i];
-    }
-
-    // Obtain the pointer to the native array
-    final nativePointer = nativeArray.cast<Float>();
-
-    return nativePointer;
+  // Copy the values from the list to the native array
+  for (var i = 0; i < floatList.length; i++) {
+    nativeArray[i] = floatList[i];
   }
 
+  // Obtain the pointer to the native array
+  final nativePointer = nativeArray.cast<Float>();
 
+  return nativePointer;
+}
 
 class ImageUtils {
-
-  static Uint8List imageToUint8List(Image image, List<double> mean, List<double> std,
+  static Uint8List imageToUint8List(
+      Image image, List<double> mean, List<double> std,
       {bool contiguous = true}) {
     var bytes = Float32List(1 * image.height * image.width * 3);
     var buffer = Float32List.view(bytes.buffer);
@@ -81,14 +77,22 @@ class ImageUtils {
 
     return bytes.buffer.asUint8List();
   }
+
   /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format
   static Image? convertCameraImage(CameraImage cameraImage) {
+    Image? image;
     if (cameraImage.format.group == ImageFormatGroup.yuv420) {
-      return convertYUV420ToImage(cameraImage);
+      image = convertYUV420ToImage(cameraImage);
     } else if (cameraImage.format.group == ImageFormatGroup.bgra8888) {
-      return convertBGRA8888ToImage(cameraImage);
+      image = convertBGRA8888ToImage(cameraImage);
     } else {
       return null;
+    }
+
+    if (Platform.isAndroid) {
+      return copyRotate(image, angle: 90);
+    } else {
+      return copyRotate(image, angle: 270);
     }
   }
 
@@ -129,8 +133,7 @@ class ImageUtils {
         }
       }
     }
-    image = Image.fromBytes(
-        width: width, height: height, bytes: bytes.buffer);
+    image = Image.fromBytes(width: width, height: height, bytes: bytes.buffer);
     return image;
   }
 
@@ -151,6 +154,4 @@ class ImageUtils {
         ((g << 8) & 0xff00) |
         (r & 0xff);
   }
-
-
 }
