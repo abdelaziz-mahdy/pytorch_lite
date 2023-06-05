@@ -29,6 +29,11 @@ const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
 
 const List<double> noMeanRgb = [0, 0, 0];
 const List<double> noStdRgb = [1, 1, 1];
+//TODO: isolates for camera conversions
+//TODO: isolates for post-processing for object detection
+
+// is think the best idea is to make the isolates here instead of pytorchFFI, and make them static like i did there 
+// and also add a method for running on camera image to avoid making it hard on people
 
 class PytorchLite {
   static Future<String> _getAbsolutePath(String path) async {
