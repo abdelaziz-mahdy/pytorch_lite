@@ -130,7 +130,7 @@ model_inference(int index,float *input_data_ptr,int input_length) {
  * It also captures any exception that might occur during inference and records it in OutputData.
  */
 extern "C" __attribute__((visibility("default"))) __attribute__((used)) OutputData
-image_model_inference(int index, unsigned char* data, int height, int width) {
+image_model_inference(int index, unsigned char* data, int height, int width, int objectDetectionFlag) {
     // Define the output data structure
     struct OutputData output;
     try {
@@ -140,9 +140,29 @@ image_model_inference(int index, unsigned char* data, int height, int width) {
         // Convert image data into PyTorch tensor
         torch::Tensor tensor_image = torch::from_blob(data, {1,3,height, width}, torch::kFloat32);
 
-        // Run the model with the input tensor and get the output tensor
-        auto output_tensor = model.forward({tensor_image}).toTensor();
+        torch::Tensor output_tensor;
+        if (objectDetectionFlag==1) {
+            // Run the object detection model
 
+            // Run the model with the input tensor and get the output tuple of tensors
+            auto output_tuple_ptr = model.forward({tensor_image}).toTuple();
+
+            // Example: Extract the first tensor from the tuple
+            auto& output_tuple = *output_tuple_ptr;
+
+            // Access the elements of the tuple using the appropriate methods
+            output_tensor = output_tuple.elements()[0].toTensor();
+
+
+
+        }
+        else {
+            // Run other model types
+
+            // Run the model with the input tensor and get the output tensor
+            output_tensor = model.forward({tensor_image}).toTensor();
+
+        }
         // Get the number of elements in the output tensor
         int tensor_length = output_tensor.numel();
 
@@ -154,7 +174,6 @@ image_model_inference(int index, unsigned char* data, int height, int width) {
         output.values = output_data;
         output.length = tensor_length;
         output.exception = "";  // Empty string indicates no exception occurred
-
     }
     catch (const std::exception& e) {
         // If any exception occurs, record it in the output data structure  
@@ -166,3 +185,4 @@ image_model_inference(int index, unsigned char* data, int height, int width) {
     // Return the output data structure
     return output;
 }
+

@@ -37,39 +37,44 @@ class NativeLibrary {
       .asFunction<ModelLoadResult Function(ffi.Pointer<pkg_ffi.Utf8>)>();
 
   OutputData modelInference(
+    int index,
     ffi.Pointer<ffi.Float> input_data_ptr,
   ) {
     return _modelInference(
+      index,
       input_data_ptr,
     );
   }
 
-  late final _modelInferencePtr =
-      _lookup<ffi.NativeFunction<OutputData Function(ffi.Pointer<ffi.Float>)>>(
-          'modelInference');
+  late final _modelInferencePtr = _lookup<
+      ffi.NativeFunction<
+          OutputData Function(
+              ffi.Int, ffi.Pointer<ffi.Float>)>>('modelInference');
   late final _modelInference = _modelInferencePtr
-      .asFunction<OutputData Function(ffi.Pointer<ffi.Float>)>();
+      .asFunction<OutputData Function(int, ffi.Pointer<ffi.Float>)>();
 
   OutputData image_model_inference(
     int index,
     ffi.Pointer<ffi.UnsignedChar> data,
     int height,
     int width,
+    int objectDetectionFlag,
   ) {
     return _image_model_inference(
       index,
       data,
       height,
       width,
+      objectDetectionFlag,
     );
   }
 
   late final _image_model_inferencePtr = _lookup<
       ffi.NativeFunction<
           OutputData Function(ffi.Int, ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
-              ffi.Int)>>('image_model_inference');
+              ffi.Int, ffi.Int)>>('image_model_inference');
   late final _image_model_inference = _image_model_inferencePtr.asFunction<
-      OutputData Function(int, ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+      OutputData Function(int, ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 }
 
  class OutputData extends ffi.Struct {

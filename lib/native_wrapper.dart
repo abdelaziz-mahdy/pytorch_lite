@@ -26,12 +26,11 @@ class PytorchFfi {
     }
     print("PytorchFfi initialization");
     PytorchFfi.initiated = true;
-    PytorchFfi.loadModelManager = IsolateManager.create(_loadModel, isDebug: true);
+    PytorchFfi.loadModelManager =
+        IsolateManager.create(_loadModel, isDebug: true);
     PytorchFfi.imageModelInferenceManager =
         IsolateManager.create(_imageModelInference, isDebug: true);
   }
-
-
 
   @pragma('vm:entry-point')
   static Future<int> loadModel(dynamic modelPath) async {
@@ -41,7 +40,6 @@ class PytorchFfi {
 
   @pragma('vm:entry-point')
   static Future<int> _loadModel(dynamic modelPath) async {
-
     ModelLoadResult result =
         _bindings.load_ml_model((modelPath as String).toNativeUtf8());
 
@@ -57,11 +55,19 @@ class PytorchFfi {
       int imageHeight,
       int imageWidth,
       List<double> mean,
-      List<double> std) async {
+      List<double> std,
+      bool objectDetectionYolov5) async {
     PytorchFfi.init();
 
-    return await imageModelInferenceManager.compute(
-        [modelIndex, imageAsBytes, imageHeight, imageWidth, mean, std]);
+    return await imageModelInferenceManager.compute([
+      modelIndex,
+      imageAsBytes,
+      imageHeight,
+      imageWidth,
+      mean,
+      std,
+      objectDetectionYolov5
+    ]);
   }
 
   @pragma('vm:entry-point')
@@ -72,6 +78,7 @@ class PytorchFfi {
     int imageWidth = values[3];
     List<double> mean = values[4];
     List<double> std = values[5];
+    bool objectDetection = values[6];
     Image? img = decodeImage(imageAsBytes);
     if (img == null) {
       throw Exception("Failed to decode image");
@@ -81,8 +88,8 @@ class PytorchFfi {
 
     Pointer<UnsignedChar> dataPointer = convertUint8ListToPointerChar(
         ImageUtils.imageToUint8List(scaledImageBytes, mean, std));
-    OutputData outputData = _bindings.image_model_inference(
-        modelIndex, dataPointer, imageWidth, imageHeight);
+    OutputData outputData = _bindings.image_model_inference(modelIndex,
+        dataPointer, imageWidth, imageHeight, objectDetection ? 1 : 0);
     if (outputData.exception.toDartString().isNotEmpty) {
       throw Exception(outputData.exception.toDartString());
     }

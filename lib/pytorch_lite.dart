@@ -174,7 +174,7 @@ class ClassificationModel {
     assert(std.length == 3, "STD should have size of 3");
 
     return await PytorchFfi.imageModelInference(
-        _index, imageAsBytes, imageHeight, imageWidth, mean, std);
+        _index, imageAsBytes, imageHeight, imageWidth, mean, std,false);
   }
 
   ///predicts image but returns the output as probabilities
@@ -242,7 +242,7 @@ class ClassificationModel {
     Uint8List combinedUint8List = Uint8List.fromList(
         imageAsBytesList.expand((Uint8List uint8List) => uint8List).toList());
     final List<double> prediction = await PytorchFfi.imageModelInference(
-        _index, combinedUint8List, imageWidth, imageHeight, mean, std);
+        _index, combinedUint8List, imageWidth, imageHeight, mean, std,false);
 
     return prediction;
   }
@@ -347,7 +347,7 @@ class ModelObjectDetection {
       List<double> std = noStdRgb}) async {
     List<ResultObjectDetection?> prediction = postProcessorObjectDetection
         .outputsToNMSPredictions(await PytorchFfi.imageModelInference(
-            _index, imageAsBytes, imageHeight, imageWidth, mean, std));
+            _index, imageAsBytes, imageHeight, imageWidth, mean, std,modelType==ObjectDetectionModelType.yolov5));
     return prediction;
   }
 
@@ -363,7 +363,7 @@ class ModelObjectDetection {
         imageAsBytesList.expand((Uint8List uint8List) => uint8List).toList());
     List<ResultObjectDetection?> prediction = postProcessorObjectDetection
         .outputsToNMSPredictions(await PytorchFfi.imageModelInference(
-            _index, combinedUint8List, imageHeight, imageWidth, mean, std));
+            _index, combinedUint8List, imageHeight, imageWidth, mean, std,modelType==ObjectDetectionModelType.yolov5));
 
     return prediction;
   }
