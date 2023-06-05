@@ -14,7 +14,7 @@ dependencies:
   path: ^1.8.0
   ffi: ^2.0.1
   image: ^4.0.15
-  camera: ^0.10.3
+  camera: ^0.10.5+2
   isolate_manager: ^3.0.0
 
 dev_dependencies:
