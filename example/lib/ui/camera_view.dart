@@ -2,7 +2,6 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart';
-import 'package:pytorch_lite/pigeon.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
 import 'camera_view_singleton.dart';
@@ -152,7 +151,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
 
     var futures = <Future>[];
     futures.add(runClassification(cameraImage));
-    // futures.add(runObjectDetection(cameraImage));
+    futures.add(runObjectDetection(cameraImage));
     await Future.wait(futures);
 
     predicting = false;

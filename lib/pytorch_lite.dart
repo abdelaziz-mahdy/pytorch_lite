@@ -9,17 +9,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pytorch_lite/classes/result_object_detection.dart';
+import 'package:pytorch_lite/enums/model_type.dart';
 import 'package:pytorch_lite/generated_bindings.dart';
 import 'package:pytorch_lite/native_wrapper.dart';
-import 'package:pytorch_lite/pigeon.dart';
 import 'package:image/image.dart' as imageLib;
+import 'package:pytorch_lite/post_processor.dart';
 
 import 'native_locator.dart';
 
 export 'enums/dtype.dart';
 export 'utils.dart';
+export 'classes/rect.dart';
+export 'classes/result_object_detection.dart';
+export 'enums/model_type.dart';
+
 const torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
 const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
+
+const List<double> noMeanRgb = [0, 0, 0];
+const List<double> noStdRgb = [1, 1, 1];
 
 class PytorchLite {
   /*
@@ -67,7 +76,13 @@ class PytorchLite {
         labels = await _getLabelsCsv(labelPath);
       }
     }
-    return ModelObjectDetection(index, imageWidth, imageHeight, labels,
+    return ModelObjectDetection(
+        index,
+        imageWidth,
+        imageHeight,
+        labels,
+        PostProcessorObjectDetection(
+            numberOfClasses, imageWidth, imageHeight, objectDetectionModelType),
         modelType: objectDetectionModelType);
   }
 }
@@ -183,7 +198,9 @@ class ClassificationModel {
     assert(mean.length == 3, "mean should have size of 3");
     assert(std.length == 3, "std should have size of 3");
 
-    final List<double> prediction = await getImagePredictionListFromBytesList(imageAsBytesList, imageWidth, imageHeight,mean: mean,std: std);
+    final List<double> prediction = await getImagePredictionListFromBytesList(
+        imageAsBytesList, imageWidth, imageHeight,
+        mean: mean, std: std);
 
     double maxScore = double.negativeInfinity;
     int maxScoreIndex = -1;
@@ -223,7 +240,9 @@ class ClassificationModel {
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
 
-    final List<double> prediction = await getImagePredictionListFromBytesList(imageAsBytesList, imageWidth, imageHeight,mean: mean,std: std);
+    final List<double> prediction = await getImagePredictionListFromBytesList(
+        imageAsBytesList, imageWidth, imageHeight,
+        mean: mean, std: std);
 
     List<double> predictionProbabilities = [];
 
@@ -250,8 +269,9 @@ class ModelObjectDetection {
   final int imageHeight;
   final List<String> labels;
   final ObjectDetectionModelType modelType;
-  ModelObjectDetection(
-      this._index, this.imageWidth, this.imageHeight, this.labels,
+  final PostProcessorObjectDetection postProcessorObjectDetection;
+  ModelObjectDetection(this._index, this.imageWidth, this.imageHeight,
+      this.labels, this.postProcessorObjectDetection,
       {this.modelType = ObjectDetectionModelType.yolov5});
 
   ///predicts image and returns the supposed label belonging to it
@@ -259,10 +279,16 @@ class ModelObjectDetection {
       Uint8List imageAsBytes,
       {double minimumScore = 0.5,
       double iOUThreshold = 0.5,
-      int boxesLimit = 10}) async {
-    List<ResultObjectDetection?> prediction = await ModelApi()
-        .getImagePredictionListObjectDetection(_index, imageAsBytes, null, null,
-            null, minimumScore, iOUThreshold, boxesLimit);
+      int boxesLimit = 10,
+      List<double> mean = noMeanRgb,
+      List<double> std = noStdRgb}) async {
+    List<ResultObjectDetection?> prediction = await getImagePredictionList(
+        imageAsBytes,
+        minimumScore: minimumScore,
+        iOUThreshold: iOUThreshold,
+        boxesLimit: boxesLimit,
+        mean: mean,
+        std: std);
 
     for (var element in prediction) {
       element?.className = labels[element.classIndex];
@@ -276,10 +302,16 @@ class ModelObjectDetection {
       List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
       {double minimumScore = 0.5,
       double iOUThreshold = 0.5,
-      int boxesLimit = 10}) async {
-    List<ResultObjectDetection?> prediction = await ModelApi()
-        .getImagePredictionListObjectDetection(_index, null, imageAsBytesList,
-            imageWidth, imageHeight, minimumScore, iOUThreshold, boxesLimit);
+      int boxesLimit = 10,
+      List<double> mean = noMeanRgb,
+      List<double> std = noStdRgb}) async {
+    List<ResultObjectDetection?> prediction =
+        await getImagePredictionListFromBytesList(
+            imageAsBytesList, imageWidth, imageHeight,
+            minimumScore: minimumScore,
+            iOUThreshold: iOUThreshold,
+            mean: mean,
+            std: std);
 
     for (var element in prediction) {
       element?.className = labels[element.classIndex];
@@ -293,10 +325,12 @@ class ModelObjectDetection {
       Uint8List imageAsBytes,
       {double minimumScore = 0.5,
       double iOUThreshold = 0.5,
-      int boxesLimit = 10}) async {
-    final List<ResultObjectDetection?> prediction = await ModelApi()
-        .getImagePredictionListObjectDetection(_index, imageAsBytes, null, null,
-            null, minimumScore, iOUThreshold, boxesLimit);
+      int boxesLimit = 10,
+      List<double> mean = noMeanRgb,
+      List<double> std = noStdRgb}) async {
+    List<ResultObjectDetection?> prediction = postProcessorObjectDetection
+        .outputsToNMSPredictions(await PytorchFfi.imageModelInference(
+            _index, imageAsBytes, imageHeight, imageWidth, mean, std));
     return prediction;
   }
 
@@ -305,10 +339,15 @@ class ModelObjectDetection {
       List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
       {double minimumScore = 0.5,
       double iOUThreshold = 0.5,
-      int boxesLimit = 10}) async {
-    final List<ResultObjectDetection?> prediction = await ModelApi()
-        .getImagePredictionListObjectDetection(_index, null, imageAsBytesList,
-            imageWidth, imageHeight, minimumScore, iOUThreshold, boxesLimit);
+      int boxesLimit = 10,
+      List<double> mean = noMeanRgb,
+      List<double> std = noStdRgb}) async {
+    Uint8List combinedUint8List = Uint8List.fromList(
+        imageAsBytesList.expand((Uint8List uint8List) => uint8List).toList());
+    List<ResultObjectDetection?> prediction = postProcessorObjectDetection
+        .outputsToNMSPredictions(await PytorchFfi.imageModelInference(
+            _index, combinedUint8List, imageHeight, imageWidth, mean, std));
+
     return prediction;
   }
 

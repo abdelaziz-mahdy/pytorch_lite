@@ -49,8 +49,44 @@
                # Provides a relative path to your source file(s).
                ../ios/Classes/pytorch_ffi.cpp )
   
-  
-  set(LIBTORCH_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../libtorch-android")
+  # libtorch-android archive containing the pre-built shared libraries & headers.
+set(LIBTORCH "libtorch-android.zip")
+
+# Download URL of the libtorch-android archive.
+set(LIBTORCH_URL "https://github.com/zezo357/pytorch_lite/releases/download/libs/${LIBTORCH}")
+
+# Download location of the libtorch-android archive.
+set(LIBTORCH_ARCHIVE "${CMAKE_BINARY_DIR}/${LIBTORCH}")
+set(LIBTORCH_SRC "${CMAKE_BINARY_DIR}/libtorch-android")
+
+# Download the libtorch-android archive if it doesn't exist.
+if(NOT EXISTS "${LIBTORCH_ARCHIVE}")
+  message(STATUS "Downloading ${LIBTORCH}...")
+  execute_process(
+    COMMAND wget -O "${LIBTORCH_ARCHIVE}" "${LIBTORCH_URL}"
+    RESULT_VARIABLE result
+  )
+  if(result)
+    message(FATAL_ERROR "Download of ${LIBTORCH} failed.")
+  endif()
+  message(STATUS "Downloaded ${LIBTORCH}...")
+endif()
+
+# Extract the libtorch-android archive.
+if(NOT EXISTS "${LIBTORCH_SRC}")
+  message(STATUS "Extracting ${LIBTORCH}...")
+  file(MAKE_DIRECTORY "${LIBTORCH_SRC}")
+  execute_process(
+    COMMAND unzip -o "${LIBTORCH_ARCHIVE}" -d "${LIBTORCH_SRC}"
+    RESULT_VARIABLE result
+  )
+  if(result)
+    message(FATAL_ERROR "Extraction of ${LIBTORCH} failed.")
+  endif()
+  message(STATUS "Extracted ${LIBTORCH}...")
+endif()
+
+  set(LIBTORCH_BASE_DIR "${LIBTORCH_SRC}/libtorch-android")
   file(GLOB PYTORCH_INCLUDE_DIRS "${LIBTORCH_BASE_DIR}/include")
   set(LIBTORCH_LIB_DIR "${LIBTORCH_BASE_DIR}/lib/${ANDROID_ABI}")
   
