@@ -1,7 +1,7 @@
 name: Build_on_platforms
 on:
   push:
-    branches: [ master ]
+    branches: [ master, testing-ffi ]
     paths:
       - 'package/**'
       - '!package/README.md'
