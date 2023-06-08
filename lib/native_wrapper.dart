@@ -46,7 +46,7 @@ class PytorchFfi {
     if (result.exception.toDartString().isNotEmpty) {
       throw Exception(result.exception.toDartString());
     }
-    // calloc.free(data);
+    calloc.free(data);
     // calloc.free(result.exception);
     return result.index;
   }
@@ -111,7 +111,7 @@ class PytorchFfi {
         outputData.values.asTypedList(outputData.length);
     // calloc.free(outputData.values);
     // calloc.free(outputData.exception);
-    // calloc.free(dataPointer);
+    calloc.free(dataPointer);
 
     return prediction;
   }
