@@ -38,12 +38,12 @@ final DynamicLibrary dylib = () {
   if (Platform.isMacOS || Platform.isIOS) {
     return DynamicLibrary.executable();
     // Add from here...
-    if (Platform.environment.containsKey('FLUTTER_TEST')) {
-      return DynamicLibrary.open('build/macos/Build/Products/Debug'
-          '/$_libName/$_libName.framework/$_libName');
-    }
-    // ...to here.
-    return DynamicLibrary.open('$_libName.framework/$_libName');
+    // if (Platform.environment.containsKey('FLUTTER_TEST')) {
+    //   return DynamicLibrary.open('build/macos/Build/Products/Debug'
+    //       '/$_libName/$_libName.framework/$_libName');
+    // }
+    // // ...to here.
+    // return DynamicLibrary.open('$_libName.framework/$_libName');
   }
   if (Platform.isAndroid || Platform.isLinux) {
     // Add from here...

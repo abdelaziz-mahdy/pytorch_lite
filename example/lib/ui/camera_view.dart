@@ -127,16 +127,30 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     }
   }
 
-  runObjectDetection(CameraImage cameraImage) async {
-    if (_objectModel != null) {
-      List<ResultObjectDetection?> objDetect = await _objectModel!
-          .getImagePredictionList(
-              encodePng(ImageUtils.convertCameraImage(cameraImage)!),
-              minimumScore: 0.3,
-              iOUThreshold: 0.3);
+  Future<Uint8List?> convertCameraImageToJpg(CameraImage cameraImage) async {
+    Command command = Command()
+      ..image(ImageUtils.convertCameraImage(cameraImage)!)
+      ..encodeJpg();
 
-      print("data outputted $objDetect");
-      widget.resultsCallback(objDetect);
+    Uint8List? bytes = await command.getBytes();
+    return bytes;
+  }
+
+  Future<void> runObjectDetection(CameraImage cameraImage) async {
+    if (_objectModel != null) {
+      Uint8List? jpgBytes = await convertCameraImageToJpg(cameraImage);
+
+      if (jpgBytes != null) {
+        List<ResultObjectDetection?> objDetect =
+            await _objectModel!.getImagePredictionList(
+          jpgBytes,
+          minimumScore: 0.3,
+          iOUThreshold: 0.3,
+        );
+
+        print("data outputted $objDetect");
+        widget.resultsCallback(objDetect);
+      }
     }
   }
 

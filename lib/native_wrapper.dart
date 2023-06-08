@@ -1,11 +1,9 @@
 import 'dart:ffi';
-import 'dart:io';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
 import 'package:isolate_manager/isolate_manager.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
+
 import 'package:pytorch_lite/generated_bindings.dart';
 import 'package:image/image.dart';
 import 'package:pytorch_lite/utils.dart';

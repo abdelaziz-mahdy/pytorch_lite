@@ -16,7 +16,6 @@ import 'package:pytorch_lite/native_wrapper.dart';
 import 'package:image/image.dart' as imageLib;
 import 'package:pytorch_lite/post_processor.dart';
 
-import 'native_locator.dart';
 
 export 'enums/dtype.dart';
 export 'utils.dart';
