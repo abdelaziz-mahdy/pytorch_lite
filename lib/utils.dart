@@ -80,6 +80,8 @@ class ImageUtils {
 
   /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format
   static Image? convertCameraImage(CameraImage cameraImage) {
+    DateTime startTime = DateTime.now(); // Record the start time
+
     Image? image;
     if (cameraImage.format.group == ImageFormatGroup.yuv420) {
       image = convertYUV420ToImage(cameraImage);
@@ -89,11 +91,20 @@ class ImageUtils {
       return null;
     }
 
-    if (Platform.isAndroid) {
-      return copyRotate(image, angle: 90);
-    } else {
-      return copyRotate(image, angle: 270);
-    }
+    // if (Platform.isAndroid) {
+    //   image = copyRotate(image, angle: 90);
+    // } else {
+    //   image = copyRotate(image, angle: 270);
+    // }
+
+    DateTime endTime = DateTime.now(); // Record the end time
+    int executionTime = endTime
+        .difference(startTime)
+        .inMilliseconds; // Calculate the execution time in milliseconds
+
+    print("convertCameraImage: Execution time: $executionTime milliseconds");
+
+    return image;
   }
 
   /// Converts a [CameraImage] in BGRA888 format to [Image] in RGB format

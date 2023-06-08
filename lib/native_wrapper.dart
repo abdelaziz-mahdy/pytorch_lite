@@ -40,12 +40,14 @@ class PytorchFfi {
 
   @pragma('vm:entry-point')
   static Future<int> _loadModel(dynamic modelPath) async {
-    ModelLoadResult result =
-        _bindings.load_ml_model((modelPath as String).toNativeUtf8());
+    Pointer<Utf8> data = (modelPath as String).toNativeUtf8();
+    ModelLoadResult result = _bindings.load_ml_model(data);
 
     if (result.exception.toDartString().isNotEmpty) {
       throw Exception(result.exception.toDartString());
     }
+    calloc.free(data);
+    calloc.free(result.exception);
     return result.index;
   }
 
@@ -107,6 +109,9 @@ class PytorchFfi {
     }
     final List<double> prediction =
         outputData.values.asTypedList(outputData.length);
+    calloc.free(outputData.values);
+    calloc.free(outputData.exception);
+    calloc.free(dataPointer);
 
     return prediction;
   }

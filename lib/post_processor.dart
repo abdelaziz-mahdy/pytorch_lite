@@ -175,11 +175,23 @@ class PostProcessorObjectDetection {
   }
 
   List<ResultObjectDetection> outputsToNMSPredictions(List<double> outputs) {
-    // Depending on model return value
+    DateTime startTime = DateTime.now(); // Record the start time
+
+    List<ResultObjectDetection> predictions;
+
     if (objectDetectionModelType == ObjectDetectionModelType.yolov5) {
-      return outputsToNMSPredictionsYolov5(outputs);
+      predictions = outputsToNMSPredictionsYolov5(outputs);
     } else {
-      return outputsToNMSPredictionsYoloV8(outputs);
+      predictions = outputsToNMSPredictionsYoloV8(outputs);
     }
+
+    DateTime endTime = DateTime.now(); // Record the end time
+    int executionTime = endTime
+        .difference(startTime)
+        .inMilliseconds; // Calculate the execution time in milliseconds
+
+    print(" outputsToNMSPredictions: Execution time: $executionTime milliseconds");
+
+    return predictions;
   }
 }

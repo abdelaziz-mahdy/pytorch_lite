@@ -1,19 +1,14 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
-import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pytorch_lite/classes/result_object_detection.dart';
 import 'package:pytorch_lite/enums/model_type.dart';
-import 'package:pytorch_lite/generated_bindings.dart';
 import 'package:pytorch_lite/native_wrapper.dart';
-import 'package:image/image.dart' as imageLib;
 import 'package:pytorch_lite/post_processor.dart';
 
 
@@ -28,8 +23,6 @@ const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
 
 const List<double> noMeanRgb = [0, 0, 0];
 const List<double> noStdRgb = [1, 1, 1];
-//TODO: isolates for camera conversions
-//TODO: isolates for post-processing for object detection
 
 // is think the best idea is to make the isolates here instead of pytorchFFI, and make them static like i did there 
 // and also add a method for running on camera image to avoid making it hard on people
