@@ -1,6 +1,6 @@
 name: pytorch_lite
 description: Flutter package to help run pytorch lite models classification and yolov5
-version: 3.0.0
+version: 3.0.0-alpha
 homepage: https://github.com/zezo357/pytorch_lite
 
 environment:

@@ -1,6 +1,7 @@
-## 3.0.0
+## 3.0.0-alpha
 * Converted to work on ffi (for improved performance, and ios support)
 * ios support
+* camera not working as expected yet
 
 ## 2.0.5
 * fixed dart analyses problems (renamed some variables to follow convention)
