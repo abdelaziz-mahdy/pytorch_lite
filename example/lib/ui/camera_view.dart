@@ -142,7 +142,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
 
       if (jpgBytes != null) {
         List<ResultObjectDetection?> objDetect =
-            await _objectModel!.getImagePredictionList(
+            await _objectModel!.getImagePrediction(
           jpgBytes,
           minimumScore: 0.3,
           iOUThreshold: 0.3,
