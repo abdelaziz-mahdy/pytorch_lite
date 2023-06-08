@@ -1,5 +1,4 @@
 import 'dart:ffi';
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:camera/camera.dart';
 
@@ -51,15 +50,15 @@ class ImageUtils {
     var buffer = Float32List.view(bytes.buffer);
 
     if (contiguous) {
-      int offset_g = image.height * image.width;
-      int offset_b = 2 * image.height * image.width;
+      int offsetG = image.height * image.width;
+      int offsetB = 2 * image.height * image.width;
       int i = 0;
       for (var y = 0; y < image.height; y++) {
         for (var x = 0; x < image.width; x++) {
           Pixel pixel = image.getPixel(x, y);
           buffer[i] = ((pixel.r / 255) - mean[0]) / std[0];
-          buffer[offset_g + i] = ((pixel.g / 255) - mean[1]) / std[1];
-          buffer[offset_b + i] = ((pixel.b / 255) - mean[2]) / std[2];
+          buffer[offsetG + i] = ((pixel.g / 255) - mean[1]) / std[1];
+          buffer[offsetB + i] = ((pixel.b / 255) - mean[2]) / std[2];
           i++;
         }
       }

@@ -11,7 +11,6 @@ import 'package:pytorch_lite/enums/model_type.dart';
 import 'package:pytorch_lite/native_wrapper.dart';
 import 'package:pytorch_lite/post_processor.dart';
 
-
 export 'enums/dtype.dart';
 export 'utils.dart';
 export 'classes/rect.dart';
@@ -24,7 +23,7 @@ const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
 const List<double> noMeanRgb = [0, 0, 0];
 const List<double> noStdRgb = [1, 1, 1];
 
-// is think the best idea is to make the isolates here instead of pytorchFFI, and make them static like i did there 
+// is think the best idea is to make the isolates here instead of pytorchFFI, and make them static like i did there
 // and also add a method for running on camera image to avoid making it hard on people
 
 class PytorchLite {
@@ -171,7 +170,7 @@ class ClassificationModel {
     assert(std.length == 3, "STD should have size of 3");
 
     return await PytorchFfi.imageModelInference(
-        _index, imageAsBytes, imageHeight, imageWidth, mean, std,false);
+        _index, imageAsBytes, imageHeight, imageWidth, mean, std, false);
   }
 
   ///predicts image but returns the output as probabilities
@@ -202,10 +201,6 @@ class ClassificationModel {
 
     return predictionProbabilities;
   }
-
-
- 
-
 }
 
 class ModelObjectDetection {
@@ -242,8 +237,6 @@ class ModelObjectDetection {
     return prediction;
   }
 
-
-
   ///predicts image but returns the raw net output
   Future<List<ResultObjectDetection?>> getImagePredictionList(
       Uint8List imageAsBytes,
@@ -254,10 +247,15 @@ class ModelObjectDetection {
       List<double> std = noStdRgb}) async {
     List<ResultObjectDetection?> prediction = postProcessorObjectDetection
         .outputsToNMSPredictions(await PytorchFfi.imageModelInference(
-            _index, imageAsBytes, imageHeight, imageWidth, mean, std,modelType==ObjectDetectionModelType.yolov5));
+            _index,
+            imageAsBytes,
+            imageHeight,
+            imageWidth,
+            mean,
+            std,
+            modelType == ObjectDetectionModelType.yolov5));
     return prediction;
   }
-
 
   /*
 

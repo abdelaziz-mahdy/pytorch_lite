@@ -56,9 +56,7 @@ class BoxWidget extends StatelessWidget {
             alignment: Alignment.centerRight,
             color: usedColor,
             child: Text(
-              "${result.className ?? result.classIndex.toString()}_${showPercentage
-                      ? "${(result.score * 100).toStringAsFixed(2)}%"
-                      : ""}",
+              "${result.className ?? result.classIndex.toString()}_${showPercentage ? "${(result.score * 100).toStringAsFixed(2)}%" : ""}",
             ),
           ),
           Container(

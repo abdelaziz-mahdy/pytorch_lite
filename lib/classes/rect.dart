@@ -1,5 +1,3 @@
-
-
 class PyTorchRect {
   PyTorchRect({
     required this.left,
@@ -21,7 +19,4 @@ class PyTorchRect {
   double width;
 
   double height;
-
-
 }
-

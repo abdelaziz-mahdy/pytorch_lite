@@ -15,6 +15,4 @@ class ResultObjectDetection {
   double score;
 
   PyTorchRect rect;
-
-
 }

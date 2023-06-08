@@ -190,7 +190,8 @@ class PostProcessorObjectDetection {
         .difference(startTime)
         .inMilliseconds; // Calculate the execution time in milliseconds
 
-    print(" outputsToNMSPredictions: Execution time: $executionTime milliseconds");
+    print(
+        " outputsToNMSPredictions: Execution time: $executionTime milliseconds");
 
     return predictions;
   }

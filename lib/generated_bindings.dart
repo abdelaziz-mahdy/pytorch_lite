@@ -77,7 +77,7 @@ class NativeLibrary {
       OutputData Function(int, ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 }
 
- class OutputData extends ffi.Struct {
+class OutputData extends ffi.Struct {
   external ffi.Pointer<ffi.Float> values;
 
   @ffi.Int()
@@ -86,7 +86,7 @@ class NativeLibrary {
   external ffi.Pointer<pkg_ffi.Utf8> exception;
 }
 
- class ModelLoadResult extends ffi.Struct {
+class ModelLoadResult extends ffi.Struct {
   @ffi.Int()
   external int index;
 
