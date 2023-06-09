@@ -52,7 +52,7 @@ class PytorchLite {
 
   ///Sets pytorch model path and returns Model
   static Future<ClassificationModel> loadClassificationModel(
-      String path, int imageWidth, int imageHeight,
+      String path, int imageWidth, int imageHeight,int numberOfClasses,
       {String? labelPath}) async {
     String absPathModelPath = await _getAbsolutePath(path);
 
@@ -67,7 +67,7 @@ class PytorchLite {
       }
     }
 
-    return ClassificationModel(index, labels, imageWidth, imageHeight);
+    return ClassificationModel(index, labels, imageWidth, imageHeight,numberOfClasses);
   }
 
   ///Sets pytorch object detection model (path and lables) and returns Model
@@ -135,8 +135,9 @@ class ClassificationModel {
   final List<String> labels;
   final int imageWidth;
   final int imageHeight;
+  final int numberOfClasses;
   ClassificationModel(
-      this._index, this.labels, this.imageWidth, this.imageHeight);
+      this._index, this.labels, this.imageWidth, this.imageHeight,this.numberOfClasses);
 
   ///predicts image and returns the supposed label belonging to it
   Future<String> getImagePrediction(Uint8List imageAsBytes,
@@ -170,7 +171,7 @@ class ClassificationModel {
     assert(std.length == 3, "STD should have size of 3");
 
     return await PytorchFfi.imageModelInference(
-        _index, imageAsBytes, imageHeight, imageWidth, mean, std, false);
+        _index, imageAsBytes, imageHeight, imageWidth, mean, std, false,numberOfClasses);
   }
 
   ///predicts image but returns the output as probabilities
@@ -253,7 +254,9 @@ class ModelObjectDetection {
             imageWidth,
             mean,
             std,
-            modelType == ObjectDetectionModelType.yolov5));
+            modelType == ObjectDetectionModelType.yolov5,
+            postProcessorObjectDetection.modelOutputLength
+            ));
     return prediction;
   }
 

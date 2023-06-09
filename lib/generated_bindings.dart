@@ -59,6 +59,7 @@ class NativeLibrary {
     int height,
     int width,
     int objectDetectionFlag,
+    ffi.Pointer<ffi.Float> output_data,
   ) {
     return _image_model_inference(
       index,
@@ -66,18 +67,25 @@ class NativeLibrary {
       height,
       width,
       objectDetectionFlag,
+      output_data,
     );
   }
 
   late final _image_model_inferencePtr = _lookup<
       ffi.NativeFunction<
-          OutputData Function(ffi.Int, ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
-              ffi.Int, ffi.Int)>>('image_model_inference');
+          OutputData Function(
+              ffi.Int,
+              ffi.Pointer<ffi.UnsignedChar>,
+              ffi.Int,
+              ffi.Int,
+              ffi.Int,
+              ffi.Pointer<ffi.Float>)>>('image_model_inference');
   late final _image_model_inference = _image_model_inferencePtr.asFunction<
-      OutputData Function(int, ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
+      OutputData Function(int, ffi.Pointer<ffi.UnsignedChar>, int, int, int,
+          ffi.Pointer<ffi.Float>)>();
 }
 
-class OutputData extends ffi.Struct {
+ class OutputData extends ffi.Struct {
   external ffi.Pointer<ffi.Float> values;
 
   @ffi.Int()
@@ -86,7 +94,7 @@ class OutputData extends ffi.Struct {
   external ffi.Pointer<pkg_ffi.Utf8> exception;
 }
 
-class ModelLoadResult extends ffi.Struct {
+ class ModelLoadResult extends ffi.Struct {
   @ffi.Int()
   external int index;
 

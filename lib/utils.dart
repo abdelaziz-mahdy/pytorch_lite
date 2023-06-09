@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:camera/camera.dart';
 
@@ -90,11 +91,11 @@ class ImageUtils {
       return null;
     }
 
-    // if (Platform.isAndroid) {
-    //   image = copyRotate(image, angle: 90);
-    // } else {
-    //   image = copyRotate(image, angle: 270);
-    // }
+    if (Platform.isAndroid) {
+      image = copyRotate(image, angle: 90);
+    } else {
+      image = copyRotate(image, angle: 270);
+    }
 
     DateTime endTime = DateTime.now(); // Record the end time
     int executionTime = endTime

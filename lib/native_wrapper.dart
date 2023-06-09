@@ -58,7 +58,8 @@ class PytorchFfi {
       int imageWidth,
       List<double> mean,
       List<double> std,
-      bool objectDetectionYolov5) async {
+      bool objectDetectionYolov5,
+      int outputLength) async {
     PytorchFfi.init();
 
     return await imageModelInferenceManager.compute([
@@ -68,7 +69,8 @@ class PytorchFfi {
       imageWidth,
       mean,
       std,
-      objectDetectionYolov5
+      objectDetectionYolov5,
+      outputLength
     ]);
     // return _imageModelInference(
     //   [
@@ -92,7 +94,7 @@ class PytorchFfi {
     List<double> mean = values[4];
     List<double> std = values[5];
     bool objectDetection = values[6];
-
+    int outputLength = values[7];
     Image? img = decodeImage(imageAsBytes);
     if (img == null) {
       throw Exception("Failed to decode image");
@@ -102,14 +104,19 @@ class PytorchFfi {
 
     Pointer<UnsignedChar> dataPointer = convertUint8ListToPointerChar(
         ImageUtils.imageToUint8List(scaledImageBytes, mean, std));
+    Pointer<Float> output = malloc<Float>(outputLength);
     OutputData outputData = _bindings.image_model_inference(modelIndex,
-        dataPointer, imageWidth, imageHeight, objectDetection ? 1 : 0);
+        dataPointer, imageWidth, imageHeight, objectDetection ? 1 : 0, output);
     if (outputData.exception.toDartString().isNotEmpty) {
       throw Exception(outputData.exception.toDartString());
     }
-    final List<double> prediction =
-        outputData.values.asTypedList(outputData.length);
-    // calloc.free(outputData.values);
+    if (outputLength != outputData.length) {
+      throw Exception(
+          "output length does not match model length, please check model type and number of classes expected ${outputLength}, got ${outputData.length}");
+    }
+    print(outputData.length);
+    final List<double> prediction = output.asTypedList(outputData.length);
+    calloc.free(output);
     // calloc.free(outputData.exception);
     calloc.free(dataPointer);
 

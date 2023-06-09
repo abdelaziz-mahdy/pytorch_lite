@@ -8,6 +8,7 @@ class PostProcessorObjectDetection {
   late int numberOfClasses;
   late int outputRow;
   late int outputColumn;
+  late int modelOutputLength;
   double scoreThreshold = 0.30;
   double IOUThreshold = 0.30;
   int imageWidth;
@@ -24,9 +25,12 @@ class PostProcessorObjectDetection {
     if (objectDetectionModelType == ObjectDetectionModelType.yolov5) {
       outputRow = 25200;
       outputColumn = (numberOfClasses + 5);
+      modelOutputLength = outputRow * outputColumn;
     } else {
       outputRow = 8400;
       outputColumn = (numberOfClasses + 4);
+            modelOutputLength = outputRow * outputColumn;
+
     }
   }
 

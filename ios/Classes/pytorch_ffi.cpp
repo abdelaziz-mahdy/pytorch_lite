@@ -56,7 +56,6 @@ ModelLoadResult load_ml_model(const char* model_path) {
     try {
         // Load the model using torch::jit::load
         torch::jit::Module model = torch::jit::load(model_path);
-
         // Add the loaded model to the models vector
         models.push_back(model);
 
@@ -130,7 +129,7 @@ model_inference(int index,float *input_data_ptr,int input_length) {
  * It also captures any exception that might occur during inference and records it in OutputData.
  */
 extern "C" __attribute__((visibility("default"))) __attribute__((used)) OutputData
-image_model_inference(int index, unsigned char* data, int height, int width, int objectDetectionFlag) {
+image_model_inference(int index, unsigned char* data, int height, int width, int objectDetectionFlag,float* output_data) {
     // Define the output data structure
     struct OutputData output;
     try {
@@ -167,7 +166,7 @@ image_model_inference(int index, unsigned char* data, int height, int width, int
         int tensor_length = output_tensor.numel();
 
         // Allocate memory for output data and copy data from the output tensor
-        float *output_data = static_cast<float*>(malloc(sizeof(float) * tensor_length));
+        // float *output_data = static_cast<float*>(malloc(sizeof(float) * tensor_length));
         memcpy(output_data, output_tensor.data_ptr<float>(), sizeof(float) * tensor_length);
 
         // Store the output data and length in the output data structure
