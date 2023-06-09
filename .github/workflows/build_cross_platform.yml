@@ -19,9 +19,9 @@ jobs:
     name: Android
     runs-on: windows-latest
     steps:
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '11'
+      # - uses: actions/setup-java@v1
+      #   with:
+      #     java-version: '11'
       - uses: actions/checkout@v2
         with:
           submodules: "true"
@@ -30,7 +30,7 @@ jobs:
           channel: "stable"
           cache: true
       - run: flutter pub get
-      - run: flutter build apk --verbose
+      - run: flutter build apk --split-per-abi --verbose
   
   ios:
     name: iOS
