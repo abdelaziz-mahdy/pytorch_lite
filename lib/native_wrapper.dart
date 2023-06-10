@@ -104,7 +104,7 @@ class PytorchFfi {
 
     Pointer<UnsignedChar> dataPointer = convertUint8ListToPointerChar(
         ImageUtils.imageToUint8List(scaledImageBytes, mean, std));
-    Pointer<Float> output = malloc<Float>(outputLength);
+    Pointer<Float> output = malloc<Float>(outputLength + 1);
     OutputData outputData = _bindings.image_model_inference(modelIndex,
         dataPointer, imageWidth, imageHeight, objectDetection ? 1 : 0, output);
     if (outputData.exception.toDartString().isNotEmpty) {
@@ -114,12 +114,12 @@ class PytorchFfi {
       throw Exception(
           "output length does not match model length, please check model type and number of classes expected ${outputLength}, got ${outputData.length}");
     }
-    print(outputData.length);
-    final List<double> prediction = output.asTypedList(outputData.length);
-    calloc.free(output);
-    // calloc.free(outputData.exception);
-    calloc.free(dataPointer);
 
+    //to list is used to make a copy of the values
+    final List<double> prediction =
+        (output.asTypedList(outputData.length)).toList();
+    calloc.free(output);
+    calloc.free(dataPointer);
     return prediction;
   }
 }

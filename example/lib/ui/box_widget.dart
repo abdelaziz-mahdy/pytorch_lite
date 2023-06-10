@@ -36,6 +36,8 @@ class BoxWidget extends StatelessWidget {
     } else {
       usedColor = boxesColor;
     }
+
+    print(result.rect.width.toDouble() * factorX);
     return Positioned(
       left: result.rect.left * factorX,
       top: result.rect.top * factorY - 20,

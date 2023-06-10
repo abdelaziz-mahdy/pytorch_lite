@@ -143,28 +143,27 @@ image_model_inference(int index, unsigned char* data, int height, int width, int
         if (objectDetectionFlag==1) {
             // Run the object detection model
 
-            // Run the model with the input tensor and get the output tuple of tensors
-            auto output_tuple_ptr = model.forward({tensor_image}).toTuple();
+//            // Run the model with the input tensor and get the output tuple of tensors
+//            auto output_tuple_ptr = model.forward({tensor_image}).toTuple();
+//
+//            // Example: Extract the first tensor from the tuple
+//            auto& output_tuple = *output_tuple_ptr;
+//
+//            // Access the elements of the tuple using the appropriate methods
+//            output_tensor = output_tuple.elements()[0].toTensor();
 
-            // Example: Extract the first tensor from the tuple
-            auto& output_tuple = *output_tuple_ptr;
-
-            // Access the elements of the tuple using the appropriate methods
-            output_tensor = output_tuple.elements()[0].toTensor();
-
-
+            torch::jit::IValue outputTuple = model.forward({tensor_image}).toTuple();
+            output_tensor = outputTuple.toTuple()->elements()[0].toTensor();
 
         }
         else {
-            // Run other model types
-
             // Run the model with the input tensor and get the output tensor
             output_tensor = model.forward({tensor_image}).toTensor();
 
         }
         // Get the number of elements in the output tensor
         int tensor_length = output_tensor.numel();
-
+        
         // Allocate memory for output data and copy data from the output tensor
         // float *output_data = static_cast<float*>(malloc(sizeof(float) * tensor_length));
         memcpy(output_data, output_tensor.data_ptr<float>(), sizeof(float) * tensor_length);
