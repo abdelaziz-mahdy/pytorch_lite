@@ -40,7 +40,7 @@ class PytorchFfi {
 
   @pragma('vm:entry-point')
   static Future<int> _loadModel(dynamic modelPath) async {
-    Pointer<Utf8> data = (modelPath as String).toNativeUtf8();
+    Pointer<Utf8> data = (modelPath as String).toNativeUtf8(allocator: calloc);
     ModelLoadResult result = _bindings.load_ml_model(data);
 
     if (result.exception.toDartString().isNotEmpty) {
@@ -85,41 +85,41 @@ class PytorchFfi {
     // );
   }
 
-  @pragma('vm:entry-point')
-  static List<double> _imageModelInference(dynamic values) {
-    int modelIndex = values[0];
-    Uint8List imageAsBytes = values[1];
-    int imageHeight = values[2];
-    int imageWidth = values[3];
-    List<double> mean = values[4];
-    List<double> std = values[5];
-    bool objectDetection = values[6];
-    int outputLength = values[7];
-    Image? img = decodeImage(imageAsBytes);
-    if (img == null) {
-      throw Exception("Failed to decode image");
-    }
-    Image scaledImageBytes =
-        copyResize(img, width: imageWidth, height: imageHeight);
-
-    Pointer<UnsignedChar> dataPointer = convertUint8ListToPointerChar(
-        ImageUtils.imageToUint8List(scaledImageBytes, mean, std));
-    Pointer<Float> output = malloc<Float>(outputLength + 1);
-    OutputData outputData = _bindings.image_model_inference(modelIndex,
-        dataPointer, imageWidth, imageHeight, objectDetection ? 1 : 0, output);
-    if (outputData.exception.toDartString().isNotEmpty) {
-      throw Exception(outputData.exception.toDartString());
-    }
-    if (outputLength != outputData.length) {
-      throw Exception(
-          "output length does not match model length, please check model type and number of classes expected ${outputLength}, got ${outputData.length}");
-    }
-
-    //to list is used to make a copy of the values
-    final List<double> prediction =
-        (output.asTypedList(outputData.length)).toList();
-    calloc.free(output);
-    calloc.free(dataPointer);
-    return prediction;
+@pragma('vm:entry-point')
+static List<double> _imageModelInference(dynamic values) {
+  int modelIndex = values[0];
+  Uint8List imageAsBytes = values[1];
+  int imageHeight = values[2];
+  int imageWidth = values[3];
+  List<double> mean = values[4];
+  List<double> std = values[5];
+  bool objectDetection = values[6];
+  int outputLength = values[7];
+  Image? img = decodeImage(imageAsBytes);
+  if (img == null) {
+    throw Exception("Failed to decode image");
   }
+  Image scaledImageBytes =
+      copyResize(img, width: imageWidth, height: imageHeight);
+
+  Pointer<UnsignedChar> dataPointer = convertUint8ListToPointerChar(
+      ImageUtils.imageToUint8List(scaledImageBytes, mean, std));
+  Pointer<Float> output = calloc<Float>(outputLength + 1);
+  OutputData outputData = _bindings.image_model_inference(modelIndex,
+      dataPointer, imageWidth, imageHeight, objectDetection ? 1 : 0, output);
+  if (outputData.exception.toDartString().isNotEmpty) {
+    throw Exception(outputData.exception.toDartString());
+  }
+  if (outputLength != outputData.length) {
+    throw Exception(
+        "output length does not match model length, please check model type and number of classes expected ${outputLength}, got ${outputData.length}");
+  }
+  //to list is used to make a copy of the values
+  final List<double> prediction =
+      (output.asTypedList(outputData.length)).toList();
+  calloc.free(output);
+  calloc.free(dataPointer);
+  return prediction;
+}
+
 }

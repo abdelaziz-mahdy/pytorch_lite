@@ -80,89 +80,79 @@ class ImageUtils {
 
   /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format
   static Image? convertCameraImage(CameraImage cameraImage) {
-    DateTime startTime = DateTime.now(); // Record the start time
-
-    Image? image;
     if (cameraImage.format.group == ImageFormatGroup.yuv420) {
-      image = convertYUV420ToImage(cameraImage);
+      return convertYUV420ToImage(cameraImage);
     } else if (cameraImage.format.group == ImageFormatGroup.bgra8888) {
-      image = convertBGRA8888ToImage(cameraImage);
+      return convertBGRA8888ToImage(cameraImage);
     } else {
       return null;
     }
-
-    if (Platform.isAndroid) {
-      image = copyRotate(image, angle: 90);
-    } else {
-      image = copyRotate(image, angle: 270);
-    }
-
-    DateTime endTime = DateTime.now(); // Record the end time
-    int executionTime = endTime
-        .difference(startTime)
-        .inMilliseconds; // Calculate the execution time in milliseconds
-
-    print("convertCameraImage: Execution time: $executionTime milliseconds");
-
-    return image;
   }
 
-  /// Converts a [CameraImage] in BGRA888 format to [Image] in RGB format
-  static Image convertBGRA8888ToImage(CameraImage cameraImage) {
-    Image img = Image.fromBytes(
-      width: cameraImage.planes[0].width!,
-      height: cameraImage.planes[0].height!,
-      bytes: cameraImage.planes[0].bytes.buffer,
+  static Image convertBGRA8888ToImage(CameraImage image) {
+    return Image.fromBytes(
+      width: image.width,
+      height: image.height,
+      bytes: image.planes[0].bytes.buffer,
       order: ChannelOrder.bgra,
-      // format: Format.bgra
     );
+  }
+
+  static Image convertNV21ToImage(CameraImage image) {
+    return Image.fromBytes(
+      width: image.width,
+      height: image.height,
+      bytes: image.planes.first.bytes.buffer,
+      order: ChannelOrder.bgra,
+    );
+  }
+
+
+  static Image convertYUV420ToImage(CameraImage image) {
+    final uvRowStride = image.planes[1].bytesPerRow;
+    final uvPixelStride = image.planes[1].bytesPerPixel ?? 0;
+    final img = Image(width: image.width, height: image.height);
+    for (final p in img) {
+      final x = p.x;
+      final y = p.y;
+      final uvIndex = uvPixelStride * (x / 2).floor() + uvRowStride * (y / 2).floor();
+      final index = y * uvRowStride +
+          x; // Use the row stride instead of the image width as some devices pad the image data, and in those cases the image width != bytesPerRow. Using width will give you a distored image.
+      final yp = image.planes[0].bytes[index];
+      final up = image.planes[1].bytes[uvIndex];
+      final vp = image.planes[2].bytes[uvIndex];
+      p.r = (yp + vp * 1436 / 1024 - 179).round().clamp(0, 255).toInt();
+      p.g = (yp - up * 46549 / 131072 + 44 - vp * 93604 / 131072 + 91).round().clamp(0, 255).toInt();
+      p.b = (yp + up * 1814 / 1024 - 227).round().clamp(0, 255).toInt();
+    }
+
+
     return img;
   }
 
-  /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format
-  static Image convertYUV420ToImage(CameraImage cameraImage) {
-    final int width = cameraImage.width;
-    final int height = cameraImage.height;
 
-    final int uvRowStride = cameraImage.planes[1].bytesPerRow;
-    final int? uvPixelStride = cameraImage.planes[1].bytesPerPixel;
+static Image? processCameraImage(CameraImage cameraImage) {
+  Image? image = ImageUtils.convertCameraImage(cameraImage);
 
-    Image image = Image(width: width, height: height);
-    Uint8List bytes = image.toUint8List();
-    for (int w = 0; w < width; w++) {
-      for (int h = 0; h < height; h++) {
-        final int uvIndex =
-            uvPixelStride! * (w / 2).floor() + uvRowStride * (h / 2).floor();
-        final int index = h * width + w;
-
-        final y = cameraImage.planes[0].bytes[index];
-        final u = cameraImage.planes[1].bytes[uvIndex];
-        final v = cameraImage.planes[2].bytes[uvIndex];
-
-        if (image.data != null) {
-          bytes[index] = ImageUtils.yuv2rgb(y, u, v);
-        }
-      }
-    }
-    image = Image.fromBytes(width: width, height: height, bytes: bytes.buffer);
-    return image;
+  if (Platform.isIOS) {
+    // ios, default camera image is portrait view
+    // rotate 270 to the view that top is on the left, bottom is on the right
+    // image ^4.0.17 error here
+    image = copyRotate(image!, angle: 270);
+  }
+    if (Platform.isAndroid) {
+    // ios, default camera image is portrait view
+    // rotate 270 to the view that top is on the left, bottom is on the right
+    // image ^4.0.17 error here
+    image = copyRotate(image!, angle: 90);
   }
 
-  /// Convert a single YUV pixel to RGB
-  static int yuv2rgb(int y, int u, int v) {
-    // Convert yuv pixel to rgb
-    int r = (y + v * 1436 / 1024 - 179).round();
-    int g = (y - u * 46549 / 131072 + 44 - v * 93604 / 131072 + 91).round();
-    int b = (y + u * 1814 / 1024 - 227).round();
-
-    // Clipping RGB values to be inside boundaries [ 0 , 255 ]
-    r = r.clamp(0, 255);
-    g = g.clamp(0, 255);
-    b = b.clamp(0, 255);
-
-    return 0xff000000 |
-        ((b << 16) & 0xff0000) |
-        ((g << 8) & 0xff00) |
-        (r & 0xff);
-  }
+  return image;
+  // processImage(inputImage);
 }
+
+}
+
+
+
+

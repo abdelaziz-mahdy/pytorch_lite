@@ -47,7 +47,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     String pathObjectDetectionModel = "assets/models/yolov5s.torchscript";
     try {
       _imageModel = await PytorchLite.loadClassificationModel(
-          pathImageModel, 224, 224,1000,
+          pathImageModel, 224, 224, 1000,
           labelPath: "assets/labels/label_classification_imageNet.txt");
       //_customModel = await PytorchLite.loadCustomModel(pathCustomModel);
       _objectModel = await PytorchLite.loadObjectDetectionModel(
@@ -79,7 +79,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
 
     // cameras[0] for rear-camera
     cameraController =
-        CameraController(cameras[0], ResolutionPreset.high, enableAudio: false);
+        CameraController(cameras[0], ResolutionPreset.high, enableAudio: false,imageFormatGroup: ImageFormatGroup.bgra8888);
 
     cameraController?.initialize().then((_) async {
       // Stream of image passed to [onLatestImageAvailable] callback
@@ -116,41 +116,35 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     //     child: CameraPreview(cameraController));
   }
 
-  runClassification(CameraImage cameraImage) async {
+  runClassification(Uint8List jpgBytes) async {
     if (_imageModel != null) {
-      String imageClassifaction = await _imageModel!.getImagePrediction(
-        encodePng(ImageUtils.convertCameraImage(cameraImage)!),
-      );
+      String imageClassification =
+          await _imageModel!.getImagePrediction(jpgBytes);
 
-      print("imageClassifaction $imageClassifaction");
-      widget.resultsCallbackClassification(imageClassifaction);
+      print("imageClassification $imageClassification");
+      widget.resultsCallbackClassification(imageClassification);
     }
   }
 
   Future<Uint8List?> convertCameraImageToJpg(CameraImage cameraImage) async {
     Command command = Command()
-      ..image(ImageUtils.convertCameraImage(cameraImage)!)
-      ..encodeJpg();
+      ..image(ImageUtils.processCameraImage(cameraImage)!)..encodeJpg();
 
     Uint8List? bytes = await command.getBytes();
     return bytes;
   }
 
-  Future<void> runObjectDetection(CameraImage cameraImage) async {
+  Future<void> runObjectDetection(Uint8List jpgBytes) async {
     if (_objectModel != null) {
-      Uint8List? jpgBytes = await convertCameraImageToJpg(cameraImage);
+      List<ResultObjectDetection?> objDetect =
+          await _objectModel!.getImagePrediction(
+        jpgBytes,
+        minimumScore: 0.3,
+        iOUThreshold: 0.3,
+      );
 
-      if (jpgBytes != null) {
-        List<ResultObjectDetection?> objDetect =
-            await _objectModel!.getImagePrediction(
-          jpgBytes,
-          minimumScore: 0.3,
-          iOUThreshold: 0.3,
-        );
-
-        print("data outputted $objDetect");
-        widget.resultsCallback(objDetect);
-      }
+      print("data outputted $objDetect");
+      widget.resultsCallback(objDetect);
     }
   }
 
@@ -160,10 +154,11 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       return;
     }
     predicting = true;
+    Uint8List jpgBytes =(await convertCameraImageToJpg(cameraImage))!;
 
     var futures = <Future>[];
-    // futures.add(runClassification(cameraImage));
-    futures.add(runObjectDetection(cameraImage));
+    futures.add(runClassification(jpgBytes));
+    futures.add(runObjectDetection(jpgBytes));
     await Future.wait(futures);
 
     predicting = false;

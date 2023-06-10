@@ -1,3 +1,7 @@
+## 3.0.0-alpha2
+* Better memory usage and freeing
+* Fixed yolov8 infinite width boxes
+* Fixed camera example usage
 ## 3.0.0-alpha
 * Converted to work on ffi (for improved performance, and ios support)
 * ios support
