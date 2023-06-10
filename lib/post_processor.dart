@@ -29,8 +29,7 @@ class PostProcessorObjectDetection {
     } else {
       outputRow = 8400;
       outputColumn = (numberOfClasses + 4);
-            modelOutputLength = outputRow * outputColumn;
-
+      modelOutputLength = outputRow * outputColumn;
     }
   }
 
@@ -115,12 +114,13 @@ class PostProcessorObjectDetection {
 
       if (max > scoreThreshold) {
         PyTorchRect rect = PyTorchRect(
-            left: left / imageWidth,
-            top: top / imageHeight,
-            right: right / imageWidth,
-            bottom: bottom / imageHeight,
-            width: w,
-            height: h);
+          left: left / imageWidth,
+          top: top / imageHeight,
+          right: right / imageWidth,
+          bottom: bottom / imageHeight,
+          width: w / imageWidth,
+          height: h / imageHeight,
+        );
         ResultObjectDetection result =
             ResultObjectDetection(classIndex: cls, score: max, rect: rect);
 
