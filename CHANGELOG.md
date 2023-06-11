@@ -1,3 +1,6 @@
+## 3.0.0-alpha3
+* Added ImageUtilsIsolate to process camera images in isolate instead of ui thread
+* Updated Camera example
 ## 3.0.0-alpha2
 * Better memory usage and freeing
 * Fixed yolov8 infinite width boxes

@@ -25,11 +25,11 @@ class PytorchFfi {
     print("PytorchFfi initialization");
     PytorchFfi.initiated = true;
     PytorchFfi.loadModelManager =
-        IsolateManager.create(_loadModel, concurrent: 3, isDebug: true);
+        IsolateManager.create(_loadModel, concurrent: 2, isDebug: false);
     PytorchFfi.imageModelInferenceManager = IsolateManager.create(
         _imageModelInference,
-        concurrent: 3,
-        isDebug: true);
+        concurrent: 2,
+        isDebug: false);
   }
 
   @pragma('vm:entry-point')

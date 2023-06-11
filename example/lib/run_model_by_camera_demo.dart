@@ -105,6 +105,9 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
   }
 
   void resultsCallback(List<ResultObjectDetection?> results) {
+    if (!mounted) {
+      return;
+    }
     setState(() {
       this.results = results;
       for (var element in results) {
@@ -123,6 +126,9 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
   }
 
   void resultsCallbackClassification(String classification) {
+    if (!mounted) {
+      return;
+    }
     setState(() {
       this.classification = classification;
     });

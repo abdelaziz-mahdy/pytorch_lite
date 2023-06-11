@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart';
+import 'package:pytorch_lite/image_utils_isolate.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
 import 'camera_view_singleton.dart';
@@ -78,8 +81,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     cameras = await availableCameras();
 
     // cameras[0] for rear-camera
-    cameraController =
-        CameraController(cameras[0], ResolutionPreset.high, enableAudio: false,imageFormatGroup: ImageFormatGroup.bgra8888);
+    cameraController = CameraController(cameras[0], ResolutionPreset.medium,
+        enableAudio: false);
 
     cameraController?.initialize().then((_) async {
       // Stream of image passed to [onLatestImageAvailable] callback
@@ -126,14 +129,6 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     }
   }
 
-  Future<Uint8List?> convertCameraImageToJpg(CameraImage cameraImage) async {
-    Command command = Command()
-      ..image(ImageUtils.processCameraImage(cameraImage)!)..encodeJpg();
-
-    Uint8List? bytes = await command.getBytes();
-    return bytes;
-  }
-
   Future<void> runObjectDetection(Uint8List jpgBytes) async {
     if (_objectModel != null) {
       List<ResultObjectDetection?> objDetect =
@@ -153,15 +148,23 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     if (predicting) {
       return;
     }
-    predicting = true;
-    Uint8List jpgBytes =(await convertCameraImageToJpg(cameraImage))!;
+    setState(() {
+      predicting = true;
+    });
+    log("will start prediction");
+    Uint8List jpgBytes =
+        (await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage))!;
+    log("Converted camera image");
 
     var futures = <Future>[];
     futures.add(runClassification(jpgBytes));
     futures.add(runObjectDetection(jpgBytes));
     await Future.wait(futures);
+    log("done prediction camera image");
 
-    predicting = false;
+    setState(() {
+      predicting = false;
+    });
   }
 
   @override
