@@ -58,6 +58,7 @@ class ImageUtilsIsolate {
   static Future<Uint8List?> convertCameraImageToBytes(
       CameraImage cameraImage) async {
     ImageUtilsIsolate.init();
+
     return await ImageUtilsIsolate.converterFromCameraToBytesIsolate.compute([
       cameraImage.format.group,
       cameraImage.planes[1].bytesPerRow,

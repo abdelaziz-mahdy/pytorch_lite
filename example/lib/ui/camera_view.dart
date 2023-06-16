@@ -37,6 +37,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   ClassificationModel? _imageModel;
 
   bool classification = false;
+
+  String errorMessage = "";
   @override
   void initState() {
     super.initState();
@@ -47,7 +49,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   Future loadModel() async {
     String pathImageModel = "assets/models/model_classification.pt";
     //String pathCustomModel = "assets/models/custom_model.ptl";
-    String pathObjectDetectionModel = "assets/models/yolov5s.torchscript";
+    String pathObjectDetectionModel = "assets/models/yolov8s.torchscript";
     try {
       _imageModel = await PytorchLite.loadClassificationModel(
           pathImageModel, 224, 224, 1000,
@@ -55,7 +57,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       //_customModel = await PytorchLite.loadCustomModel(pathCustomModel);
       _objectModel = await PytorchLite.loadObjectDetectionModel(
           pathObjectDetectionModel, 80, 640, 640,
-          labelPath: "assets/labels/labels_objectDetection_Coco.txt");
+          labelPath: "assets/labels/labels_objectDetection_Coco.txt",
+          objectDetectionModelType: ObjectDetectionModelType.yolov8);
     } catch (e) {
       if (e is PlatformException) {
         print("only supported for android, Error is $e");
@@ -70,10 +73,42 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     await loadModel();
 
     // Camera initialization
-    initializeCamera();
-
+    try {
+      initializeCamera();
+    } on CameraException catch (e) {
+      switch (e.code) {
+        case 'CameraAccessDenied':
+          errorMessage = ('You have denied camera access.');
+          break;
+        case 'CameraAccessDeniedWithoutPrompt':
+          // iOS only
+          errorMessage = ('Please go to Settings app to enable camera access.');
+          break;
+        case 'CameraAccessRestricted':
+          // iOS only
+          errorMessage = ('Camera access is restricted.');
+          break;
+        case 'AudioAccessDenied':
+          errorMessage = ('You have denied audio access.');
+          break;
+        case 'AudioAccessDeniedWithoutPrompt':
+          // iOS only
+          errorMessage = ('Please go to Settings app to enable audio access.');
+          break;
+        case 'AudioAccessRestricted':
+          // iOS only
+          errorMessage = ('Audio access is restricted.');
+          break;
+        default:
+          errorMessage = (e.toString());
+          break;
+      }
+      setState(() {});
+    }
     // Initially predicting = false
-    // predicting = false;
+    setState(() {
+      predicting = false;
+    });
   }
 
   /// Initializes the camera by setting [cameraController]
@@ -131,15 +166,19 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
 
   Future<void> runObjectDetection(Uint8List jpgBytes) async {
     if (_objectModel != null) {
-      List<ResultObjectDetection?> objDetect =
-          await _objectModel!.getImagePrediction(
+      // List<ResultObjectDetection?> objDetect =
+      //     await _objectModel!.getImagePrediction(
+      //   jpgBytes,
+      //   minimumScore: 0.3,
+      //   iOUThreshold: 0.3,
+      // );
+      await _objectModel!.getImagePredictionList(
         jpgBytes,
         minimumScore: 0.3,
         iOUThreshold: 0.3,
       );
-
-      print("data outputted $objDetect");
-      widget.resultsCallback(objDetect);
+      // print("data outputted $objDetect");
+      // widget.resultsCallback(objDetect);
     }
   }
 
@@ -151,6 +190,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     setState(() {
       predicting = true;
     });
+
     log("will start prediction");
     Uint8List jpgBytes =
         (await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage))!;
@@ -161,7 +201,6 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     futures.add(runObjectDetection(jpgBytes));
     await Future.wait(futures);
     log("done prediction camera image");
-
     setState(() {
       predicting = false;
     });
