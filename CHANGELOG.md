@@ -1,3 +1,5 @@
+## 3.0.0-alpha4
+* Improved isolates to stop ui frame drops
 ## 3.0.0-alpha3
 * Added ImageUtilsIsolate to process camera images in isolate instead of ui thread
 * Updated Camera example

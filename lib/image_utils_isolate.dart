@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
@@ -23,7 +24,7 @@ class ImageUtilsIsolate {
   }
 
   /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format and encodes to jpg and return bytes
-  static Uint8List? _convertCameraImageToBytes(dynamic values) {
+  static TransferableTypedData? _convertCameraImageToBytes(dynamic values) {
     ImageFormatGroup imageFormatGroup = values[0];
     int uvRowStride = values[1];
     int uvPixelStride = values[2];
@@ -49,7 +50,7 @@ class ImageUtilsIsolate {
       if (Platform.isAndroid) {
         image = copyRotate(image, angle: 90);
       }
-      return encodeJpg(image);
+      return TransferableTypedData.fromList([encodeJpg(image)]);
     }
     return null;
   }
@@ -59,19 +60,19 @@ class ImageUtilsIsolate {
       CameraImage cameraImage) async {
     ImageUtilsIsolate.init();
 
-    return await ImageUtilsIsolate.converterFromCameraToBytesIsolate.compute([
+    return (await ImageUtilsIsolate.converterFromCameraToBytesIsolate.compute([
       cameraImage.format.group,
       cameraImage.planes[1].bytesPerRow,
       cameraImage.planes[1].bytesPerPixel ?? 0,
       cameraImage.planes.map((e) => e.bytes).toList(),
       cameraImage.width,
       cameraImage.height
-    ]);
+    ]) as TransferableTypedData?)?.materialize().asUint8List();
   }
 
   /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format
   static Future<Image?> convertCameraImage(CameraImage cameraImage) async {
-    Uint8List? bytes = await convertCameraImageToBytes(cameraImage);
+    Uint8List? bytes = (await convertCameraImageToBytes(cameraImage));
     if (bytes != null) {
       return decodeJpg(bytes);
     } else {

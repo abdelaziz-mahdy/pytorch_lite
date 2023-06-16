@@ -1,4 +1,6 @@
 import 'dart:ffi';
+import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
@@ -62,7 +64,7 @@ class PytorchFfi {
       int outputLength) async {
     PytorchFfi.init();
 
-    return await imageModelInferenceManager.compute([
+    return (await imageModelInferenceManager.compute([
       modelIndex,
       imageAsBytes,
       imageHeight,
@@ -71,7 +73,7 @@ class PytorchFfi {
       std,
       objectDetectionYolov5,
       outputLength
-    ]);
+    ])as TransferableTypedData).materialize().asFloat32List().toList();
     // return _imageModelInference(
     //   [
     //   modelIndex,
@@ -86,7 +88,7 @@ class PytorchFfi {
   }
 
 @pragma('vm:entry-point')
-static List<double> _imageModelInference(dynamic values) {
+static TransferableTypedData _imageModelInference(dynamic values) {
   int modelIndex = values[0];
   Uint8List imageAsBytes = values[1];
   int imageHeight = values[2];
@@ -119,7 +121,7 @@ static List<double> _imageModelInference(dynamic values) {
       (output.asTypedList(outputData.length)).toList();
   calloc.free(output);
   calloc.free(dataPointer);
-  return prediction;
+  return TransferableTypedData.fromList([Float32List.fromList(prediction)]);
 }
 
 }
