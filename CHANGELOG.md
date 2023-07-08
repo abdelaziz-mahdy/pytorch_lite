@@ -1,16 +1,11 @@
-## 3.0.0-alpha4
+## 3.0.0
+* Converted to work on ffi (for improved performance, and ios support)
 * Improved isolates to stop ui frame drops
-## 3.0.0-alpha3
 * Added ImageUtilsIsolate to process camera images in isolate instead of ui thread
 * Updated Camera example
-## 3.0.0-alpha2
 * Better memory usage and freeing
-* Fixed yolov8 infinite width boxes
 * Fixed camera example usage
-## 3.0.0-alpha
-* Converted to work on ffi (for improved performance, and ios support)
-* ios support
-* camera not working as expected yet
+
 
 ## 2.0.5
 * fixed dart analyses problems (renamed some variables to follow convention)
