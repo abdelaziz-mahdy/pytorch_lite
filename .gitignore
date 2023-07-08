@@ -28,3 +28,4 @@
 .packages
 build/
 android/.cxx/
+android/.cxx/*

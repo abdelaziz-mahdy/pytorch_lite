@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pytorch_lite/pigeon.dart';
+import 'package:pytorch_lite/pytorch_lite.dart';
 import 'package:pytorch_lite_example/ui/box_widget.dart';
 
 import 'ui/camera_view.dart';
@@ -105,6 +105,9 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
   }
 
   void resultsCallback(List<ResultObjectDetection?> results) {
+    if (!mounted) {
+      return;
+    }
     setState(() {
       this.results = results;
       for (var element in results) {
@@ -123,6 +126,9 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
   }
 
   void resultsCallbackClassification(String classification) {
+    if (!mounted) {
+      return;
+    }
     setState(() {
       this.classification = classification;
     });

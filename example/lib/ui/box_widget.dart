@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pytorch_lite/pigeon.dart';
+import 'package:pytorch_lite/pytorch_lite.dart';
 import 'package:pytorch_lite_example/ui/camera_view_singleton.dart';
 
 /// Individual bounding box
@@ -36,6 +36,8 @@ class BoxWidget extends StatelessWidget {
     } else {
       usedColor = boxesColor;
     }
+
+    print(result.rect.width.toDouble() * factorX);
     return Positioned(
       left: result.rect.left * factorX,
       top: result.rect.top * factorY - 20,
@@ -56,9 +58,7 @@ class BoxWidget extends StatelessWidget {
             alignment: Alignment.centerRight,
             color: usedColor,
             child: Text(
-              "${result.className ?? result.classIndex.toString()}_${showPercentage
-                      ? "${(result.score * 100).toStringAsFixed(2)}%"
-                      : ""}",
+              "${result.className ?? result.classIndex.toString()}_${showPercentage ? "${(result.score * 100).toStringAsFixed(2)}%" : ""}",
             ),
           ),
           Container(
