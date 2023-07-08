@@ -1,10 +1,12 @@
-## 3.0.0
+## 3.0.0+1
 * Converted to work on ffi (for improved performance, and ios support)
 * Improved isolates to stop ui frame drops
 * Added ImageUtilsIsolate to process camera images in isolate instead of ui thread
 * Updated Camera example
 * Better memory usage and freeing
 * Fixed camera example usage
+* Breaking changes
+    * getImagePredictionFromBytesList Removed, (check camera example for new usage)
 
 
 ## 2.0.5
