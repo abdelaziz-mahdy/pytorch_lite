@@ -22,6 +22,9 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
+      configurations {
+    extractForNativeBuild
+  }
     compileSdkVersion 31
 
     compileOptions {
@@ -32,13 +35,54 @@ android {
     defaultConfig {
         minSdkVersion 21
     }
+    // // Add this block at the end of the file
+    // project.afterEvaluate {
+    //     preBuild.doLast {
+    //         // Execute your custom task here
+    //         exec {
+    //             commandLine 'cmake', '--build', '.'
+    //         }
+    //     }
+    // }
+    externalNativeBuild {
+
+        // Encapsulates your CMake build configurations.
+        cmake {
+
+            // Provides a relative path to your CMake build script.
+            path "CMakeLists.txt"
+        }
+    }
 }
 dependencies{
+    // implementation fileTree(dir: 'libs', include: ['*.jar'])
+
     //  implementation 'org.pytorch:pytorch_android_lite:1.12'
     // implementation 'org.pytorch:pytorch_android_torchvision_lite:1.12'
-    implementation 'org.pytorch:pytorch_android:1.12'
-    implementation 'org.pytorch:pytorch_android_torchvision:1.12'
-    implementation 'com.facebook.soloader:nativeloader:0.10.5'
+    // implementation 'org.pytorch:pytorch_android:1.12'
+    // implementation 'org.pytorch:pytorch_android_torchvision:1.12'
+    // implementation 'com.facebook.soloader:nativeloader:0.10.5'
 
+    // extractForNativeBuild 'org.pytorch:pytorch_android:1.12'
+    // extractForNativeBuild 'org.pytorch:pytorch_android_torchvision:1.12'
+    
+    }
+// task extractAARForNativeBuild {
+//   doLast {
+//     configurations.extractForNativeBuild.files.each {
+//       def file = it.absoluteFile
+//       copy {
+//         from zipTree(file)
+//         into "$buildDir/$file.name"
+//         include "headers/**"
+//         include "jni/**"
+//       }
+//     }
+//   }
+// }
 
-}
+// tasks.whenTaskAdded { task ->
+//   if (task.name.contains('externalNativeBuild')) {
+//     task.dependsOn(extractAARForNativeBuild)
+//   }
+// }

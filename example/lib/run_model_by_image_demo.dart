@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:pytorch_lite/pigeon.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
 class RunModelByImageDemo extends StatefulWidget {
@@ -40,7 +39,7 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
     String pathObjectDetectionModelYolov8 = "assets/models/yolov8s.torchscript";
     try {
       _imageModel = await PytorchLite.loadClassificationModel(
-          pathImageModel, 224, 224,
+          pathImageModel, 224, 224,1000,
           labelPath: "assets/labels/label_classification_imageNet.txt");
       //_customModel = await PytorchLite.loadCustomModel(pathCustomModel);
       _objectModel = await PytorchLite.loadObjectDetectionModel(
@@ -88,9 +87,9 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
 
   Future runObjectDetection() async {
     //pick a random image
-    Stopwatch stopwatch = Stopwatch()..start();
 
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    Stopwatch stopwatch = Stopwatch()..start();
     objDetect = await _objectModel.getImagePrediction(
         await File(image!.path).readAsBytes(),
         minimumScore: 0.1,
@@ -141,7 +140,7 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
         },
       });
     }
-    print('object executed in ${stopwatch.elapsed.inMilliseconds}');
+    print('object executed in ${stopwatch.elapsed.inMilliseconds} Milliseconds');
     setState(() {
       //this.objDetect = objDetect;
       _image = File(image.path);
@@ -174,7 +173,8 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
     for (int i = 0; i < predictionListProbabilities!.length; i++) {
       if (predictionListProbabilities[i]! > maxScoreProbability) {
         maxScoreProbability = predictionListProbabilities[i]!;
-        sumOfProbabilities = sumOfProbabilities + predictionListProbabilities[i]!;
+        sumOfProbabilities =
+            sumOfProbabilities + predictionListProbabilities[i]!;
         index = i;
       }
     }

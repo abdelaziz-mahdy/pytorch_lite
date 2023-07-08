@@ -1,8 +1,10 @@
+import 'dart:developer';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pytorch_lite/pigeon.dart';
+import 'package:image/image.dart';
+import 'package:pytorch_lite/image_utils_isolate.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
 import 'camera_view_singleton.dart';
@@ -14,7 +16,9 @@ class CameraView extends StatefulWidget {
   final Function(String classification) resultsCallbackClassification;
 
   /// Constructor
-  const CameraView(this.resultsCallback, this.resultsCallbackClassification, {Key? key}) : super(key: key);
+  const CameraView(this.resultsCallback, this.resultsCallbackClassification,
+      {Key? key})
+      : super(key: key);
   @override
   _CameraViewState createState() => _CameraViewState();
 }
@@ -33,6 +37,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   ClassificationModel? _imageModel;
 
   bool classification = false;
+
+  String errorMessage = "";
   @override
   void initState() {
     super.initState();
@@ -43,15 +49,16 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   Future loadModel() async {
     String pathImageModel = "assets/models/model_classification.pt";
     //String pathCustomModel = "assets/models/custom_model.ptl";
-    String pathObjectDetectionModel = "assets/models/yolov5s.torchscript";
+    String pathObjectDetectionModel = "assets/models/yolov8s.torchscript";
     try {
       _imageModel = await PytorchLite.loadClassificationModel(
-          pathImageModel, 224, 224,
+          pathImageModel, 224, 224, 1000,
           labelPath: "assets/labels/label_classification_imageNet.txt");
       //_customModel = await PytorchLite.loadCustomModel(pathCustomModel);
       _objectModel = await PytorchLite.loadObjectDetectionModel(
           pathObjectDetectionModel, 80, 640, 640,
-          labelPath: "assets/labels/labels_objectDetection_Coco.txt");
+          labelPath: "assets/labels/labels_objectDetection_Coco.txt",
+          objectDetectionModelType: ObjectDetectionModelType.yolov8);
     } catch (e) {
       if (e is PlatformException) {
         print("only supported for android, Error is $e");
@@ -66,10 +73,42 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     await loadModel();
 
     // Camera initialization
-    initializeCamera();
-
+    try {
+      initializeCamera();
+    } on CameraException catch (e) {
+      switch (e.code) {
+        case 'CameraAccessDenied':
+          errorMessage = ('You have denied camera access.');
+          break;
+        case 'CameraAccessDeniedWithoutPrompt':
+          // iOS only
+          errorMessage = ('Please go to Settings app to enable camera access.');
+          break;
+        case 'CameraAccessRestricted':
+          // iOS only
+          errorMessage = ('Camera access is restricted.');
+          break;
+        case 'AudioAccessDenied':
+          errorMessage = ('You have denied audio access.');
+          break;
+        case 'AudioAccessDeniedWithoutPrompt':
+          // iOS only
+          errorMessage = ('Please go to Settings app to enable audio access.');
+          break;
+        case 'AudioAccessRestricted':
+          // iOS only
+          errorMessage = ('Audio access is restricted.');
+          break;
+        default:
+          errorMessage = (e.toString());
+          break;
+      }
+      setState(() {});
+    }
     // Initially predicting = false
-    // predicting = false;
+    setState(() {
+      predicting = false;
+    });
   }
 
   /// Initializes the camera by setting [cameraController]
@@ -77,8 +116,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     cameras = await availableCameras();
 
     // cameras[0] for rear-camera
-    cameraController =
-        CameraController(cameras[0], ResolutionPreset.high, enableAudio: false);
+    cameraController = CameraController(cameras[0], ResolutionPreset.medium,
+        enableAudio: false);
 
     cameraController?.initialize().then((_) async {
       // Stream of image passed to [onLatestImageAvailable] callback
@@ -115,32 +154,31 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     //     child: CameraPreview(cameraController));
   }
 
-  runClassification(CameraImage cameraImage) async {
+  runClassification(Uint8List jpgBytes) async {
     if (_imageModel != null) {
-      String imageClassifaction =
-          await _imageModel!.getImagePredictionFromBytesList(
-        cameraImage.planes.map((e) => e.bytes).toList(),
-        cameraImage.width,
-        cameraImage.height,
-      );
+      String imageClassification =
+          await _imageModel!.getImagePrediction(jpgBytes);
 
-      print("imageClassifaction $imageClassifaction");
-      widget.resultsCallbackClassification(imageClassifaction);
+      print("imageClassification $imageClassification");
+      widget.resultsCallbackClassification(imageClassification);
     }
   }
 
-  runObjectDetection(CameraImage cameraImage) async {
+  Future<void> runObjectDetection(Uint8List jpgBytes) async {
     if (_objectModel != null) {
-      List<ResultObjectDetection?> objDetect = await _objectModel!
-          .getImagePredictionFromBytesList(
-              cameraImage.planes.map((e) => e.bytes).toList(),
-              cameraImage.width,
-              cameraImage.height,
-              minimumScore: 0.3,
-              iOUThreshold: 0.3);
-
-      print("data outputted $objDetect");
-      widget.resultsCallback(objDetect);
+      // List<ResultObjectDetection?> objDetect =
+      //     await _objectModel!.getImagePrediction(
+      //   jpgBytes,
+      //   minimumScore: 0.3,
+      //   iOUThreshold: 0.3,
+      // );
+      await _objectModel!.getImagePredictionList(
+        jpgBytes,
+        minimumScore: 0.3,
+        iOUThreshold: 0.3,
+      );
+      // print("data outputted $objDetect");
+      // widget.resultsCallback(objDetect);
     }
   }
 
@@ -149,14 +187,23 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     if (predicting) {
       return;
     }
-    predicting = true;
+    setState(() {
+      predicting = true;
+    });
+
+    log("will start prediction");
+    Uint8List jpgBytes =
+        (await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage))!;
+    log("Converted camera image");
 
     var futures = <Future>[];
-    futures.add(runClassification(cameraImage));
-    futures.add(runObjectDetection(cameraImage));
+    futures.add(runClassification(jpgBytes));
+    futures.add(runObjectDetection(jpgBytes));
     await Future.wait(futures);
-
-    predicting = false;
+    log("done prediction camera image");
+    setState(() {
+      predicting = false;
+    });
   }
 
   @override
