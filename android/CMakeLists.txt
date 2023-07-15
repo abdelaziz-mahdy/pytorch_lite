@@ -77,7 +77,7 @@ if(NOT EXISTS "${LIBTORCH_SRC}")
   message(STATUS "Extracting ${LIBTORCH}...")
   file(MAKE_DIRECTORY "${LIBTORCH_SRC}")
   execute_process(
-    COMMAND unzip -o "${LIBTORCH_ARCHIVE}" -d "${LIBTORCH_SRC}"
+    COMMAND tar -xvf "${LIBTORCH_ARCHIVE}" -C "${LIBTORCH_SRC}"
     RESULT_VARIABLE result
   )
   if(result)
