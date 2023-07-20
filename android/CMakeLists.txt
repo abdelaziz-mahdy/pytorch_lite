@@ -90,7 +90,6 @@ message(STATUS "Downloaded ${LIBTORCH}...")
 # # Attach MD5 hash of downloaded file (for getting the MD5 hash) 
 # message(FATAL_ERROR "MD5 hash of downloaded file: ${md5_hash}")
 
-if(NOT EXISTS "${LIBTORCH_SRC}")
   message(STATUS "Extracting ${LIBTORCH}...")
 
   if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
@@ -115,7 +114,6 @@ if(NOT EXISTS "${LIBTORCH_SRC}")
     message(FATAL_ERROR "Extraction of ${LIBTORCH} failed with error: ${error_output}\nOutput: ${output}")
   endif()
 
-endif()
 
 message(STATUS "Extracted ${LIBTORCH}...")
 
