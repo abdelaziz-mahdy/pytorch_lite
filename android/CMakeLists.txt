@@ -80,23 +80,28 @@ if(NOT EXISTS "${LIBTORCH_SRC}")
   message(STATUS "Extracting ${LIBTORCH}...")
 
   if(WIN32)
+    message(STATUS "Detected Windows OS, using PowerShell's Expand-Archive for extraction...")
     execute_process(
       COMMAND Powershell -Command "Expand-Archive -Force '${LIBTORCH_ARCHIVE}' '${LIBTORCH_SRC}'"
       RESULT_VARIABLE result
+      ERROR_VARIABLE error_output
     )
   else()
+    message(STATUS "Detected non-Windows OS, using unzip for extraction...")
     execute_process(
       COMMAND unzip -o "${LIBTORCH_ARCHIVE}" -d "${LIBTORCH_SRC}"
       RESULT_VARIABLE result
+      ERROR_VARIABLE error_output
     )
   endif()
 
   if(result)
-    message(FATAL_ERROR "Extraction of ${LIBTORCH} failed.")
+    message(FATAL_ERROR "Extraction of ${LIBTORCH} failed with error: ${error_output}")
   endif()
 
   message(STATUS "Extracted ${LIBTORCH}...")
 endif()
+
 
 
   set(LIBTORCH_BASE_DIR "${LIBTORCH_SRC}/libtorch-android")
