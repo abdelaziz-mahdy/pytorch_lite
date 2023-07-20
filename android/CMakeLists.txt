@@ -90,30 +90,32 @@ message(STATUS "Downloaded ${LIBTORCH}...")
 # # Attach MD5 hash of downloaded file (for getting the MD5 hash) 
 # message(FATAL_ERROR "MD5 hash of downloaded file: ${md5_hash}")
 
-message(STATUS "Extracting ${LIBTORCH}...")
+if(NOT EXISTS "${LIBTORCH_SRC}")
+  message(STATUS "Extracting ${LIBTORCH}...")
 
-if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-  message(STATUS "Detected Windows OS, using tar for extraction...")
-  execute_process(
-    COMMAND tar -xf "${LIBTORCH_ARCHIVE}" -C "${LIBTORCH_SRC}"
-    RESULT_VARIABLE result
-    OUTPUT_VARIABLE output
-    ERROR_VARIABLE error_output
-  )
-else()
-  message(STATUS "Detected non-Windows OS, using unzip for extraction...")
-  execute_process(
-    COMMAND unzip -o "${LIBTORCH_ARCHIVE}" -d "${LIBTORCH_SRC}"
-    RESULT_VARIABLE result
-    OUTPUT_VARIABLE output
-    ERROR_VARIABLE error_output
-  )
+  if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    message(STATUS "Detected Windows OS, using PowerShell's Expand-Archive for extraction...")
+    execute_process(
+      COMMAND Powershell -Command "Expand-Archive -Force '${LIBTORCH_ARCHIVE}' '${LIBTORCH_SRC}'"
+      RESULT_VARIABLE result
+      OUTPUT_VARIABLE output
+      ERROR_VARIABLE error_output
+    )
+  else()
+    message(STATUS "Detected non-Windows OS, using unzip for extraction...")
+    execute_process(
+      COMMAND unzip -o "${LIBTORCH_ARCHIVE}" -d "${LIBTORCH_SRC}"
+      RESULT_VARIABLE result
+      OUTPUT_VARIABLE output
+      ERROR_VARIABLE error_output
+    )
+  endif()
+
+  if(result)
+    message(FATAL_ERROR "Extraction of ${LIBTORCH} failed with error: ${error_output}\nOutput: ${output}")
+  endif()
+
 endif()
-
-if(result)
-  message(FATAL_ERROR "Extraction of ${LIBTORCH} failed with error: ${error_output}\nOutput: ${output}")
-endif()
-
 
 message(STATUS "Extracted ${LIBTORCH}...")
 
