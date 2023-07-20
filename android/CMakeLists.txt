@@ -59,18 +59,22 @@ set(LIBTORCH_URL "https://github.com/zezo357/pytorch_lite/releases/download/libs
 set(LIBTORCH_ARCHIVE "${CMAKE_BINARY_DIR}/${LIBTORCH}")
 set(LIBTORCH_SRC "${CMAKE_BINARY_DIR}/libtorch-android")
 
-# Download the libtorch-android archive if it doesn't exist.
 if(NOT EXISTS "${LIBTORCH_ARCHIVE}")
   message(STATUS "Downloading ${LIBTORCH}...")
-  execute_process(
-    COMMAND wget -O "${LIBTORCH_ARCHIVE}" "${LIBTORCH_URL}"
-    RESULT_VARIABLE result
-  )
-  if(result)
-    message(FATAL_ERROR "Download of ${LIBTORCH} failed.")
+  file(DOWNLOAD "${LIBTORCH_URL}" "${LIBTORCH_ARCHIVE}"
+       STATUS status
+       SHOW_PROGRESS)
+  
+  list(GET status 0 status_code)
+  list(GET status 1 status_string)
+  
+  if(status_code)
+    message(FATAL_ERROR "Download of ${LIBTORCH} failed with the following error: ${status_string}")
   endif()
+
   message(STATUS "Downloaded ${LIBTORCH}...")
 endif()
+
 
 # Extract the libtorch-android archive.
 if(NOT EXISTS "${LIBTORCH_SRC}")

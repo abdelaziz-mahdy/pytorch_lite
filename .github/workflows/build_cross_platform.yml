@@ -15,9 +15,25 @@ defaults:
     working-directory: example
 
 jobs:
-  android:
+  android_windows:
     name: Android
     runs-on: windows-latest
+    steps:
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '11'
+      - uses: actions/checkout@v2
+        with:
+          submodules: "true"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
+      - run: flutter pub get
+      - run: flutter build apk --split-per-abi --verbose
+  android_macos:
+    name: Android
+    runs-on: macos-latest
     steps:
       - uses: actions/setup-java@v1
         with:
