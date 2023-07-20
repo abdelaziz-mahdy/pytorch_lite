@@ -95,6 +95,10 @@ if(NOT EXISTS "${LIBTORCH_SRC}")
 
   if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
     message(STATUS "Detected Windows OS, using tar for extraction...")
+
+    file(MAKE_DIRECTORY "${LIBTORCH_SRC}")
+    message(STATUS "Path to LIBTORCH_SRC: ${LIBTORCH_SRC}")
+
     execute_process(
       COMMAND tar -xvf "${LIBTORCH_ARCHIVE}" -C "${LIBTORCH_SRC}"
       RESULT_VARIABLE result
@@ -103,6 +107,10 @@ if(NOT EXISTS "${LIBTORCH_SRC}")
     )
   else()
     message(STATUS "Detected non-Windows OS, using unzip for extraction...")
+    
+    file(MAKE_DIRECTORY "${LIBTORCH_SRC}")
+    message(STATUS "Path to LIBTORCH_SRC: ${LIBTORCH_SRC}")
+
     execute_process(
       COMMAND unzip -o "${LIBTORCH_ARCHIVE}" -d "${LIBTORCH_SRC}"
       RESULT_VARIABLE result
