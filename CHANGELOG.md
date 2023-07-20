@@ -1,3 +1,5 @@
+## 3.0.3
+* windows extracting using tar instead of powershell since powershell is so slow
 ## 3.0.2
 * improving cmake for windows extraction (thanks https://github.com/ZhaoXinZhang for pointing it out).
 ## 3.0.1
