@@ -1,3 +1,5 @@
+## 3.0.1
+* fix android build on Windows.
 ## 3.0.0+1
 * Converted to work on ffi (for improved performance, and ios support)
 * Improved isolates to stop ui frame drops
