@@ -16,7 +16,7 @@ defaults:
 
 jobs:
   android_windows:
-    name: Android
+    name: Android_windows
     runs-on: windows-latest
     steps:
       - uses: actions/setup-java@v1
@@ -32,7 +32,7 @@ jobs:
       - run: flutter pub get
       - run: flutter build apk --split-per-abi --verbose
   android_macos:
-    name: Android
+    name: Android_macos
     runs-on: macos-latest
     steps:
       - uses: actions/setup-java@v1
@@ -61,4 +61,5 @@ jobs:
           cache: true
       - run: flutter pub get
       - run: flutter build ios --verbose --no-codesign
+
 
