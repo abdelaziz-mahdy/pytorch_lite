@@ -94,9 +94,9 @@ if(NOT EXISTS "${LIBTORCH_SRC}")
   message(STATUS "Extracting ${LIBTORCH}...")
 
   if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    message(STATUS "Detected Windows OS, using PowerShell's Expand-Archive for extraction...")
+    message(STATUS "Detected Windows OS, using tar for extraction...")
     execute_process(
-      COMMAND Powershell -Command "Expand-Archive -Force '${LIBTORCH_ARCHIVE}' '${LIBTORCH_SRC}'"
+      COMMAND tar -xvf "${LIBTORCH_ARCHIVE}" -C "${LIBTORCH_SRC}"
       RESULT_VARIABLE result
       OUTPUT_VARIABLE output
       ERROR_VARIABLE error_output
