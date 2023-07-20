@@ -76,19 +76,28 @@ if(NOT EXISTS "${LIBTORCH_ARCHIVE}")
 endif()
 
 
-# Extract the libtorch-android archive.
 if(NOT EXISTS "${LIBTORCH_SRC}")
   message(STATUS "Extracting ${LIBTORCH}...")
-  file(MAKE_DIRECTORY "${LIBTORCH_SRC}")
-  execute_process(
-    COMMAND unzip -o "${LIBTORCH_ARCHIVE}" -d "${LIBTORCH_SRC}"
-    RESULT_VARIABLE result
-  )
+
+  if(WIN32)
+    execute_process(
+      COMMAND Powershell -Command "Expand-Archive -Force '${LIBTORCH_ARCHIVE}' '${LIBTORCH_SRC}'"
+      RESULT_VARIABLE result
+    )
+  else()
+    execute_process(
+      COMMAND unzip -o "${LIBTORCH_ARCHIVE}" -d "${LIBTORCH_SRC}"
+      RESULT_VARIABLE result
+    )
+  endif()
+
   if(result)
     message(FATAL_ERROR "Extraction of ${LIBTORCH} failed.")
   endif()
+
   message(STATUS "Extracted ${LIBTORCH}...")
 endif()
+
 
   set(LIBTORCH_BASE_DIR "${LIBTORCH_SRC}/libtorch-android")
   file(GLOB PYTORCH_INCLUDE_DIRS "${LIBTORCH_BASE_DIR}/include")
