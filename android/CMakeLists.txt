@@ -72,9 +72,23 @@ if(NOT EXISTS "${LIBTORCH_ARCHIVE}")
     message(FATAL_ERROR "Download of ${LIBTORCH} failed with the following error: ${status_string}")
   endif()
 
-  message(STATUS "Downloaded ${LIBTORCH}...")
 endif()
 
+# Expected MD5 hash
+set(EXPECTED_MD5 "61f013bc7371a65b900d14fccb27a013")
+file(MD5 "${LIBTORCH_ARCHIVE}" md5_hash)
+
+# Compare calculated MD5 hash with the expected MD5 hash
+if(md5_hash STREQUAL EXPECTED_MD5)
+  message(STATUS "MD5 hash verification successful.")
+else()
+  message(FATAL_ERROR "MD5 hash verification failed. , please run flutter clean and try again")
+endif()
+
+message(STATUS "Downloaded ${LIBTORCH}...")
+
+# # Attach MD5 hash of downloaded file (for getting the MD5 hash) 
+# message(FATAL_ERROR "MD5 hash of downloaded file: ${md5_hash}")
 
 if(NOT EXISTS "${LIBTORCH_SRC}")
   message(STATUS "Extracting ${LIBTORCH}...")
@@ -101,9 +115,11 @@ if(NOT EXISTS "${LIBTORCH_SRC}")
     message(FATAL_ERROR "Extraction of ${LIBTORCH} failed with error: ${error_output}\nOutput: ${output}")
   endif()
 
-  message(STATUS "Extracted ${LIBTORCH}...")
 endif()
 
+message(STATUS "Extracted ${LIBTORCH}...")
+
+# message(FATAL_ERROR "kjasjdlksajd error")
 
 
   set(LIBTORCH_BASE_DIR "${LIBTORCH_SRC}/libtorch-android")

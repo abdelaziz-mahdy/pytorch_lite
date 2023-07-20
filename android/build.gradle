@@ -22,9 +22,9 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-      configurations {
-    extractForNativeBuild
-  }
+//       configurations {
+//     extractForNativeBuild
+//   }
     compileSdkVersion 31
 
     compileOptions {
@@ -51,6 +51,8 @@ android {
 
             // Provides a relative path to your CMake build script.
             path "CMakeLists.txt"
+            // arguments "-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE" // Set log level to VERBOSE
+
         }
     }
 }
