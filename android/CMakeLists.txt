@@ -72,17 +72,16 @@ if(EXISTS "${LIBTORCH_ARCHIVE}")
   file(MD5 "${LIBTORCH_ARCHIVE}" md5_hash)
 
   # Check if hash matches
-  if(${md5_hash} STREQUAL ${EXPECTED_MD5})
+  if(md5_hash STREQUAL EXPECTED_MD5)
     message(STATUS "Hash matches - no need to download.")
-  else()
-    message(STATUS "Hash does not match - re-downloading file.")
-    file(REMOVE "${LIBTORCH_ARCHIVE}")
-    set(FILE_DOES_NOT_EXIST TRUE)
+    else()
+      message(STATUS "Hash does not match - re-downloading file.")
+      file(REMOVE "${LIBTORCH_ARCHIVE}")
+    endif()
   endif()
-endif()
 
 # If the file does not exist or the hash doesn't match, download the file
-if(NOT EXISTS "${LIBTORCH_ARCHIVE}" OR FILE_DOES_NOT_EXIST)
+if(NOT EXISTS "${LIBTORCH_ARCHIVE}")
   message(STATUS "Downloading ${LIBTORCH}...")
   file(DOWNLOAD "${LIBTORCH_URL}" "${LIBTORCH_ARCHIVE}"
        STATUS status
@@ -99,9 +98,9 @@ endif()
 
 # Compare calculated MD5 hash with the expected MD5 hash
 if(md5_hash STREQUAL EXPECTED_MD5)
-  message(STATUS "MD5 hash verification successful.")
+  message(STATUS "MD5 hash verification successful. Calculated MD5: ${md5_hash}, Expected MD5: ${EXPECTED_MD5}")
 else()
-  message(FATAL_ERROR "MD5 hash verification failed. , please run flutter clean and try again")
+  message(FATAL_ERROR "MD5 hash verification failed. Calculated MD5: ${md5_hash}, Expected MD5: ${EXPECTED_MD5}. Please run flutter clean and try again.")
 endif()
 
 message(STATUS "Downloaded ${LIBTORCH}...")
