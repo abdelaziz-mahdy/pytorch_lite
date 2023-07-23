@@ -18,14 +18,11 @@ Pointer<Uint8> convertUint8ListToPointer(Uint8List data) {
 }
 
 Pointer<UnsignedChar> convertUint8ListToPointerChar(Uint8List data) {
-  int length = data.length;
-  Pointer<UnsignedChar> dataPtr = calloc<UnsignedChar>(length);
+  final Pointer<Uint8> frameData = calloc<Uint8>(data.length);
+  final pointerList = frameData.asTypedList(data.length);
+  pointerList.setAll(0, data);
 
-  for (int i = 0; i < length; i++) {
-    dataPtr.elementAt(i).value = data[i];
-  }
-
-  return dataPtr;
+  return frameData.cast<UnsignedChar>();
 }
 
 Pointer<Float> convertListToPointer(List<double> floatList) {
@@ -107,7 +104,6 @@ class ImageUtils {
     );
   }
 
-
   static Image convertYUV420ToImage(CameraImage image) {
     final uvRowStride = image.planes[1].bytesPerRow;
     final uvPixelStride = image.planes[1].bytesPerPixel ?? 0;
@@ -115,44 +111,41 @@ class ImageUtils {
     for (final p in img) {
       final x = p.x;
       final y = p.y;
-      final uvIndex = uvPixelStride * (x / 2).floor() + uvRowStride * (y / 2).floor();
+      final uvIndex =
+          uvPixelStride * (x / 2).floor() + uvRowStride * (y / 2).floor();
       final index = y * uvRowStride +
           x; // Use the row stride instead of the image width as some devices pad the image data, and in those cases the image width != bytesPerRow. Using width will give you a distored image.
       final yp = image.planes[0].bytes[index];
       final up = image.planes[1].bytes[uvIndex];
       final vp = image.planes[2].bytes[uvIndex];
       p.r = (yp + vp * 1436 / 1024 - 179).round().clamp(0, 255).toInt();
-      p.g = (yp - up * 46549 / 131072 + 44 - vp * 93604 / 131072 + 91).round().clamp(0, 255).toInt();
+      p.g = (yp - up * 46549 / 131072 + 44 - vp * 93604 / 131072 + 91)
+          .round()
+          .clamp(0, 255)
+          .toInt();
       p.b = (yp + up * 1814 / 1024 - 227).round().clamp(0, 255).toInt();
     }
-
 
     return img;
   }
 
+  static Image? processCameraImage(CameraImage cameraImage) {
+    Image? image = ImageUtils.convertCameraImage(cameraImage);
 
-static Image? processCameraImage(CameraImage cameraImage) {
-  Image? image = ImageUtils.convertCameraImage(cameraImage);
-
-  if (Platform.isIOS) {
-    // ios, default camera image is portrait view
-    // rotate 270 to the view that top is on the left, bottom is on the right
-    // image ^4.0.17 error here
-    image = copyRotate(image!, angle: 270);
-  }
+    if (Platform.isIOS) {
+      // ios, default camera image is portrait view
+      // rotate 270 to the view that top is on the left, bottom is on the right
+      // image ^4.0.17 error here
+      image = copyRotate(image!, angle: 270);
+    }
     if (Platform.isAndroid) {
-    // ios, default camera image is portrait view
-    // rotate 270 to the view that top is on the left, bottom is on the right
-    // image ^4.0.17 error here
-    image = copyRotate(image!, angle: 90);
+      // ios, default camera image is portrait view
+      // rotate 270 to the view that top is on the left, bottom is on the right
+      // image ^4.0.17 error here
+      image = copyRotate(image!, angle: 90);
+    }
+
+    return image;
+    // processImage(inputImage);
   }
-
-  return image;
-  // processImage(inputImage);
 }
-
-}
-
-
-
-

@@ -39,7 +39,7 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
     String pathObjectDetectionModelYolov8 = "assets/models/yolov8s.torchscript";
     try {
       _imageModel = await PytorchLite.loadClassificationModel(
-          pathImageModel, 224, 224,1000,
+          pathImageModel, 224, 224, 1000,
           labelPath: "assets/labels/label_classification_imageNet.txt");
       //_customModel = await PytorchLite.loadCustomModel(pathCustomModel);
       _objectModel = await PytorchLite.loadObjectDetectionModel(
@@ -140,7 +140,8 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
         },
       });
     }
-    print('object executed in ${stopwatch.elapsed.inMilliseconds} Milliseconds');
+    print(
+        'object executed in ${stopwatch.elapsed.inMilliseconds} Milliseconds');
     setState(() {
       //this.objDetect = objDetect;
       _image = File(image.path);
@@ -162,26 +163,26 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
     );
 
     print(predictionList);
-    List<double?>? predictionListProbabilities =
-        await _imageModel!.getImagePredictionListProbabilities(
-      await File(image.path).readAsBytes(),
-    );
-    //Gettting the highest Probability
-    double maxScoreProbability = double.negativeInfinity;
-    double sumOfProbabilities = 0;
-    int index = 0;
-    for (int i = 0; i < predictionListProbabilities!.length; i++) {
-      if (predictionListProbabilities[i]! > maxScoreProbability) {
-        maxScoreProbability = predictionListProbabilities[i]!;
-        sumOfProbabilities =
-            sumOfProbabilities + predictionListProbabilities[i]!;
-        index = i;
-      }
-    }
-    print(predictionListProbabilities);
-    print(index);
-    print(sumOfProbabilities);
-    print(maxScoreProbability);
+    // List<double?>? predictionListProbabilities =
+    //     await _imageModel!.getImagePredictionListProbabilities(
+    //   await File(image.path).readAsBytes(),
+    // );
+    // //Gettting the highest Probability
+    // double maxScoreProbability = double.negativeInfinity;
+    // double sumOfProbabilities = 0;
+    // int index = 0;
+    // for (int i = 0; i < predictionListProbabilities!.length; i++) {
+    //   if (predictionListProbabilities[i]! > maxScoreProbability) {
+    //     maxScoreProbability = predictionListProbabilities[i]!;
+    //     sumOfProbabilities =
+    //         sumOfProbabilities + predictionListProbabilities[i]!;
+    //     index = i;
+    //   }
+    // }
+    // print(predictionListProbabilities);
+    // print(index);
+    // print(sumOfProbabilities);
+    // print(maxScoreProbability);
 
     setState(() {
       //this.objDetect = objDetect;

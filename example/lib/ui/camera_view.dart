@@ -208,6 +208,9 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (!mounted) {
+      return;
+    }
     switch (state) {
       case AppLifecycleState.paused:
         cameraController?.stopImageStream();
