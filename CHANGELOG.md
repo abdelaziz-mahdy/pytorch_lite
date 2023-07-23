@@ -1,5 +1,6 @@
 ## 3.0.4
 * improved speed of inference
+* improve build speed on android
 ## 3.0.3
 * windows extracting using tar instead of powershell since powershell is so slow
 ## 3.0.2
