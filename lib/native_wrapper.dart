@@ -73,7 +73,10 @@ class PytorchFfi {
       std,
       objectDetectionYolov5,
       outputLength
-    ])as TransferableTypedData).materialize().asFloat32List().toList();
+    ]) as TransferableTypedData)
+        .materialize()
+        .asFloat32List()
+        .toList();
     // return _imageModelInference(
     //   [
     //   modelIndex,
@@ -97,18 +100,36 @@ static TransferableTypedData _imageModelInference(dynamic values) {
   List<double> std = values[5];
   bool objectDetection = values[6];
   int outputLength = values[7];
+
+  var startTime = DateTime.now();
   Image? img = decodeImage(imageAsBytes);
+  var endTime = DateTime.now();
+  print("decodeImage time: ${endTime.difference(startTime).inMilliseconds}ms");
+
   if (img == null) {
     throw Exception("Failed to decode image");
   }
+
+  startTime = DateTime.now();
   Image scaledImageBytes =
       copyResize(img, width: imageWidth, height: imageHeight);
+  endTime = DateTime.now();
+  print("copyResize time: ${endTime.difference(startTime).inMilliseconds}ms");
 
+  startTime = DateTime.now();
   Pointer<UnsignedChar> dataPointer = convertUint8ListToPointerChar(
       ImageUtils.imageToUint8List(scaledImageBytes, mean, std));
+  endTime = DateTime.now();
+  print("convertUint8ListToPointerChar time: ${endTime.difference(startTime).inMilliseconds}ms");
+
   Pointer<Float> output = calloc<Float>(outputLength + 1);
+
+  startTime = DateTime.now();
   OutputData outputData = _bindings.image_model_inference(modelIndex,
       dataPointer, imageWidth, imageHeight, objectDetection ? 1 : 0, output);
+  endTime = DateTime.now();
+  print("image_model_inference time: ${endTime.difference(startTime).inMilliseconds}ms");
+
   if (outputData.exception.toDartString().isNotEmpty) {
     throw Exception(outputData.exception.toDartString());
   }
@@ -116,12 +137,24 @@ static TransferableTypedData _imageModelInference(dynamic values) {
     throw Exception(
         "output length does not match model length, please check model type and number of classes expected ${outputLength}, got ${outputData.length}");
   }
+
+  startTime = DateTime.now();
   //to list is used to make a copy of the values
   final List<double> prediction =
       (output.asTypedList(outputData.length)).toList();
+  endTime = DateTime.now();
+  print("toList time: ${endTime.difference(startTime).inMilliseconds}ms");
+
   calloc.free(output);
   calloc.free(dataPointer);
-  return TransferableTypedData.fromList([Float32List.fromList(prediction)]);
+
+  startTime = DateTime.now();
+  TransferableTypedData data =
+      TransferableTypedData.fromList([Float32List.fromList(prediction)]);
+  endTime = DateTime.now();
+  print("TransferableTypedData time: ${endTime.difference(startTime).inMilliseconds}ms");
+
+  return data;
 }
 
 }

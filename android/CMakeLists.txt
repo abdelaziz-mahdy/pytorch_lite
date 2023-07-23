@@ -55,28 +55,47 @@ set(LIBTORCH "libtorch-android.zip")
 # Download URL of the libtorch-android archive.
 set(LIBTORCH_URL "https://github.com/zezo357/pytorch_lite/releases/download/libs/${LIBTORCH}")
 
-# Download location of the libtorch-android archive.
-set(LIBTORCH_ARCHIVE "${CMAKE_BINARY_DIR}/${LIBTORCH}")
-set(LIBTORCH_SRC "${CMAKE_BINARY_DIR}/libtorch-android")
+# set base directory
+set(BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-if(NOT EXISTS "${LIBTORCH_ARCHIVE}")
+# use BASE_DIR in other variables
+set(LIBTORCH_ARCHIVE "${BASE_DIR}/${LIBTORCH}")
+set(LIBTORCH_SRC "${BASE_DIR}/libtorch-android")
+
+
+# Expected MD5 hash
+set(EXPECTED_MD5 "61f013bc7371a65b900d14fccb27a013")
+
+# Check if file exists
+if(EXISTS "${LIBTORCH_ARCHIVE}")
+  # Calculate MD5 hash
+  file(MD5 "${LIBTORCH_ARCHIVE}" md5_hash)
+
+  # Check if hash matches
+  if(${md5_hash} STREQUAL ${EXPECTED_MD5})
+    message(STATUS "Hash matches - no need to download.")
+  else()
+    message(STATUS "Hash does not match - re-downloading file.")
+    file(REMOVE "${LIBTORCH_ARCHIVE}")
+    set(FILE_DOES_NOT_EXIST TRUE)
+  endif()
+endif()
+
+# If the file does not exist or the hash doesn't match, download the file
+if(NOT EXISTS "${LIBTORCH_ARCHIVE}" OR FILE_DOES_NOT_EXIST)
   message(STATUS "Downloading ${LIBTORCH}...")
   file(DOWNLOAD "${LIBTORCH_URL}" "${LIBTORCH_ARCHIVE}"
        STATUS status
        SHOW_PROGRESS)
-  
+
   list(GET status 0 status_code)
   list(GET status 1 status_string)
-  
+
   if(status_code)
     message(FATAL_ERROR "Download of ${LIBTORCH} failed with the following error: ${status_string}")
   endif()
-
 endif()
 
-# Expected MD5 hash
-set(EXPECTED_MD5 "61f013bc7371a65b900d14fccb27a013")
-file(MD5 "${LIBTORCH_ARCHIVE}" md5_hash)
 
 # Compare calculated MD5 hash with the expected MD5 hash
 if(md5_hash STREQUAL EXPECTED_MD5)
