@@ -29,3 +29,6 @@
 build/
 android/.cxx/
 android/.cxx/*
+android/libtorch-android/
+android/libtorch-android.zip
+
