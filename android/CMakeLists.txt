@@ -95,6 +95,7 @@ if(NOT EXISTS "${LIBTORCH_ARCHIVE}")
   endif()
 endif()
 
+file(MD5 "${LIBTORCH_ARCHIVE}" md5_hash)
 
 # Compare calculated MD5 hash with the expected MD5 hash
 if(md5_hash STREQUAL EXPECTED_MD5)
