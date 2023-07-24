@@ -102,42 +102,52 @@ class PytorchFfi {
     int outputLength = values[7];
 
     var startTime = DateTime.now();
-    Image? img = decodeImage(imageAsBytes);
+//     Image? img = decodeImage(imageAsBytes);
     var endTime = DateTime.now();
-    print(
-        "decodeImage time: ${endTime.difference(startTime).inMilliseconds}ms");
+//     print(
+//         "decodeImage time: ${endTime.difference(startTime).inMilliseconds}ms");
 
-    if (img == null) {
-      throw Exception("Failed to decode image");
-    }
+//     if (img == null) {
+//       throw Exception("Failed to decode image");
+//     }
 
-    startTime = DateTime.now();
-    Image scaledImageBytes =
-        copyResize(img, width: imageWidth, height: imageHeight);
-    endTime = DateTime.now();
-    print("copyResize time: ${endTime.difference(startTime).inMilliseconds}ms");
+//     startTime = DateTime.now();
+//     Image scaledImageBytes =
+//         copyResize(img, width: imageWidth, height: imageHeight);
+//     endTime = DateTime.now();
+//     print("copyResize time: ${endTime.difference(startTime).inMilliseconds}ms");
 
-// ImageUtils.imageToUint8List()
-    startTime = DateTime.now();
-    Uint8List convertedImage =
-        ImageUtils.imageToUint8List(scaledImageBytes, mean, std);
-    endTime = DateTime.now();
-    print(
-        "ImageUtils.imageToUint8List time: ${endTime.difference(startTime).inMilliseconds}ms");
+// // ImageUtils.imageToUint8List()
+//     startTime = DateTime.now();
+//     Uint8List convertedImage =
+//         ImageUtils.imageToUint8List(scaledImageBytes, mean, std);
+//     endTime = DateTime.now();
+//     print(
+//         "ImageUtils.imageToUint8List time: ${endTime.difference(startTime).inMilliseconds}ms");
 
 // convertUint8ListToPointerChar()
     startTime = DateTime.now();
     Pointer<UnsignedChar> dataPointer =
-        convertUint8ListToPointerChar(convertedImage);
+        convertUint8ListToPointerChar(imageAsBytes);
     endTime = DateTime.now();
     print(
         "convertUint8ListToPointerChar time: ${endTime.difference(startTime).inMilliseconds}ms");
 
     Pointer<Float> output = calloc<Float>(outputLength + 1);
+    Pointer<Float> meanPointer = convertDoubleListToPointerFloat(mean);
+        Pointer<Float> stdPointer = convertDoubleListToPointerFloat(std);
 
     startTime = DateTime.now();
-    OutputData outputData = _bindings.image_model_inference(modelIndex,
-        dataPointer, imageWidth, imageHeight, objectDetection ? 1 : 0, output);
+    OutputData outputData = _bindings.image_model_inference(
+        modelIndex,
+        dataPointer,
+        imageAsBytes.lengthInBytes,
+        imageWidth,
+        imageHeight,
+        objectDetection ? 1 : 0,
+        meanPointer,
+        stdPointer,
+        output);
     endTime = DateTime.now();
     print(
         "image_model_inference time: ${endTime.difference(startTime).inMilliseconds}ms");
@@ -157,15 +167,16 @@ class PytorchFfi {
     // endTime = DateTime.now();
     // print("toList time: ${endTime.difference(startTime).inMilliseconds}ms");
 
-
     startTime = DateTime.now();
-    TransferableTypedData data =
-        TransferableTypedData.fromList([Float32List.fromList(output.asTypedList(outputData.length))]);
+    TransferableTypedData data = TransferableTypedData.fromList(
+        [Float32List.fromList(output.asTypedList(outputData.length))]);
     endTime = DateTime.now();
     print(
         "TransferableTypedData time: ${endTime.difference(startTime).inMilliseconds}ms");
     calloc.free(output);
     calloc.free(dataPointer);
+    calloc.free(meanPointer);
+    calloc.free(stdPointer);
 
     return data;
   }

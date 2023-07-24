@@ -24,7 +24,13 @@ Pointer<UnsignedChar> convertUint8ListToPointerChar(Uint8List data) {
 
   return frameData.cast<UnsignedChar>();
 }
+Pointer<Float> convertDoubleListToPointerFloat(List<double> data) {
+  final Pointer<Float> frameData = calloc<Float>(data.length);
+  final pointerList = frameData.asTypedList(data.length);
+  pointerList.setAll(0, data);
 
+  return frameData;
+}
 Pointer<Float> convertListToPointer(List<double> floatList) {
   // Create a native array to hold the double values
   final nativeArray = calloc<Double>(floatList.length);

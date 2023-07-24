@@ -56,17 +56,23 @@ class NativeLibrary {
   OutputData image_model_inference(
     int index,
     ffi.Pointer<ffi.UnsignedChar> data,
+    int input_length,
     int height,
     int width,
     int objectDetectionFlag,
+    ffi.Pointer<ffi.Float> mean_values,
+    ffi.Pointer<ffi.Float> std_values,
     ffi.Pointer<ffi.Float> output_data,
   ) {
     return _image_model_inference(
       index,
       data,
+      input_length,
       height,
       width,
       objectDetectionFlag,
+      mean_values,
+      std_values,
       output_data,
     );
   }
@@ -79,9 +85,20 @@ class NativeLibrary {
               ffi.Int,
               ffi.Int,
               ffi.Int,
+              ffi.Int,
+              ffi.Pointer<ffi.Float>,
+              ffi.Pointer<ffi.Float>,
               ffi.Pointer<ffi.Float>)>>('image_model_inference');
   late final _image_model_inference = _image_model_inferencePtr.asFunction<
-      OutputData Function(int, ffi.Pointer<ffi.UnsignedChar>, int, int, int,
+      OutputData Function(
+          int,
+          ffi.Pointer<ffi.UnsignedChar>,
+          int,
+          int,
+          int,
+          int,
+          ffi.Pointer<ffi.Float>,
+          ffi.Pointer<ffi.Float>,
           ffi.Pointer<ffi.Float>)>();
 }
 

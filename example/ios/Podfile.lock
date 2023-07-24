@@ -9,12 +9,14 @@ PODS:
   - LibTorch/Core (1.13.0.1):
     - LibTorch/Torch
   - LibTorch/Torch (1.13.0.1)
+  - OpenCV (4.3.0)
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
   - pytorch_lite (0.0.1):
     - Flutter
     - LibTorch (~> 1.13.0.1)
+    - OpenCV (= 4.3.0)
 
 DEPENDENCIES:
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
@@ -26,6 +28,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - LibTorch
+    - OpenCV
 
 EXTERNAL SOURCES:
   camera_avfoundation:
@@ -44,8 +47,9 @@ SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   image_picker_ios: 4a8aadfbb6dc30ad5141a2ce3832af9214a705b5
   LibTorch: 8abfa5fc9d146230b31065a29b0502e1104956ea
-  path_provider_foundation: eaf5b3e458fc0e5fbb9940fb09980e853fe058b8
-  pytorch_lite: de1dd7347a66835242554d23326e94a2c18b6e8f
+  OpenCV: 681e0451c1e54c5930a8922277f817ed5d5ab459
+  path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
+  pytorch_lite: 404d5b352f88c9528f6dffa137c0256a583063cd
 
 PODFILE CHECKSUM: 7be2f5f74864d463a8ad433546ed1de7e0f29aef
 

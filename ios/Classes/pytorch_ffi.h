@@ -30,4 +30,4 @@ struct ModelLoadResult {
 
 struct ModelLoadResult load_ml_model(const char* model_path);
 struct OutputData modelInference(int index,float* input_data_ptr);
-struct OutputData image_model_inference(int index, unsigned char* data, int height, int width, int objectDetectionFlag,float* output_data);
+struct OutputData image_model_inference(int index, unsigned char* data,int input_length, int height, int width, int objectDetectionFlag, float* mean_values, float* std_values, float* output_data);

@@ -94,6 +94,8 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
         await File(image!.path).readAsBytes(),
         minimumScore: 0.1,
         iOUThreshold: 0.3);
+    print('object executed in ${stopwatch.elapsed.inMilliseconds}');
+
     for (var element in objDetect) {
       print({
         "score": element?.score,
@@ -109,7 +111,6 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
         },
       });
     }
-    print('object executed in ${stopwatch.elapsed.inMilliseconds}');
     setState(() {
       //this.objDetect = objDetect;
       _image = File(image.path);
@@ -125,6 +126,8 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
         await File(image!.path).readAsBytes(),
         minimumScore: 0.1,
         iOUThreshold: 0.3);
+    print(
+        'object executed in ${stopwatch.elapsed.inMilliseconds} Milliseconds');
     for (var element in objDetect) {
       print({
         "score": element?.score,
@@ -140,8 +143,7 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
         },
       });
     }
-    print(
-        'object executed in ${stopwatch.elapsed.inMilliseconds} Milliseconds');
+
     setState(() {
       //this.objDetect = objDetect;
       _image = File(image.path);

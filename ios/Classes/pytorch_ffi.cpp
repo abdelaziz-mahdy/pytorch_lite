@@ -12,7 +12,10 @@
 #include <cstddef>
 #include <exception>
 #include <string>
-
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <vector>
 // #include "pytorch_ffi.h"
 
@@ -129,16 +132,66 @@ model_inference(int index,float *input_data_ptr,int input_length) {
  * It also captures any exception that might occur during inference and records it in OutputData.
  */
 extern "C" __attribute__((visibility("default"))) __attribute__((used)) OutputData
-image_model_inference(int index, unsigned char* data, int height, int width, int objectDetectionFlag,float* output_data) {
+image_model_inference(int index, unsigned char* data,int input_length, int height, int width, int objectDetectionFlag, float* mean_values, float* std_values, float* output_data) {
     // Define the output data structure
     struct OutputData output;
     try {
+        cv::_InputArray inputArray(data,input_length); // No size is given here
+
+        cv::Mat img = cv::imdecode(inputArray, cv::IMREAD_COLOR);
+        
+        cv::Mat imgRGB;
+        cv::cvtColor(img, imgRGB, cv::COLOR_BGR2RGB);
+        // Convert the received image data into an OpenCV Mat
+//        cv::Mat img(height, width, CV_8UC3, data);
+
+        // Use the provided height and width as the desired size
+        cv::Size sizeDesired(width, height);
+
+        // Resize the image to the desired size
+        cv::Mat imgResized;
+        cv::resize(imgRGB, imgResized, sizeDesired);
+
+//        // Convert image to float and normalize to [0, 1]
+        cv::Mat imgFloat;
+        // convert [unsigned int] to [float]
+        imgResized.convertTo(imgFloat, CV_32FC3, 1.0f / 255.0f);
+//        // Initialize cv::Mat for mean and std values
+//        cv::Mat mean = (cv::Mat_<float>(1, 3) << mean_values[0], mean_values[1], mean_values[2]);
+//        cv::Mat std = (cv::Mat_<float>(1, 3) << std_values[0], std_values[1], std_values[2]);
+//
+//        cv::Mat mean_f, std_f;
+//
+//        mean.convertTo(mean_f, CV_64F);
+//        std.convertTo(std_f, CV_64F);
+//
+//        // Normalize the resized image with provided mean and std values
+//        cv::Mat imgNormalized;
+//        cv::subtract(imgFloat, mean_f, imgNormalized);
+//        cv::divide(imgNormalized, std_f, imgNormalized);
+//
+////        cv::subtract(imgFloat, mean, imgNormalized);
+//        cv::divide(imgNormalized, std, imgNormalized);
+
         // Load the PyTorch model
         torch::jit::Module model = models.at(index);
 
-        // Convert image data into PyTorch tensor
-        torch::Tensor tensor_image = torch::from_blob(data, {1,3,height, width}, torch::kFloat32);
+        // Convert the normalized image data into a PyTorch tensor
+        torch::Tensor tensor_image = torch::from_blob(imgFloat.data, {1, 3, height, width}, torch::kFloat32);
+        // Channel-wise mean and std values
+        torch::Tensor mean = torch::tensor({mean_values[0], mean_values[1], mean_values[2]});
+        torch::Tensor std = torch::tensor({std_values[0], std_values[1], std_values[2]});
 
+        // Convert mean and std to the same device and dtype as tensor_image
+        mean = mean.to(tensor_image.device()).to(tensor_image.dtype());
+        std = std.to(tensor_image.device()).to(tensor_image.dtype());
+
+        // Expand dimensions of mean and std to match with the tensor_image shape for broadcasting
+        mean = mean.view({1, 3, 1, 1});
+        std = std.view({1, 3, 1, 1});
+
+        // Normalize
+        tensor_image = tensor_image.sub(mean).div(std);
         torch::Tensor output_tensor;
         if (objectDetectionFlag==1) {
             // Run the object detection model
