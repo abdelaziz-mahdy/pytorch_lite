@@ -55,10 +55,9 @@ jobs:
         with:
           channel: "stable"
           cache: true
+      - uses: futureware-tech/simulator-action@v2
+        with:
+          model: 'iPhone 8'
       - run: flutter pub get
-      - name: Start iOS Simulator
-        run: |
-          sudo xcode-select --switch /Applications/Xcode_12.4.app
-          open -a Simulator
       - name: Run integration tests
         run: flutter test integration_test
