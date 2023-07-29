@@ -136,14 +136,15 @@ image_model_inference(int index, unsigned char* data,int input_length, int heigh
     // Define the output data structure
     struct OutputData output;
     try {
-        cv::_InputArray inputArray(data,input_length); // No size is given here
 
+        // std::vector<uchar> dataVec = std::vector<uchar>(data, data + input_length);
+        // cv::Mat img = cv::imdecode(dataVec, cv::IMREAD_COLOR);
+        cv::_InputArray inputArray(data,input_length);
         cv::Mat img = cv::imdecode(inputArray, cv::IMREAD_COLOR);
         
         cv::Mat imgRGB;
         cv::cvtColor(img, imgRGB, cv::COLOR_BGR2RGB);
         // Convert the received image data into an OpenCV Mat
-//        cv::Mat img(height, width, CV_8UC3, data);
 
         // Use the provided height and width as the desired size
         cv::Size sizeDesired(width, height);
@@ -177,7 +178,9 @@ image_model_inference(int index, unsigned char* data,int input_length, int heigh
         torch::jit::Module model = models.at(index);
 
         // Convert the normalized image data into a PyTorch tensor
-        torch::Tensor tensor_image = torch::from_blob(imgFloat.data, {1, 3, height, width}, torch::kFloat32);
+        torch::Tensor tensor_image = torch::from_blob(imgFloat.data, {1, height, width, 3}, torch::kFloat32);
+        tensor_image = tensor_image.permute({0, 3, 1, 2});
+
         // Channel-wise mean and std values
         torch::Tensor mean = torch::tensor({mean_values[0], mean_values[1], mean_values[2]});
         torch::Tensor std = torch::tensor({std_values[0], std_values[1], std_values[2]});
