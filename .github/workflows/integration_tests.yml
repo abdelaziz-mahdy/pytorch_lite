@@ -22,7 +22,7 @@ jobs:
       matrix:
         # api-level: [21, 23, 24, 26, 28, 29]
         api-level: [29]
-        target: [default, google_apis]
+        target: [google_apis]
     steps:
       - uses: actions/setup-java@v1
         with:
