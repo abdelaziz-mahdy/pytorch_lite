@@ -42,73 +42,93 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   PytorchFfi.init();
   ImageUtilsIsolate.init();
-   group('Loading Models', () {
+
+  group('Loading Models', () {
     testWidgets('Load Classification Model', (WidgetTester tester) async {
+      int startTime = DateTime.now().millisecondsSinceEpoch;
       imageModel = await PytorchLite.loadClassificationModel(
         pathClassificationModel, 224, 224, 1000,
         labelPath: labelPathClassification);
+      int endTime = DateTime.now().millisecondsSinceEpoch;
+      print("Time taken for 'Load Classification Model': ${endTime - startTime} ms");
       expect(imageModel, isNotNull);
     });
 
     testWidgets('Load Object Detection Model', (WidgetTester tester) async {
+      int startTime = DateTime.now().millisecondsSinceEpoch;
       objectModel = await PytorchLite.loadObjectDetectionModel(
         pathObjectDetectionModel, 80, 640, 640,
         labelPath: labelPathObjectDetection);
+      int endTime = DateTime.now().millisecondsSinceEpoch;
+      print("Time taken for 'Load Object Detection Model': ${endTime - startTime} ms");
       expect(objectModel, isNotNull);
     });
 
     testWidgets('Load Object Detection Model YOLOv8', (WidgetTester tester) async {
+      int startTime = DateTime.now().millisecondsSinceEpoch;
       objectModelYolov8 = await PytorchLite.loadObjectDetectionModel(
         pathObjectDetectionModelYolov8, 80, 640, 640,
         labelPath: labelPathObjectDetection,
         objectDetectionModelType: ObjectDetectionModelType.yolov8);
+      int endTime = DateTime.now().millisecondsSinceEpoch;
+      print("Time taken for 'Load Object Detection Model YOLOv8': ${endTime - startTime} ms");
       expect(objectModelYolov8, isNotNull);
     });
   });
 
   group('Testing Model Runs', () {
     testWidgets('Run Classification Model on Small Image', (WidgetTester tester) async {
+      int startTime = DateTime.now().millisecondsSinceEpoch;
       Uint8List smallImageData = await _getImageBytes(pathToSmallTestImage);
       var imagePrediction = await imageModel.getImagePrediction(smallImageData);
+      int endTime = DateTime.now().millisecondsSinceEpoch;
+      print("Time taken for 'Run Classification Model on Small Image': ${endTime - startTime} ms");
       expect(imagePrediction, isNotNull);
-      // Add more assertions here to test the output prediction
     });
 
     testWidgets('Run Classification Model on Large Image', (WidgetTester tester) async {
+      int startTime = DateTime.now().millisecondsSinceEpoch;
       Uint8List largeImageData = await _getImageBytes(pathToLargeTestImage);
       var imagePrediction = await imageModel.getImagePrediction(largeImageData);
+      int endTime = DateTime.now().millisecondsSinceEpoch;
+      print("Time taken for 'Run Classification Model on Large Image': ${endTime - startTime} ms");
       expect(imagePrediction, isNotNull);
-      // Add more assertions here to test the output prediction
     });
 
     testWidgets('Run Object Detection Model on Small Image', (WidgetTester tester) async {
+      int startTime = DateTime.now().millisecondsSinceEpoch;
       Uint8List smallImageData = await _getImageBytes(pathToSmallTestImage);
       var objDetect = await objectModel.getImagePrediction(smallImageData, minimumScore: 0.1, iOUThreshold: 0.3);
+      int endTime = DateTime.now().millisecondsSinceEpoch;
+      print("Time taken for 'Run Object Detection Model on Small Image': ${endTime - startTime} ms");
       expect(objDetect, isNotNull);
-      // Add more assertions here to test the output objDetect
     });
 
     testWidgets('Run Object Detection Model on Large Image', (WidgetTester tester) async {
+      int startTime = DateTime.now().millisecondsSinceEpoch;
       Uint8List largeImageData = await _getImageBytes(pathToLargeTestImage);
       var objDetect = await objectModel.getImagePrediction(largeImageData, minimumScore: 0.1, iOUThreshold: 0.3);
+      int endTime = DateTime.now().millisecondsSinceEpoch;
+      print("Time taken for 'Run Object Detection Model on Large Image': ${endTime - startTime} ms");
       expect(objDetect, isNotNull);
-      // Add more assertions here to test the output objDetect
     });
 
     testWidgets('Run Object Detection Model YOLOv8 on Small Image', (WidgetTester tester) async {
+      int startTime = DateTime.now().millisecondsSinceEpoch;
       Uint8List smallImageData = await _getImageBytes(pathToSmallTestImage);
       var objDetect = await objectModelYolov8.getImagePrediction(smallImageData, minimumScore: 0.1, iOUThreshold: 0.3);
+      int endTime = DateTime.now().millisecondsSinceEpoch;
+      print("Time taken for 'Run Object Detection Model YOLOv8 on Small Image': ${endTime - startTime} ms");
       expect(objDetect, isNotNull);
-      // Add more assertions here to test the output objDetect
     });
 
     testWidgets('Run Object Detection Model YOLOv8 on Large Image', (WidgetTester tester) async {
+      int startTime = DateTime.now().millisecondsSinceEpoch;
       Uint8List largeImageData = await _getImageBytes(pathToLargeTestImage);
       var objDetect = await objectModelYolov8.getImagePrediction(largeImageData, minimumScore: 0.1, iOUThreshold: 0.3);
+      int endTime = DateTime.now().millisecondsSinceEpoch;
+      print("Time taken for 'Run Object Detection Model YOLOv8 on Large Image': ${endTime - startTime} ms");
       expect(objDetect, isNotNull);
-      // Add more assertions here to test the output objDetect
     });
-});
-
-
+  });
 }
