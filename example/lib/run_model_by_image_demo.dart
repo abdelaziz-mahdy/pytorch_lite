@@ -119,9 +119,10 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
 
   Future runObjectDetectionYolov8() async {
     //pick a random image
-    Stopwatch stopwatch = Stopwatch()..start();
 
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    Stopwatch stopwatch = Stopwatch()..start();
+
     objDetect = await _objectModelYolov8.getImagePrediction(
         await File(image!.path).readAsBytes(),
         minimumScore: 0.1,
