@@ -1,7 +1,6 @@
 # pytorch_lite
 
-- flutter package to help run pytorch lite models classification and yolov5
-- ios support (can be added following this https://github.com/pytorch/ios-demo-app) PR will be appreciated  
+- flutter package to help run pytorch lite models classification and yolov5 and yolov8
 
 
 # example for Classification
