@@ -2,8 +2,8 @@
 # Set minimum required version of cmake, project name and C++ standard
 cmake_minimum_required(VERSION 3.4.1)
 project(pytorch_lite)
-set(CMAKE_CXX_STANDARD 17)
-set(BUILD_WITH_HALF_PRECISION ON)
+set(CMAKE_CXX_STANDARD 14)  # needed for libtorch
+# set(BUILD_WITH_HALF_PRECISION ON)
 # Add library source file(s)
 add_library(pytorch_lite SHARED ../ios/Classes/pytorch_ffi.cpp)
 
@@ -146,9 +146,10 @@ check_file_exists(${LIBTORCH_LIB_DIR}/libpytorch_jni.so)
 
 # Include directories
 target_include_directories(pytorch_lite PRIVATE
-  # ${OpenCV_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
   ${PYTORCH_INCLUDE_DIRS}
 )
+# message(FATAL_ERROR ${OpenCV_INCLUDE_DIRS})
 
 # message(FATAL_ERROR ${OpenCV_LIBS})
 # Link libraries
@@ -159,4 +160,4 @@ target_link_libraries(pytorch_lite
   ${OpenCV_LIBS}
 )
 target_link_libraries(pytorch_lite -fopenmp)
-target_link_libraries(pytorch_lite dl)
+# target_link_libraries(pytorch_lite dl)

@@ -31,11 +31,8 @@ android/.cxx/
 android/.cxx/*
 android/libtorch-android/
 android/libtorch-android.zip
-android/libtorch-android-13.1.zip
-android/libtorch-android-13.1/
+android/libtorch-android*
 
-android/opencv-mobile-4.6.0-android.zip
-android/opencv-mobile-4.6.0-android/
-
-android/opencv/
-android/opencv.zip
+android/libtorch-android*/*
+android/opencv*/*
+android/opencv*

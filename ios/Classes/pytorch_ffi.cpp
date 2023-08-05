@@ -1,11 +1,23 @@
+#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <torch/script.h>
+#include <unistd.h>
+#include <string>
+#include <string>  
+#include <iostream> 
+#include <sstream>   
+#include <cstddef>
+#include <exception>
+#include <string>
+
+#include <vector>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <torch/script.h>
-#include <vector>
-#include <exception>
-#include <string>
 // #include "pytorch_ffi.h"
 
 /* OutputData Structure
@@ -121,13 +133,10 @@ model_inference(int index,float *input_data_ptr,int input_length) {
  * It also captures any exception that might occur during inference and records it in OutputData.
  */
 extern "C" __attribute__((visibility("default"))) __attribute__((used)) OutputData
-image_model_inference(int index, unsigned char* data,int input_length, int height, int width, int objectDetectionFlag, float* mean_values, float* std_values, float* output_data) {
+image_model_inference(int index, unsigned char* data,int input_length, int height, int width, int objectDetectionFlag, float* mean_values, float* std_values,float* output_data) {
     // Define the output data structure
     struct OutputData output;
     try {
-
-        // std::vector<uchar> dataVec = std::vector<uchar>(data, data + input_length);
-        // cv::Mat img = cv::imdecode(dataVec, cv::IMREAD_COLOR);
         cv::_InputArray inputArray(data,input_length);
         cv::Mat img = cv::imdecode(inputArray, cv::IMREAD_COLOR);
         
@@ -146,44 +155,26 @@ image_model_inference(int index, unsigned char* data,int input_length, int heigh
         cv::Mat imgFloat;
         // convert [unsigned int] to [float]
         imgResized.convertTo(imgFloat, CV_32FC3, 1.0f / 255.0f);
-//        // Initialize cv::Mat for mean and std values
-//        cv::Mat mean = (cv::Mat_<float>(1, 3) << mean_values[0], mean_values[1], mean_values[2]);
-//        cv::Mat std = (cv::Mat_<float>(1, 3) << std_values[0], std_values[1], std_values[2]);
-//
-//        cv::Mat mean_f, std_f;
-//
-//        mean.convertTo(mean_f, CV_64F);
-//        std.convertTo(std_f, CV_64F);
-//
-//        // Normalize the resized image with provided mean and std values
-//        cv::Mat imgNormalized;
-//        cv::subtract(imgFloat, mean_f, imgNormalized);
-//        cv::divide(imgNormalized, std_f, imgNormalized);
-//
-////        cv::subtract(imgFloat, mean, imgNormalized);
-//        cv::divide(imgNormalized, std, imgNormalized);
+
+        // Assuming mean_values and std_values are std::vector<double> with 3 elements
+        cv::Scalar mean(mean_values[0], mean_values[1], mean_values[2]);
+        cv::Scalar std(mean_values[0], std_values[1], std_values[2]);
+
+        // Subtract the mean (cv::subtract supports broadcasting)
+        cv::Mat imgMeanSubtracted;
+        cv::subtract(imgFloat, mean, imgMeanSubtracted);
+
+        // Divide by the standard deviation (cv::divide supports broadcasting)
+        cv::Mat imgNormalized;
+        cv::divide(imgMeanSubtracted, std, imgNormalized);
 
         // Load the PyTorch model
         torch::jit::Module model = models.at(index);
-
         // Convert the normalized image data into a PyTorch tensor
-        torch::Tensor tensor_image = torch::from_blob(imgFloat.data, {1, height, width, 3}, torch::kFloat32);
+        torch::Tensor tensor_image = torch::from_blob(imgNormalized.data, {1, height, width, 3}, torch::kFloat32);
         tensor_image = tensor_image.permute({0, 3, 1, 2});
 
-        // Channel-wise mean and std values
-        torch::Tensor mean = torch::tensor({mean_values[0], mean_values[1], mean_values[2]});
-        torch::Tensor std = torch::tensor({std_values[0], std_values[1], std_values[2]});
 
-        // Convert mean and std to the same device and dtype as tensor_image
-        mean = mean.to(tensor_image.device()).to(tensor_image.dtype());
-        std = std.to(tensor_image.device()).to(tensor_image.dtype());
-
-        // Expand dimensions of mean and std to match with the tensor_image shape for broadcasting
-        mean = mean.view({1, 3, 1, 1});
-        std = std.view({1, 3, 1, 1});
-
-        // Normalize
-        tensor_image = tensor_image.sub(mean).div(std);
         torch::Tensor output_tensor;
         if (objectDetectionFlag==1) {
             // Run the object detection model
@@ -228,4 +219,3 @@ image_model_inference(int index, unsigned char* data,int input_length, int heigh
     // Return the output data structure
     return output;
 }
-
