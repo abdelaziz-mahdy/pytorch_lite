@@ -3,6 +3,8 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(pytorch_lite)
 set(CMAKE_CXX_STANDARD 14)  # needed for libtorch
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp -static-openmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -static-openmp")
 # set(BUILD_WITH_HALF_PRECISION ON)
 # Add library source file(s)
 add_library(pytorch_lite SHARED ../ios/Classes/pytorch_ffi.cpp)
@@ -159,5 +161,5 @@ target_link_libraries(pytorch_lite
   libpytorch_jni
   ${OpenCV_LIBS}
 )
-target_link_libraries(pytorch_lite -fopenmp)
+# target_link_libraries(pytorch_lite -fopenmp)
 # target_link_libraries(pytorch_lite dl)
