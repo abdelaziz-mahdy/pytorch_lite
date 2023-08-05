@@ -1,22 +1,11 @@
-#include <math.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <torch/script.h>
-#include <unistd.h>
-#include <string>
-#include <string>  
-#include <iostream> 
-#include <sstream>   
-#include <cstddef>
-#include <exception>
-#include <string>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <torch/script.h>
 #include <vector>
+#include <exception>
+#include <string>
 // #include "pytorch_ffi.h"
 
 /* OutputData Structure
