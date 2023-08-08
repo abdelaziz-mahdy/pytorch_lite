@@ -151,22 +151,33 @@ image_model_inference(int index, unsigned char* data,int input_length, int heigh
         cv::Mat imgResized;
         cv::resize(imgRGB, imgResized, sizeDesired);
 
-//        // Convert image to float and normalize to [0, 1]
+        // Convert image to float and normalize to [0, 1]
         cv::Mat imgFloat;
         // convert [unsigned int] to [float]
         imgResized.convertTo(imgFloat, CV_32FC3, 1.0f / 255.0f);
 
-        // Assuming mean_values and std_values are std::vector<double> with 3 elements
-        cv::Scalar mean(mean_values[0], mean_values[1], mean_values[2]);
-        cv::Scalar std(mean_values[0], std_values[1], std_values[2]);
+        // Keep mean and std as 3-element vectors
+        cv::Mat mean(1, 1, CV_32FC3, cv::Scalar(mean_values[0], mean_values[1], mean_values[2]));
+        cv::Mat std(1, 1, CV_32FC3, cv::Scalar(std_values[0], std_values[1], std_values[2]));
 
-        // Subtract the mean (cv::subtract supports broadcasting)
-        cv::Mat imgMeanSubtracted;
-        cv::subtract(imgFloat, mean, imgMeanSubtracted);
+        // Split image channels 
+        std::vector<cv::Mat> channels;
+        cv::split(imgFloat, channels);
 
-        // Divide by the standard deviation (cv::divide supports broadcasting)
+        // Normalize each channel  
+        for (int i = 0; i < 3; ++i) {
+
+        cv::Mat mean_ch = mean.at<cv::Vec3f>(0)[i] * cv::Mat::ones(imgFloat.size(), CV_32F);
+        cv::Mat std_ch = std.at<cv::Vec3f>(0)[i] * cv::Mat::ones(imgFloat.size(), CV_32F);
+
+        cv::subtract(channels[i], mean_ch, channels[i]);
+        cv::divide(channels[i], std_ch, channels[i]); 
+
+        }
+
+        // Merge channels back
         cv::Mat imgNormalized;
-        cv::divide(imgMeanSubtracted, std, imgNormalized);
+        cv::merge(channels, imgNormalized);
 
         // Load the PyTorch model
         torch::jit::Module model = models.at(index);
