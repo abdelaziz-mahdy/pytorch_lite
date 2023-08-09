@@ -100,9 +100,69 @@ class NativeLibrary {
           ffi.Pointer<ffi.Float>,
           ffi.Pointer<ffi.Float>,
           ffi.Pointer<ffi.Float>)>();
+
+  OutputData camera_model_inference(
+    int index,
+    ffi.Pointer<ffi.UnsignedChar> data,
+    int rotation,
+    int isYUV,
+    int model_image_height,
+    int model_image_width,
+    int camera_image_height,
+    int camera_image_width,
+    int objectDetectionFlag,
+    ffi.Pointer<ffi.Float> mean_values,
+    ffi.Pointer<ffi.Float> std_values,
+    ffi.Pointer<ffi.Float> output_data,
+  ) {
+    return _camera_model_inference(
+      index,
+      data,
+      rotation,
+      isYUV,
+      model_image_height,
+      model_image_width,
+      camera_image_height,
+      camera_image_width,
+      objectDetectionFlag,
+      mean_values,
+      std_values,
+      output_data,
+    );
+  }
+
+  late final _camera_model_inferencePtr = _lookup<
+      ffi.NativeFunction<
+          OutputData Function(
+              ffi.Int,
+              ffi.Pointer<ffi.UnsignedChar>,
+              ffi.Int,
+              ffi.Int,
+              ffi.Int,
+              ffi.Int,
+              ffi.Int,
+              ffi.Int,
+              ffi.Int,
+              ffi.Pointer<ffi.Float>,
+              ffi.Pointer<ffi.Float>,
+              ffi.Pointer<ffi.Float>)>>('camera_model_inference');
+  late final _camera_model_inference = _camera_model_inferencePtr.asFunction<
+      OutputData Function(
+          int,
+          ffi.Pointer<ffi.UnsignedChar>,
+          int,
+          int,
+          int,
+          int,
+          int,
+          int,
+          int,
+          ffi.Pointer<ffi.Float>,
+          ffi.Pointer<ffi.Float>,
+          ffi.Pointer<ffi.Float>)>();
 }
 
- class OutputData extends ffi.Struct {
+class OutputData extends ffi.Struct {
   external ffi.Pointer<ffi.Float> values;
 
   @ffi.Int()
@@ -111,7 +171,7 @@ class NativeLibrary {
   external ffi.Pointer<pkg_ffi.Utf8> exception;
 }
 
- class ModelLoadResult extends ffi.Struct {
+class ModelLoadResult extends ffi.Struct {
   @ffi.Int()
   external int index;
 

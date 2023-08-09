@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pytorch_lite/image_utils_isolate.dart';
 import 'package:pytorch_lite/native_wrapper.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 import 'package:pytorch_lite_example/run_model_by_camera_demo.dart';
@@ -7,7 +6,6 @@ import 'package:pytorch_lite_example/run_model_by_image_demo.dart';
 
 void main() {
   PytorchFfi.init();
-  ImageUtilsIsolate.init();
   runApp(const ChooseDemo());
 }
 

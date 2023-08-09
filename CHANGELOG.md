@@ -1,3 +1,7 @@
+## 4.0.0
+* image processing is done using opencv to improve performance
+* camera image decoding is done using opencv to improve performance
+* camera images can be ran using getCameraImage* methods
 ## 3.0.4
 * improved speed of inference
 * improve build speed on android

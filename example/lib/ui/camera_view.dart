@@ -1,10 +1,10 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart';
-import 'package:pytorch_lite/image_utils_isolate.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
 import 'camera_view_singleton.dart';
@@ -37,7 +37,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   ClassificationModel? _imageModel;
 
   bool classification = false;
-
+  int _camFrameRotation = 0;
   String errorMessage = "";
   @override
   void initState() {
@@ -115,8 +115,20 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   void initializeCamera() async {
     cameras = await availableCameras();
 
+    var idx =
+        cameras.indexWhere((c) => c.lensDirection == CameraLensDirection.back);
+    if (idx < 0) {
+      log("No Back camera found - weird");
+      return;
+    }
+
+    var desc = cameras[idx];
+    _camFrameRotation = Platform.isAndroid ? desc.sensorOrientation : 0;
     // cameras[0] for rear-camera
-    cameraController = CameraController(cameras[0], ResolutionPreset.medium,
+    cameraController = CameraController(desc, ResolutionPreset.medium,
+        imageFormatGroup: Platform.isAndroid
+            ? ImageFormatGroup.yuv420
+            : ImageFormatGroup.bgra8888,
         enableAudio: false);
 
     cameraController?.initialize().then((_) async {
@@ -154,31 +166,27 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     //     child: CameraPreview(cameraController));
   }
 
-  runClassification(Uint8List jpgBytes) async {
+  runClassification(CameraImage cameraImage) async {
     if (_imageModel != null) {
-      String imageClassification =
-          await _imageModel!.getImagePrediction(jpgBytes);
+      String imageClassification = await _imageModel!
+          .getCameraImagePrediction(cameraImage, _camFrameRotation);
 
       print("imageClassification $imageClassification");
       widget.resultsCallbackClassification(imageClassification);
     }
   }
 
-  Future<void> runObjectDetection(Uint8List jpgBytes) async {
+  Future<void> runObjectDetection(CameraImage cameraImage) async {
     if (_objectModel != null) {
-      // List<ResultObjectDetection?> objDetect =
-      //     await _objectModel!.getImagePrediction(
-      //   jpgBytes,
-      //   minimumScore: 0.3,
-      //   iOUThreshold: 0.3,
-      // );
-      await _objectModel!.getImagePredictionList(
-        jpgBytes,
+      List<ResultObjectDetection?> objDetect =
+          await _objectModel!.getCameraImagePrediction(
+        cameraImage,
+        _camFrameRotation,
         minimumScore: 0.3,
         iOUThreshold: 0.3,
       );
-      // print("data outputted $objDetect");
-      // widget.resultsCallback(objDetect);
+      print("data outputted $objDetect");
+      widget.resultsCallback(objDetect);
     }
   }
 
@@ -192,13 +200,11 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     });
 
     log("will start prediction");
-    Uint8List jpgBytes =
-        (await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage))!;
     log("Converted camera image");
 
     var futures = <Future>[];
-    futures.add(runClassification(jpgBytes));
-    futures.add(runObjectDetection(jpgBytes));
+    futures.add(runClassification(cameraImage));
+    futures.add(runObjectDetection(cameraImage));
     await Future.wait(futures);
     log("done prediction camera image");
     setState(() {

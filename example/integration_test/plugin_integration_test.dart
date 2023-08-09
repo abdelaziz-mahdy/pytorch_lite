@@ -11,7 +11,6 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:pytorch_lite/image_utils_isolate.dart';
 import 'package:pytorch_lite/native_wrapper.dart';
 
 import 'package:pytorch_lite/pytorch_lite.dart';
@@ -41,7 +40,6 @@ Future<Uint8List> _getImageBytes(String path) async {
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   PytorchFfi.init();
-  ImageUtilsIsolate.init();
 
   group('Loading Models', () {
     testWidgets('Load Classification Model', (WidgetTester tester) async {
