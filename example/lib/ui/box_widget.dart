@@ -4,10 +4,10 @@ import 'package:pytorch_lite_example/ui/camera_view_singleton.dart';
 
 /// Individual bounding box
 class BoxWidget extends StatelessWidget {
-  ResultObjectDetection result;
-  Color? boxesColor;
-  bool showPercentage;
-  BoxWidget(
+  final ResultObjectDetection result;
+  final Color? boxesColor;
+  final bool showPercentage;
+  const BoxWidget(
       {Key? key,
       required this.result,
       this.boxesColor,
