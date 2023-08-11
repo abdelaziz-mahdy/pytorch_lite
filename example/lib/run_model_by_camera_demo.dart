@@ -13,7 +13,7 @@ class RunModelByCameraDemo extends StatefulWidget {
 }
 
 class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
-  List<ResultObjectDetection?>? results;
+  List<ResultObjectDetection>? results;
   String? classification;
 
   /// Scaffold Key
@@ -95,16 +95,16 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
   }
 
   /// Returns Stack of bounding boxes
-  Widget boundingBoxes2(List<ResultObjectDetection?>? results) {
+  Widget boundingBoxes2(List<ResultObjectDetection>? results) {
     if (results == null) {
       return Container();
     }
     return Stack(
-      children: results.map((e) => BoxWidget(result: e!)).toList(),
+      children: results.map((e) => BoxWidget(result: e)).toList(),
     );
   }
 
-  void resultsCallback(List<ResultObjectDetection?> results) {
+  void resultsCallback(List<ResultObjectDetection> results) {
     if (!mounted) {
       return;
     }
@@ -113,12 +113,12 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
       for (var element in results) {
         print({
           "rect": {
-            "left": element?.rect.left,
-            "top": element?.rect.top,
-            "width": element?.rect.width,
-            "height": element?.rect.height,
-            "right": element?.rect.right,
-            "bottom": element?.rect.bottom,
+            "left": element.rect.left,
+            "top": element.rect.top,
+            "width": element.rect.width,
+            "height": element.rect.height,
+            "right": element.rect.right,
+            "bottom": element.rect.bottom,
           },
         });
       }

@@ -1,10 +1,7 @@
 import 'dart:ffi';
-import 'dart:io';
 import 'dart:typed_data';
-import 'package:camera/camera.dart';
 
 import 'package:ffi/ffi.dart';
-import 'package:image/image.dart';
 
 Pointer<Uint8> convertUint8ListToPointer(Uint8List data) {
   int length = data.length;
@@ -24,6 +21,7 @@ Pointer<UnsignedChar> convertUint8ListToPointerChar(Uint8List data) {
 
   return frameData.cast<UnsignedChar>();
 }
+
 Pointer<Float> convertDoubleListToPointerFloat(List<double> data) {
   final Pointer<Float> frameData = calloc<Float>(data.length);
   final pointerList = frameData.asTypedList(data.length);
@@ -31,6 +29,7 @@ Pointer<Float> convertDoubleListToPointerFloat(List<double> data) {
 
   return frameData;
 }
+
 Pointer<Float> convertListToPointer(List<double> floatList) {
   // Create a native array to hold the double values
   final nativeArray = calloc<Double>(floatList.length);

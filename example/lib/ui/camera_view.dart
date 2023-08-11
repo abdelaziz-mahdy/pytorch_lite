@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image/image.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
 import 'camera_view_singleton.dart';
@@ -12,7 +11,7 @@ import 'camera_view_singleton.dart';
 /// [CameraView] sends each frame for inference
 class CameraView extends StatefulWidget {
   /// Callback to pass results after inference to [HomeView]
-  final Function(List<ResultObjectDetection?> recognitions) resultsCallback;
+  final Function(List<ResultObjectDetection> recognitions) resultsCallback;
   final Function(String classification) resultsCallbackClassification;
 
   /// Constructor
@@ -32,6 +31,9 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
 
   /// true when inference is ongoing
   bool predicting = false;
+
+  /// true when inference is ongoing
+  bool predictingObjectDetection = false;
 
   ModelObjectDetection? _objectModel;
   ClassificationModel? _imageModel;
@@ -167,6 +169,12 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   }
 
   runClassification(CameraImage cameraImage) async {
+    if (predicting) {
+      return;
+    }
+    setState(() {
+      predicting = true;
+    });
     if (_imageModel != null) {
       String imageClassification = await _imageModel!
           .getCameraImagePrediction(cameraImage, _camFrameRotation);
@@ -174,11 +182,20 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       print("imageClassification $imageClassification");
       widget.resultsCallbackClassification(imageClassification);
     }
+    setState(() {
+      predicting = false;
+    });
   }
 
   Future<void> runObjectDetection(CameraImage cameraImage) async {
+    if (predictingObjectDetection) {
+      return;
+    }
+    setState(() {
+      predictingObjectDetection = true;
+    });
     if (_objectModel != null) {
-      List<ResultObjectDetection?> objDetect =
+      List<ResultObjectDetection> objDetect =
           await _objectModel!.getCameraImagePrediction(
         cameraImage,
         _camFrameRotation,
@@ -188,28 +205,31 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       print("data outputted $objDetect");
       widget.resultsCallback(objDetect);
     }
+    setState(() {
+      predictingObjectDetection = false;
+    });
   }
 
   /// Callback to receive each frame [CameraImage] perform inference on it
   onLatestImageAvailable(CameraImage cameraImage) async {
-    if (predicting) {
+    // Make sure we are still mounted, the background thread can return a response after we navigate away from this
+    // screen but before bg thread is killed
+    if (!mounted) {
       return;
     }
-    setState(() {
-      predicting = true;
-    });
 
     log("will start prediction");
     log("Converted camera image");
 
-    var futures = <Future>[];
-    futures.add(runClassification(cameraImage));
-    futures.add(runObjectDetection(cameraImage));
-    await Future.wait(futures);
+    runClassification(cameraImage);
+    runObjectDetection(cameraImage);
+
     log("done prediction camera image");
-    setState(() {
-      predicting = false;
-    });
+    // Make sure we are still mounted, the background thread can return a response after we navigate away from this
+    // screen but before bg thread is killed
+    if (!mounted) {
+      return;
+    }
   }
 
   @override

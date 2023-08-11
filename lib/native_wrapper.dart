@@ -5,7 +5,6 @@ import 'dart:typed_data';
 
 import 'package:computer/computer.dart';
 import 'package:ffi/ffi.dart';
-import 'package:flutter/services.dart';
 
 import 'package:pytorch_lite/generated_bindings.dart';
 import 'package:pytorch_lite/post_processor.dart';
@@ -66,7 +65,7 @@ class PytorchFfi {
     int cameraImageWidth,
     List<double> mean,
     List<double> std,
-    bool objectDetectionYolov5,
+    bool objectDetectionYoloV5,
     int outputLength,
   ) async {
     await PytorchFfi.init();
@@ -83,7 +82,7 @@ class PytorchFfi {
       cameraImageWidth,
       mean,
       std,
-      objectDetectionYolov5,
+      objectDetectionYoloV5,
       outputLength,
     ]);
     var startTime = DateTime.now();
@@ -109,7 +108,7 @@ class PytorchFfi {
           int cameraImageWidth,
           List<double> mean,
           List<double> std,
-          bool objectDetectionYolov5,
+          bool objectDetectionYoloV5,
           int outputLength,
           PostProcessorObjectDetection postProcessorObjectDetection) async {
     await PytorchFfi.init();
@@ -126,7 +125,7 @@ class PytorchFfi {
       cameraImageWidth,
       mean,
       std,
-      objectDetectionYolov5,
+      objectDetectionYoloV5,
       outputLength,
       postProcessorObjectDetection
     ]);
@@ -139,7 +138,7 @@ class PytorchFfi {
       int imageWidth,
       List<double> mean,
       List<double> std,
-      bool objectDetectionYolov5,
+      bool objectDetectionYoloV5,
       int outputLength) async {
     await PytorchFfi.init();
 
@@ -150,7 +149,7 @@ class PytorchFfi {
       imageWidth,
       mean,
       std,
-      objectDetectionYolov5,
+      objectDetectionYoloV5,
       outputLength
     ]) as TransferableTypedData)
         .materialize()
@@ -165,7 +164,7 @@ class PytorchFfi {
       int imageWidth,
       List<double> mean,
       List<double> std,
-      bool objectDetectionYolov5,
+      bool objectDetectionYoloV5,
       int outputLength,
       PostProcessorObjectDetection postProcessorObjectDetection) async {
     await PytorchFfi.init();
@@ -177,7 +176,7 @@ class PytorchFfi {
       imageWidth,
       mean,
       std,
-      objectDetectionYolov5,
+      objectDetectionYoloV5,
       outputLength,
       postProcessorObjectDetection
     ]);
@@ -191,7 +190,7 @@ class PytorchFfi {
     int imageWidth = values[3];
     List<double> mean = values[4];
     List<double> std = values[5];
-    bool objectDetectionYolov5 = values[6];
+    bool objectDetectionYoloV5 = values[6];
     int outputLength = values[7];
 
     var startTime = DateTime.now();
@@ -215,7 +214,7 @@ class PytorchFfi {
         imageAsBytes.lengthInBytes,
         imageWidth,
         imageHeight,
-        objectDetectionYolov5 ? 1 : 0,
+        objectDetectionYoloV5 ? 1 : 0,
         meanPointer,
         stdPointer,
         output);
@@ -228,7 +227,7 @@ class PytorchFfi {
     }
     if (outputLength != outputData.length) {
       throw Exception(
-          "output length does not match model length, please check model type and number of classes expected ${outputLength}, got ${outputData.length}");
+          "output length does not match model length, please check model type and number of classes expected $outputLength, got ${outputData.length}");
     }
 
     startTime = DateTime.now();
@@ -265,7 +264,7 @@ class PytorchFfi {
     int cameraImageWidth = values[8];
     List<double> mean = values[9];
     List<double> std = values[10];
-    bool objectDetectionYolov5 = values[11];
+    bool objectDetectionYoloV5 = values[11];
     int outputLength = values[12];
 
     var startTime = DateTime.now();
@@ -279,13 +278,13 @@ class PytorchFfi {
     Pointer<Uint8> dataPointer = malloc.allocate<Uint8>(totalSize);
 
     // We always have at least 1 plane, on Android it si the yPlane on iOS its the rgba plane
-    Uint8List _bytes = dataPointer.asTypedList(totalSize);
-    _bytes.setAll(0, yBuffer);
+    Uint8List bytes = dataPointer.asTypedList(totalSize);
+    bytes.setAll(0, yBuffer);
 
     if (Platform.isAndroid) {
       // Swap u&v buffer for opencv
-      _bytes.setAll(ySize, vBuffer!);
-      _bytes.setAll(ySize + vSize, uBuffer!);
+      bytes.setAll(ySize, vBuffer!);
+      bytes.setAll(ySize + vSize, uBuffer!);
     }
     startTime = DateTime.now();
 
@@ -307,7 +306,7 @@ class PytorchFfi {
         modelImageHeight,
         cameraImageHeight,
         cameraImageWidth,
-        objectDetectionYolov5 ? 1 : 0,
+        objectDetectionYoloV5 ? 1 : 0,
         meanPointer,
         stdPointer,
         output);
@@ -320,7 +319,7 @@ class PytorchFfi {
     }
     if (outputLength != outputData.length) {
       throw Exception(
-          "output length does not match model length, please check model type and number of classes expected ${outputLength}, got ${outputData.length}");
+          "output length does not match model length, please check model type and number of classes expected $outputLength, got ${outputData.length}");
     }
 
     startTime = DateTime.now();
