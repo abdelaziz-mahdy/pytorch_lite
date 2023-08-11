@@ -172,6 +172,10 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     if (predicting) {
       return;
     }
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       predicting = true;
     });
@@ -179,9 +183,13 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       String imageClassification = await _imageModel!
           .getCameraImagePrediction(cameraImage, _camFrameRotation);
 
-      print("imageClassification $imageClassification");
+      // print("imageClassification $imageClassification");
       widget.resultsCallbackClassification(imageClassification);
     }
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       predicting = false;
     });
@@ -191,6 +199,10 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     if (predictingObjectDetection) {
       return;
     }
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       predictingObjectDetection = true;
     });
@@ -202,9 +214,13 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
         minimumScore: 0.3,
         iOUThreshold: 0.3,
       );
-      print("data outputted $objDetect");
+      // print("data outputted $objDetect");
       widget.resultsCallback(objDetect);
     }
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       predictingObjectDetection = false;
     });
@@ -218,13 +234,13 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       return;
     }
 
-    log("will start prediction");
-    log("Converted camera image");
+    // log("will start prediction");
+    // log("Converted camera image");
 
     runClassification(cameraImage);
     runObjectDetection(cameraImage);
 
-    log("done prediction camera image");
+    // log("done prediction camera image");
     // Make sure we are still mounted, the background thread can return a response after we navigate away from this
     // screen but before bg thread is killed
     if (!mounted) {

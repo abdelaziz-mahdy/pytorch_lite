@@ -11,15 +11,15 @@ class PostProcessorObjectDetection {
   late int modelOutputLength;
   double scoreThreshold = 0.30;
   double IOUThreshold = 0.30;
-  int imageWidth;
-  int imageHeight;
+  int modelImageWidth;
+  int modelImageHeight;
   int nmsLimit = 15;
   ObjectDetectionModelType objectDetectionModelType;
 
   PostProcessorObjectDetection(
     this.numberOfClasses,
-    this.imageWidth,
-    this.imageHeight,
+    this.modelImageWidth,
+    this.modelImageHeight,
     this.objectDetectionModelType,
   ) {
     if (objectDetectionModelType == ObjectDetectionModelType.yolov5) {
@@ -114,12 +114,12 @@ class PostProcessorObjectDetection {
 
       if (max > scoreThreshold) {
         PyTorchRect rect = PyTorchRect(
-          left: left / imageWidth,
-          top: top / imageHeight,
-          right: right / imageWidth,
-          bottom: bottom / imageHeight,
-          width: w / imageWidth,
-          height: h / imageHeight,
+          left: left / modelImageWidth,
+          top: top / modelImageHeight,
+          right: right / modelImageWidth,
+          bottom: bottom / modelImageHeight,
+          width: w / modelImageWidth,
+          height: h / modelImageHeight,
         );
         ResultObjectDetection result =
             ResultObjectDetection(classIndex: cls, score: max, rect: rect);
@@ -157,12 +157,12 @@ class PostProcessorObjectDetection {
         }
 
         PyTorchRect rect = PyTorchRect(
-          left: left / imageWidth,
-          top: top / imageHeight,
-          width: w / imageWidth,
-          height: h / imageHeight,
-          bottom: bottom / imageHeight,
-          right: right / imageWidth,
+          left: left / modelImageWidth,
+          top: top / modelImageHeight,
+          width: w / modelImageWidth,
+          height: h / modelImageHeight,
+          bottom: bottom / modelImageHeight,
+          right: right / modelImageWidth,
         );
         ResultObjectDetection result = ResultObjectDetection(
           classIndex: cls,
