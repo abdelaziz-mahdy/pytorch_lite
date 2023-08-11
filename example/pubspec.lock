@@ -89,6 +89,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.17.1"
+  computer:
+    dependency: transitive
+    description:
+      name: computer
+      sha256: "34176c612a02ebf3e5eaa3e9b40e2b1df495043c46614999639d19e66823232d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.1"
   convert:
     dependency: transitive
     description:
@@ -311,22 +319,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  isolate_contactor:
-    dependency: transitive
-    description:
-      name: isolate_contactor
-      sha256: "5d18bd8bbd4944edd643c48794477ab90cf1706b6b855bab402125b9aecb1322"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.0"
-  isolate_manager:
-    dependency: transitive
-    description:
-      name: isolate_manager
-      sha256: "5a0a4a7869258b8d9bcb85d357309651861a57a054349afecfb102cce79aeef2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.1.0"
   js:
     dependency: transitive
     description:

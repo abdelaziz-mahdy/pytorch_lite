@@ -125,13 +125,8 @@ cv::Mat decode_image(unsigned char* data, int input_length) {
     cv::_InputArray inputArray(data, input_length);
     return cv::imdecode(inputArray, cv::IMREAD_COLOR);
 }
-cv::Mat preprocess_mat(cv::Mat img, int height, int width, float* mean_values, float* std_values) {
-    cv::Mat imgRGB;
-    cv::cvtColor(img, imgRGB, cv::COLOR_BGR2RGB);
+cv::Mat preprocess_mat(cv::Mat imgResized, float* mean_values, float* std_values) {
 
-    cv::Size sizeDesired(width, height);
-    cv::Mat imgResized;
-    cv::resize(imgRGB, imgResized, sizeDesired);
 
     imgResized.convertTo(imgResized, CV_32FC3, 1.0f / 255.0f);
 
@@ -208,7 +203,13 @@ void rotateMat(cv::Mat &matImage, int rotation) {
 
  image_model_inference(int index, unsigned char* data, int input_length, int height, int width, int objectDetectionFlag, float* mean_values, float* std_values, float* output_data) {
     cv::Mat img = decode_image(data, input_length);
-    cv::Mat imgNormalized = preprocess_mat(img, height, width, mean_values, std_values);
+    cv::Mat imgRGB;
+    cv::cvtColor(img, imgRGB, cv::COLOR_BGR2RGB);
+
+    cv::Size sizeDesired(width, height);
+    cv::Mat imgResized;
+    cv::resize(imgRGB, imgResized, sizeDesired);
+    cv::Mat imgNormalized = preprocess_mat(imgResized, mean_values, std_values);
     return run_inference(index, imgNormalized, height, width, objectDetectionFlag, output_data);
 }
 
@@ -222,8 +223,16 @@ extern "C" __attribute__((visibility("default"))) __attribute__((used)) OutputDa
     } else {
         img = cv::Mat(camera_image_height, camera_image_width, CV_8UC4, data);
     }
+    cv::Mat imgRGB;
+    cv::cvtColor(img, imgRGB, cv::COLOR_BGRA2RGB);
 
-    rotateMat(img, rotation);
-    cv::Mat imgNormalized = preprocess_mat(img, model_image_height, model_image_width, mean_values, std_values);
+    cv::Size sizeDesired(model_image_width, model_image_height);
+    cv::Mat imgResized;
+    cv::resize(imgRGB, imgResized, sizeDesired);
+
+
+    rotateMat(imgResized, rotation);
+
+    cv::Mat imgNormalized = preprocess_mat(imgResized, mean_values, std_values);
     return run_inference(index, imgNormalized, model_image_height, model_image_width, objectDetectionFlag, output_data);
 }

@@ -15,8 +15,8 @@ dependencies:
   ffi: ^2.0.1
   image: ^4.0.15
   camera: ^0.10.5+2
-  isolate_manager: ^4.0.0
-
+  # isolate_manager: ^4.0.0
+  computer: ^3.2.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

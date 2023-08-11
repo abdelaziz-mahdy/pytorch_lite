@@ -3,14 +3,15 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
+import 'package:computer/computer.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
-import 'package:isolate_manager/isolate_manager.dart';
 
 import 'package:pytorch_lite/generated_bindings.dart';
-import 'package:image/image.dart';
+import 'package:pytorch_lite/post_processor.dart';
 import 'package:pytorch_lite/utils.dart';
 
+import 'classes/result_object_detection.dart';
 import 'native_locator.dart';
 
 /// The bindings to the native functions in [dylib].
@@ -18,32 +19,26 @@ final NativeLibrary _bindings = NativeLibrary(dylib);
 
 class PytorchFfi {
   static bool initiated = false;
-  static late IsolateManager loadModelManager;
-  static late IsolateManager imageModelInferenceManager;
-  static late IsolateManager cameraImageModelInferenceManager;
+  static late Computer computer;
 
-  static void init() {
+  static Future<void> init({int concurrent = 4}) async {
     if (PytorchFfi.initiated) {
       return;
     }
     print("PytorchFfi initialization");
     PytorchFfi.initiated = true;
-    PytorchFfi.loadModelManager =
-        IsolateManager.create(_loadModel, concurrent: 2, isDebug: false);
-    PytorchFfi.imageModelInferenceManager = IsolateManager.create(
-        _imageModelInference,
-        concurrent: 2,
-        isDebug: false);
-    PytorchFfi.cameraImageModelInferenceManager = IsolateManager.create(
-        _cameraImageModelInference,
-        concurrent: 2,
-        isDebug: false);
+    PytorchFfi.computer = Computer.create(); //Or Computer.shared()
+
+    await PytorchFfi.computer.turnOn(
+      workersCount: concurrent, // optional, default 2
+      verbose: false, // optional, default false
+    );
   }
 
   @pragma('vm:entry-point')
   static Future<int> loadModel(dynamic modelPath) async {
-    PytorchFfi.init();
-    return await loadModelManager.compute(modelPath);
+    await PytorchFfi.init();
+    return await computer.compute(_loadModel, param: modelPath);
   }
 
   @pragma('vm:entry-point')
@@ -61,7 +56,9 @@ class PytorchFfi {
 
   static Future<List<double>> cameraImageModelInference(
     int modelIndex,
- Uint8List yBuffer, Uint8List? uBuffer, Uint8List? vBuffer,
+    Uint8List yBuffer,
+    Uint8List? uBuffer,
+    Uint8List? vBuffer,
     int rotation,
     int modelImageHeight,
     int modelImageWidth,
@@ -72,11 +69,13 @@ class PytorchFfi {
     bool objectDetectionYolov5,
     int outputLength,
   ) async {
-    PytorchFfi.init();
-
-    return (await cameraImageModelInferenceManager.compute([
+    await PytorchFfi.init();
+    TransferableTypedData transferableTypedData =
+        await computer.compute(_cameraImageModelInference, param: [
       modelIndex,
-       yBuffer,  uBuffer,  vBuffer,
+      yBuffer,
+      uBuffer,
+      vBuffer,
       rotation,
       modelImageHeight,
       modelImageWidth,
@@ -86,10 +85,51 @@ class PytorchFfi {
       std,
       objectDetectionYolov5,
       outputLength,
-    ]) as TransferableTypedData)
-        .materialize()
-        .asFloat32List()
-        .toList();
+    ]);
+    var startTime = DateTime.now();
+    List<double> data =
+        transferableTypedData.materialize().asFloat32List().toList();
+    var endTime = DateTime.now();
+    print(
+        "materialize output takes ${endTime.difference(startTime).inMilliseconds}ms");
+
+    return data;
+  }
+
+  static Future<List<ResultObjectDetection>>
+      cameraImageModelInferenceObjectDetection(
+          int modelIndex,
+          Uint8List yBuffer,
+          Uint8List? uBuffer,
+          Uint8List? vBuffer,
+          int rotation,
+          int modelImageHeight,
+          int modelImageWidth,
+          int cameraImageHeight,
+          int cameraImageWidth,
+          List<double> mean,
+          List<double> std,
+          bool objectDetectionYolov5,
+          int outputLength,
+          PostProcessorObjectDetection postProcessorObjectDetection) async {
+    await PytorchFfi.init();
+    return await computer
+        .compute(_cameraImageModelInferenceObjectDetection, param: [
+      modelIndex,
+      yBuffer,
+      uBuffer,
+      vBuffer,
+      rotation,
+      modelImageHeight,
+      modelImageWidth,
+      cameraImageHeight,
+      cameraImageWidth,
+      mean,
+      std,
+      objectDetectionYolov5,
+      outputLength,
+      postProcessorObjectDetection
+    ]);
   }
 
   static Future<List<double>> imageModelInference(
@@ -101,9 +141,9 @@ class PytorchFfi {
       List<double> std,
       bool objectDetectionYolov5,
       int outputLength) async {
-    PytorchFfi.init();
+    await PytorchFfi.init();
 
-    return (await imageModelInferenceManager.compute([
+    return (await computer.compute(_imageModelInference, param: [
       modelIndex,
       imageAsBytes,
       imageHeight,
@@ -116,6 +156,31 @@ class PytorchFfi {
         .materialize()
         .asFloat32List()
         .toList();
+  }
+
+  static Future<List<ResultObjectDetection>> imageModelInferenceObjectDetection(
+      int modelIndex,
+      Uint8List imageAsBytes,
+      int imageHeight,
+      int imageWidth,
+      List<double> mean,
+      List<double> std,
+      bool objectDetectionYolov5,
+      int outputLength,
+      PostProcessorObjectDetection postProcessorObjectDetection) async {
+    await PytorchFfi.init();
+
+    return await computer.compute(_imageModelInferenceObjectDetection, param: [
+      modelIndex,
+      imageAsBytes,
+      imageHeight,
+      imageWidth,
+      mean,
+      std,
+      objectDetectionYolov5,
+      outputLength,
+      postProcessorObjectDetection
+    ]);
   }
 
   @pragma('vm:entry-point')
@@ -205,7 +270,7 @@ class PytorchFfi {
 
     var startTime = DateTime.now();
     var endTime = DateTime.now();
-    
+
     var ySize = yBuffer.lengthInBytes;
     var uSize = uBuffer?.lengthInBytes ?? 0;
     var vSize = vBuffer?.lengthInBytes ?? 0;
@@ -224,7 +289,6 @@ class PytorchFfi {
     }
     startTime = DateTime.now();
 
-
     endTime = DateTime.now();
     print(
         "convertUint8ListToPointerChar time: ${endTime.difference(startTime).inMilliseconds}ms");
@@ -238,7 +302,7 @@ class PytorchFfi {
         modelIndex,
         dataPointer.cast<UnsignedChar>(),
         rotation,
-        Platform.isAndroid?1:0,
+        Platform.isAndroid ? 1 : 0,
         modelImageWidth,
         modelImageHeight,
         cameraImageHeight,
@@ -278,5 +342,25 @@ class PytorchFfi {
     calloc.free(stdPointer);
 
     return data;
+  }
+
+  @pragma('vm:entry-point')
+  static List<ResultObjectDetection> _cameraImageModelInferenceObjectDetection(
+      dynamic values) {
+    TransferableTypedData transferredData = _cameraImageModelInference(values);
+    PostProcessorObjectDetection postProcessorObjectDetection =
+        (values as List).last;
+    List<double> data = transferredData.materialize().asFloat32List().toList();
+    return postProcessorObjectDetection.outputsToNMSPredictions(data);
+  }
+
+  @pragma('vm:entry-point')
+  static List<ResultObjectDetection> _imageModelInferenceObjectDetection(
+      dynamic values) {
+    TransferableTypedData transferredData = _imageModelInference(values);
+    PostProcessorObjectDetection postProcessorObjectDetection =
+        (values as List).last;
+    List<double> data = transferredData.materialize().asFloat32List().toList();
+    return postProcessorObjectDetection.outputsToNMSPredictions(data);
   }
 }

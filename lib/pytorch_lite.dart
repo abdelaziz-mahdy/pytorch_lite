@@ -300,15 +300,15 @@ class ModelObjectDetection {
       {this.modelType = ObjectDetectionModelType.yolov5});
 
   ///predicts image but returns the raw net output
-  Future<List<ResultObjectDetection?>> getImagePredictionList(
+  Future<List<ResultObjectDetection>> getImagePredictionList(
       Uint8List imageAsBytes,
       {double minimumScore = 0.5,
       double iOUThreshold = 0.5,
       int boxesLimit = 10,
       List<double> mean = noMeanRgb,
       List<double> std = noStdRgb}) async {
-    List<ResultObjectDetection?> prediction = postProcessorObjectDetection
-        .outputsToNMSPredictions(await PytorchFfi.imageModelInference(
+    List<ResultObjectDetection> prediction =
+        await PytorchFfi.imageModelInferenceObjectDetection(
             _index,
             imageAsBytes,
             imageHeight,
@@ -316,19 +316,19 @@ class ModelObjectDetection {
             mean,
             std,
             modelType == ObjectDetectionModelType.yolov5,
-            postProcessorObjectDetection.modelOutputLength));
+            postProcessorObjectDetection.modelOutputLength,
+            postProcessorObjectDetection);
     return prediction;
   }
 
   ///predicts image and returns the supposed label belonging to it
-  Future<List<ResultObjectDetection?>> getImagePrediction(
-      Uint8List imageAsBytes,
+  Future<List<ResultObjectDetection>> getImagePrediction(Uint8List imageAsBytes,
       {double minimumScore = 0.5,
       double iOUThreshold = 0.5,
       int boxesLimit = 10,
       List<double> mean = noMeanRgb,
       List<double> std = noStdRgb}) async {
-    List<ResultObjectDetection?> prediction = await getImagePredictionList(
+    List<ResultObjectDetection> prediction = await getImagePredictionList(
         imageAsBytes,
         minimumScore: minimumScore,
         iOUThreshold: iOUThreshold,
@@ -337,14 +337,14 @@ class ModelObjectDetection {
         std: std);
 
     for (var element in prediction) {
-      element?.className = labels[element.classIndex];
+      element.className = labels[element.classIndex];
     }
 
     return prediction;
   }
 
   ///predicts image but returns the raw net output
-  Future<List<ResultObjectDetection?>> getCameraImagePredictionList(
+  Future<List<ResultObjectDetection>> getCameraImagePredictionList(
       CameraImage cameraImage, int rotation,
       {double minimumScore = 0.5,
       double iOUThreshold = 0.5,
@@ -366,8 +366,8 @@ class ModelObjectDetection {
       vBuffer = planes[2].bytes;
     }
 
-    List<ResultObjectDetection?> prediction = postProcessorObjectDetection
-        .outputsToNMSPredictions(await PytorchFfi.cameraImageModelInference(
+    List<ResultObjectDetection> prediction =
+        await PytorchFfi.cameraImageModelInferenceObjectDetection(
             _index,
             yBuffer,
             uBuffer,
@@ -380,20 +380,22 @@ class ModelObjectDetection {
             mean,
             std,
             modelType == ObjectDetectionModelType.yolov5,
-            postProcessorObjectDetection.modelOutputLength));
+            postProcessorObjectDetection.modelOutputLength,
+            postProcessorObjectDetection);
 
     return prediction;
   }
 
   ///predicts image and returns the supposed label belonging to it
-  Future<List<ResultObjectDetection?>> getCameraImagePrediction(
+  Future<List<ResultObjectDetection>> getCameraImagePrediction(
       CameraImage cameraImage, int rotation,
       {double minimumScore = 0.5,
       double iOUThreshold = 0.5,
       int boxesLimit = 10,
       List<double> mean = noMeanRgb,
       List<double> std = noStdRgb}) async {
-    List<ResultObjectDetection?> prediction = await getCameraImagePredictionList(cameraImage, rotation,
+    List<ResultObjectDetection> prediction = await getCameraImagePredictionList(
+        cameraImage, rotation,
         minimumScore: minimumScore,
         iOUThreshold: iOUThreshold,
         boxesLimit: boxesLimit,
@@ -401,7 +403,7 @@ class ModelObjectDetection {
         std: std);
 
     for (var element in prediction) {
-      element?.className = labels[element.classIndex];
+      element.className = labels[element.classIndex];
     }
 
     return prediction;
