@@ -21,7 +21,7 @@
 * Better memory usage and freeing
 * Fixed camera example usage
 * Breaking changes
-    * getImagePredictionFromBytesList Removed, (check camera example for new usage)
+* getImagePredictionFromBytesList Removed, (check camera example for new usage)
 
 
 ## 2.0.5
