@@ -41,7 +41,7 @@ class BoxWidget extends StatelessWidget {
       left: result.rect.left * factorX,
       top: result.rect.top * factorY,
       width: result.rect.width * factorX,
-      height: result.rect.height* factorY,
+      height: result.rect.height * factorY,
 
       //left: re?.rect.left.toDouble(),
       //top: re?.rect.top.toDouble(),
@@ -52,7 +52,7 @@ class BoxWidget extends StatelessWidget {
         height: result.rect.height * factorY,
         decoration: BoxDecoration(
             border: Border.all(color: usedColor!, width: 3),
-            borderRadius: BorderRadius.all(Radius.circular(2))),
+            borderRadius: const BorderRadius.all(Radius.circular(2))),
         child: Align(
           alignment: Alignment.topLeft,
           child: FittedBox(

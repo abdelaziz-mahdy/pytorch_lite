@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 import 'package:pytorch_lite_example/ui/box_widget.dart';
-import 'package:pytorch_lite_example/ui/camera_view_singleton.dart';
 
 import 'ui/camera_view.dart';
 
@@ -167,7 +166,7 @@ class StatsRow extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           Text(value)
         ],
