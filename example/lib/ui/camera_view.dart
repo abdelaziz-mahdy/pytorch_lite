@@ -1,10 +1,9 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image/image.dart';
-import 'package:pytorch_lite/image_utils_isolate.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
 import 'camera_view_singleton.dart';
@@ -12,8 +11,11 @@ import 'camera_view_singleton.dart';
 /// [CameraView] sends each frame for inference
 class CameraView extends StatefulWidget {
   /// Callback to pass results after inference to [HomeView]
-  final Function(List<ResultObjectDetection?> recognitions) resultsCallback;
-  final Function(String classification) resultsCallbackClassification;
+  final Function(
+          List<ResultObjectDetection> recognitions, Duration inferenceTime)
+      resultsCallback;
+  final Function(String classification, Duration inferenceTime)
+      resultsCallbackClassification;
 
   /// Constructor
   const CameraView(this.resultsCallback, this.resultsCallbackClassification,
@@ -33,11 +35,14 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   /// true when inference is ongoing
   bool predicting = false;
 
+  /// true when inference is ongoing
+  bool predictingObjectDetection = false;
+
   ModelObjectDetection? _objectModel;
   ClassificationModel? _imageModel;
 
   bool classification = false;
-
+  int _camFrameRotation = 0;
   String errorMessage = "";
   @override
   void initState() {
@@ -115,8 +120,20 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   void initializeCamera() async {
     cameras = await availableCameras();
 
+    var idx =
+        cameras.indexWhere((c) => c.lensDirection == CameraLensDirection.back);
+    if (idx < 0) {
+      log("No Back camera found - weird");
+      return;
+    }
+
+    var desc = cameras[idx];
+    _camFrameRotation = Platform.isAndroid ? desc.sensorOrientation : 0;
     // cameras[0] for rear-camera
-    cameraController = CameraController(cameras[0], ResolutionPreset.medium,
+    cameraController = CameraController(desc, ResolutionPreset.medium,
+        imageFormatGroup: Platform.isAndroid
+            ? ImageFormatGroup.yuv420
+            : ImageFormatGroup.bgra8888,
         enableAudio: false);
 
     cameraController?.initialize().then((_) async {
@@ -135,7 +152,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       // same as screenWidth while maintaining the aspectRatio
       Size screenSize = MediaQuery.of(context).size;
       CameraViewSingleton.screenSize = screenSize;
-      CameraViewSingleton.ratio = screenSize.width / previewSize.height;
+      CameraViewSingleton.ratio = cameraController!.value.aspectRatio;
     });
   }
 
@@ -154,56 +171,95 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     //     child: CameraPreview(cameraController));
   }
 
-  runClassification(Uint8List jpgBytes) async {
-    if (_imageModel != null) {
-      String imageClassification =
-          await _imageModel!.getImagePrediction(jpgBytes);
-
-      print("imageClassification $imageClassification");
-      widget.resultsCallbackClassification(imageClassification);
+  runClassification(CameraImage cameraImage) async {
+    if (predicting) {
+      return;
     }
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      predicting = true;
+    });
+    if (_imageModel != null) {
+      // Start the stopwatch
+      Stopwatch stopwatch = Stopwatch()..start();
+
+      String imageClassification = await _imageModel!
+          .getCameraImagePrediction(cameraImage, _camFrameRotation);
+      // Stop the stopwatch
+      stopwatch.stop();
+      // print("imageClassification $imageClassification");
+      widget.resultsCallbackClassification(
+          imageClassification, stopwatch.elapsed);
+    }
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      predicting = false;
+    });
   }
 
-  Future<void> runObjectDetection(Uint8List jpgBytes) async {
+  Future<void> runObjectDetection(CameraImage cameraImage) async {
+    if (predictingObjectDetection) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      predictingObjectDetection = true;
+    });
     if (_objectModel != null) {
-      // List<ResultObjectDetection?> objDetect =
-      //     await _objectModel!.getImagePrediction(
-      //   jpgBytes,
-      //   minimumScore: 0.3,
-      //   iOUThreshold: 0.3,
-      // );
-      await _objectModel!.getImagePredictionList(
-        jpgBytes,
+      // Start the stopwatch
+      Stopwatch stopwatch = Stopwatch()..start();
+
+      List<ResultObjectDetection> objDetect =
+          await _objectModel!.getCameraImagePrediction(
+        cameraImage,
+        _camFrameRotation,
         minimumScore: 0.3,
         iOUThreshold: 0.3,
       );
+
+      // Stop the stopwatch
+      stopwatch.stop();
       // print("data outputted $objDetect");
-      // widget.resultsCallback(objDetect);
+      widget.resultsCallback(objDetect, stopwatch.elapsed);
     }
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      predictingObjectDetection = false;
+    });
   }
 
   /// Callback to receive each frame [CameraImage] perform inference on it
   onLatestImageAvailable(CameraImage cameraImage) async {
-    if (predicting) {
+    // Make sure we are still mounted, the background thread can return a response after we navigate away from this
+    // screen but before bg thread is killed
+    if (!mounted) {
       return;
     }
-    setState(() {
-      predicting = true;
-    });
 
-    log("will start prediction");
-    Uint8List jpgBytes =
-        (await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage))!;
-    log("Converted camera image");
+    // log("will start prediction");
+    // log("Converted camera image");
 
-    var futures = <Future>[];
-    futures.add(runClassification(jpgBytes));
-    futures.add(runObjectDetection(jpgBytes));
-    await Future.wait(futures);
-    log("done prediction camera image");
-    setState(() {
-      predicting = false;
-    });
+    runClassification(cameraImage);
+    runObjectDetection(cameraImage);
+
+    // log("done prediction camera image");
+    // Make sure we are still mounted, the background thread can return a response after we navigate away from this
+    // screen but before bg thread is killed
+    if (!mounted) {
+      return;
+    }
   }
 
   @override

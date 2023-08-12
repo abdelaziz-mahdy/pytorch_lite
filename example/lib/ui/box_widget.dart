@@ -4,10 +4,10 @@ import 'package:pytorch_lite_example/ui/camera_view_singleton.dart';
 
 /// Individual bounding box
 class BoxWidget extends StatelessWidget {
-  ResultObjectDetection result;
-  Color? boxesColor;
-  bool showPercentage;
-  BoxWidget(
+  final ResultObjectDetection result;
+  final Color? boxesColor;
+  final bool showPercentage;
+  const BoxWidget(
       {Key? key,
       required this.result,
       this.boxesColor,
@@ -37,39 +37,37 @@ class BoxWidget extends StatelessWidget {
       usedColor = boxesColor;
     }
 
-    print(result.rect.width.toDouble() * factorX);
     return Positioned(
       left: result.rect.left * factorX,
-      top: result.rect.top * factorY - 20,
-      //width: re.rect.width.toDouble(),
-      //height: re.rect.height.toDouble(),
+      top: result.rect.top * factorY,
+      width: result.rect.width * factorX,
+      height: result.rect.height* factorY,
 
       //left: re?.rect.left.toDouble(),
       //top: re?.rect.top.toDouble(),
       //right: re.rect.right.toDouble(),
       //bottom: re.rect.bottom.toDouble(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 20,
-            alignment: Alignment.centerRight,
-            color: usedColor,
-            child: Text(
-              "${result.className ?? result.classIndex.toString()}_${showPercentage ? "${(result.score * 100).toStringAsFixed(2)}%" : ""}",
+      child: Container(
+        width: result.rect.width * factorX,
+        height: result.rect.height * factorY,
+        decoration: BoxDecoration(
+            border: Border.all(color: usedColor!, width: 3),
+            borderRadius: BorderRadius.all(Radius.circular(2))),
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: FittedBox(
+            child: Container(
+              color: usedColor,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(result.className ?? result.classIndex.toString()),
+                  Text(" ${result.score.toStringAsFixed(2)}"),
+                ],
+              ),
             ),
           ),
-          Container(
-            width: result.rect.width.toDouble() * factorX,
-            height: result.rect.height.toDouble() * factorY,
-            decoration: BoxDecoration(
-                border: Border.all(color: usedColor!, width: 3),
-                borderRadius: const BorderRadius.all(Radius.circular(2))),
-            child: Container(),
-          ),
-        ],
+        ),
       ),
     );
   }

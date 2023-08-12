@@ -2,6 +2,7 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
 # Run `pod lib lint pytorch_lite.podspec` to validate before publishing.
 #
+
 Pod::Spec.new do |s|
   s.name             = 'pytorch_lite'
   s.version          = '0.0.1'
@@ -13,6 +14,7 @@ A new Flutter plugin project.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
+
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
   s.platform = :ios, '9.0'
@@ -27,4 +29,6 @@ A new Flutter plugin project.
 
   s.static_framework = true
   s.dependency 'LibTorch', '~> 1.13.0.1'
+  # Add OpenCV dep from cocoapods and update min ios ver to 11
+  s.dependency 'OpenCV', '4.3.0'
 end

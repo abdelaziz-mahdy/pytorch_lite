@@ -1,3 +1,10 @@
+## 4.0.0
+* image processing is done using opencv to improve performance
+* camera image decoding is done using opencv to improve performance
+* camera images can be ran using getCameraImage* methods
+* improving the performance of object detection by moving all the processing to isolate
+* Fixed: CAMERA image boxes are shifted upwards in example
+* Improving example
 ## 3.0.4
 * improved speed of inference
 * improve build speed on android
@@ -15,7 +22,7 @@
 * Better memory usage and freeing
 * Fixed camera example usage
 * Breaking changes
-    * getImagePredictionFromBytesList Removed, (check camera example for new usage)
+* getImagePredictionFromBytesList Removed, (check camera example for new usage)
 
 
 ## 2.0.5

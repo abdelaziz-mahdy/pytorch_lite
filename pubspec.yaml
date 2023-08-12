@@ -1,6 +1,6 @@
 name: pytorch_lite
 description: Flutter package to help run pytorch lite models classification and yolov5 and yolov8 
-version: 3.0.4
+version: 4.0.0
 homepage: https://github.com/zezo357/pytorch_lite
 
 environment:
@@ -15,14 +15,14 @@ dependencies:
   ffi: ^2.0.1
   image: ^4.0.15
   camera: ^0.10.5+2
-  isolate_manager: ^3.0.0
-
+  # isolate_manager: ^4.0.0
+  computer: ^3.2.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.1
-  pigeon: ^9.0.0
-  ffigen: ^8.0.2
+  pigeon: ^10.1.4
+  ffigen: ^9.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

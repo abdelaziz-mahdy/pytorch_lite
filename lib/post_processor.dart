@@ -11,15 +11,15 @@ class PostProcessorObjectDetection {
   late int modelOutputLength;
   double scoreThreshold = 0.30;
   double IOUThreshold = 0.30;
-  int imageWidth;
-  int imageHeight;
+  int modelImageWidth;
+  int modelImageHeight;
   int nmsLimit = 15;
   ObjectDetectionModelType objectDetectionModelType;
 
   PostProcessorObjectDetection(
     this.numberOfClasses,
-    this.imageWidth,
-    this.imageHeight,
+    this.modelImageWidth,
+    this.modelImageHeight,
     this.objectDetectionModelType,
   ) {
     if (objectDetectionModelType == ObjectDetectionModelType.yolov5) {
@@ -33,7 +33,7 @@ class PostProcessorObjectDetection {
     }
   }
 
-  List<ResultObjectDetection> nonMaxSuppression(
+  List<ResultObjectDetection> _nonMaxSuppression(
       List<ResultObjectDetection> boxes) {
     // Sort the boxes based on the score in descending order
     boxes.sort((boxA, boxB) => boxB.score.compareTo(boxA.score));
@@ -52,7 +52,7 @@ class PostProcessorObjectDetection {
         for (int j = i + 1; j < boxes.length; j++) {
           if (active[j]) {
             ResultObjectDetection boxB = boxes[j];
-            if (iou(boxA.rect, boxB.rect) > IOUThreshold) {
+            if (_iou(boxA.rect, boxB.rect) > IOUThreshold) {
               active[j] = false;
               numActive -= 1;
               if (numActive <= 0) {
@@ -69,7 +69,7 @@ class PostProcessorObjectDetection {
     return selected;
   }
 
-  double iou(PyTorchRect a, PyTorchRect b) {
+  double _iou(PyTorchRect a, PyTorchRect b) {
     double areaA = (a.right - a.left) * (a.bottom - a.top);
     if (areaA <= 0.0) {
       return 0.0;
@@ -89,7 +89,7 @@ class PostProcessorObjectDetection {
     return intersectionArea / (areaA + areaB - intersectionArea);
   }
 
-  List<ResultObjectDetection> outputsToNMSPredictionsYoloV8(
+  List<ResultObjectDetection> _outputsToNMSPredictionsYoloV8(
       List<double> outputs) {
     List<ResultObjectDetection> results = [];
     for (int i = 0; i < outputRow; i++) {
@@ -114,12 +114,12 @@ class PostProcessorObjectDetection {
 
       if (max > scoreThreshold) {
         PyTorchRect rect = PyTorchRect(
-          left: left / imageWidth,
-          top: top / imageHeight,
-          right: right / imageWidth,
-          bottom: bottom / imageHeight,
-          width: w / imageWidth,
-          height: h / imageHeight,
+          left: left / modelImageWidth,
+          top: top / modelImageHeight,
+          right: right / modelImageWidth,
+          bottom: bottom / modelImageHeight,
+          width: w / modelImageWidth,
+          height: h / modelImageHeight,
         );
         ResultObjectDetection result =
             ResultObjectDetection(classIndex: cls, score: max, rect: rect);
@@ -129,10 +129,10 @@ class PostProcessorObjectDetection {
     }
 
     print("Result length before processing ${results.length}");
-    return nonMaxSuppression(results); // Please implement this method
+    return _nonMaxSuppression(results); // Please implement this method
   }
 
-  List<ResultObjectDetection> outputsToNMSPredictionsYolov5(
+  List<ResultObjectDetection> _outputsToNMSPredictionsYoloV5(
       List<double> outputs) {
     List<ResultObjectDetection> results = [];
     for (int i = 0; i < outputRow; i++) {
@@ -157,12 +157,12 @@ class PostProcessorObjectDetection {
         }
 
         PyTorchRect rect = PyTorchRect(
-          left: left / imageWidth,
-          top: top / imageHeight,
-          width: w / imageWidth,
-          height: h / imageHeight,
-          bottom: bottom / imageHeight,
-          right: right / imageWidth,
+          left: left / modelImageWidth,
+          top: top / modelImageHeight,
+          width: w / modelImageWidth,
+          height: h / modelImageHeight,
+          bottom: bottom / modelImageHeight,
+          right: right / modelImageWidth,
         );
         ResultObjectDetection result = ResultObjectDetection(
           classIndex: cls,
@@ -175,7 +175,7 @@ class PostProcessorObjectDetection {
     }
 
     print("Result length before processing ${results.length}");
-    return nonMaxSuppression(results);
+    return _nonMaxSuppression(results);
   }
 
   List<ResultObjectDetection> outputsToNMSPredictions(List<double> outputs) {
@@ -184,9 +184,9 @@ class PostProcessorObjectDetection {
     List<ResultObjectDetection> predictions;
 
     if (objectDetectionModelType == ObjectDetectionModelType.yolov5) {
-      predictions = outputsToNMSPredictionsYolov5(outputs);
+      predictions = _outputsToNMSPredictionsYoloV5(outputs);
     } else {
-      predictions = outputsToNMSPredictionsYoloV8(outputs);
+      predictions = _outputsToNMSPredictionsYoloV8(outputs);
     }
 
     DateTime endTime = DateTime.now(); // Record the end time
