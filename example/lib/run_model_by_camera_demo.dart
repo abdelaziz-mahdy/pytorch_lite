@@ -14,7 +14,10 @@ class RunModelByCameraDemo extends StatefulWidget {
 
 class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
   List<ResultObjectDetection>? results;
+  Duration? objectDetectionInferenceTime;
+
   String? classification;
+  Duration? classificationInferenceTime;
 
   /// Scaffold Key
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
@@ -71,17 +74,21 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
                       children: [
                         const Icon(Icons.keyboard_arrow_up,
                             size: 48, color: Colors.orange),
-                        (classification != null)
-                            ? Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  children: [
-                                    StatsRow(
-                                        'Classification:', '$classification'),
-                                  ],
-                                ),
-                              )
-                            : Container()
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              if (classification != null)
+                                StatsRow('Classification:', '$classification'),
+                              if (classificationInferenceTime != null)
+                                StatsRow('Classification Inference time:',
+                                    '${objectDetectionInferenceTime?.inMilliseconds} ms'),
+                              if (objectDetectionInferenceTime != null)
+                                StatsRow('Object Detection Inference time:',
+                                    '${objectDetectionInferenceTime?.inMilliseconds} ms'),
+                            ],
+                          ),
+                        )
                       ],
                     ),
                   ),
@@ -104,12 +111,14 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
     );
   }
 
-  void resultsCallback(List<ResultObjectDetection> results) {
+  void resultsCallback(
+      List<ResultObjectDetection> results, Duration inferenceTime) {
     if (!mounted) {
       return;
     }
     setState(() {
       this.results = results;
+      objectDetectionInferenceTime = inferenceTime;
       for (var element in results) {
         print({
           "rect": {
@@ -125,12 +134,14 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
     });
   }
 
-  void resultsCallbackClassification(String classification) {
+  void resultsCallbackClassification(
+      String classification, Duration inferenceTime) {
     if (!mounted) {
       return;
     }
     setState(() {
       this.classification = classification;
+      classificationInferenceTime = inferenceTime;
     });
   }
 
@@ -141,18 +152,18 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
 
 /// Row for one Stats field
 class StatsRow extends StatelessWidget {
-  final String left;
-  final String right;
+  final String title;
+  final String value;
 
-  const StatsRow(this.left, this.right, {Key? key}) : super(key: key);
+  const StatsRow(this.title, this.value, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text(left), Text(right)],
+      child: Column(
+        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [Text(title,style: TextStyle(fontWeight: FontWeight.bold),), Text(value)],
       ),
     );
   }

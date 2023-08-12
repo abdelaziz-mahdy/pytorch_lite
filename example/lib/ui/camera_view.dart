@@ -11,8 +11,11 @@ import 'camera_view_singleton.dart';
 /// [CameraView] sends each frame for inference
 class CameraView extends StatefulWidget {
   /// Callback to pass results after inference to [HomeView]
-  final Function(List<ResultObjectDetection> recognitions) resultsCallback;
-  final Function(String classification) resultsCallbackClassification;
+  final Function(
+          List<ResultObjectDetection> recognitions, Duration inferenceTime)
+      resultsCallback;
+  final Function(String classification, Duration inferenceTime)
+      resultsCallbackClassification;
 
   /// Constructor
   const CameraView(this.resultsCallback, this.resultsCallbackClassification,
@@ -180,11 +183,16 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       predicting = true;
     });
     if (_imageModel != null) {
+      // Start the stopwatch
+      Stopwatch stopwatch = Stopwatch()..start();
+
       String imageClassification = await _imageModel!
           .getCameraImagePrediction(cameraImage, _camFrameRotation);
-
+      // Stop the stopwatch
+      stopwatch.stop();
       // print("imageClassification $imageClassification");
-      widget.resultsCallbackClassification(imageClassification);
+      widget.resultsCallbackClassification(
+          imageClassification, stopwatch.elapsed);
     }
     if (!mounted) {
       return;
@@ -207,6 +215,9 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       predictingObjectDetection = true;
     });
     if (_objectModel != null) {
+      // Start the stopwatch
+      Stopwatch stopwatch = Stopwatch()..start();
+
       List<ResultObjectDetection> objDetect =
           await _objectModel!.getCameraImagePrediction(
         cameraImage,
@@ -214,8 +225,11 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
         minimumScore: 0.3,
         iOUThreshold: 0.3,
       );
+
+      // Stop the stopwatch
+      stopwatch.stop();
       // print("data outputted $objDetect");
-      widget.resultsCallback(objDetect);
+      widget.resultsCallback(objDetect, stopwatch.elapsed);
     }
     if (!mounted) {
       return;
