@@ -34,5 +34,5 @@ android/libtorch-android.zip
 android/libtorch-android*
 
 android/libtorch-android*/*
-android/opencv*/*
+android/opencv/*
 android/opencv*
