@@ -3,7 +3,8 @@
 * camera image decoding is done using opencv to improve performance
 * camera images can be ran using getCameraImage* methods
 * improving the performance of object detection by moving all the processing to isolate
-* TODO: CAMERA image boxes are shifted upwards
+* Fixed: CAMERA image boxes are shifted upwards in example
+* Improving example
 ## 3.0.4
 * improved speed of inference
 * improve build speed on android
