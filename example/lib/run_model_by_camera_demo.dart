@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 import 'package:pytorch_lite_example/ui/box_widget.dart';
+import 'package:pytorch_lite_example/ui/camera_view_singleton.dart';
 
 import 'ui/camera_view.dart';
 
@@ -82,7 +83,7 @@ class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
                                 StatsRow('Classification:', '$classification'),
                               if (classificationInferenceTime != null)
                                 StatsRow('Classification Inference time:',
-                                    '${objectDetectionInferenceTime?.inMilliseconds} ms'),
+                                    '${classificationInferenceTime?.inMilliseconds} ms'),
                               if (objectDetectionInferenceTime != null)
                                 StatsRow('Object Detection Inference time:',
                                     '${objectDetectionInferenceTime?.inMilliseconds} ms'),
@@ -163,7 +164,13 @@ class StatsRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Column(
         // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text(title,style: TextStyle(fontWeight: FontWeight.bold),), Text(value)],
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(value)
+        ],
       ),
     );
   }

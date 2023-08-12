@@ -152,7 +152,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       // same as screenWidth while maintaining the aspectRatio
       Size screenSize = MediaQuery.of(context).size;
       CameraViewSingleton.screenSize = screenSize;
-      CameraViewSingleton.ratio = screenSize.width / previewSize.height;
+      CameraViewSingleton.ratio = cameraController!.value.aspectRatio;
     });
   }
 

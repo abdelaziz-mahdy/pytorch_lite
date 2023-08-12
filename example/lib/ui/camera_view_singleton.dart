@@ -8,6 +8,6 @@ class CameraViewSingleton {
   static Size get actualPreviewSize =>
       Size(screenSize.width, screenSize.width * ratio);
   static Size get actualPreviewSizeH {
-    return Size(screenSize.width, screenSize.width * (1 / ratio));
+    return Size(screenSize.width, screenSize.width * (ratio));
   }
 }
