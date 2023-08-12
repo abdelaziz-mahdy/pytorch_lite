@@ -1,6 +1,6 @@
 # pytorch_lite
 
-- flutter package to help run pytorch lite models classification and yolov5 and yolov8
+- flutter package to help run pytorch lite models classification and YoloV5 and YoloV8.
 
 # example for Classification
 
