@@ -1,3 +1,5 @@
+## 4.0.1
+* android: using opencv dynamic library to improve size and make min sdk 21 
 ## 4.0.0
 * image processing is done using opencv to improve performance
 * camera image decoding is done using opencv to improve performance

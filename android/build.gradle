@@ -33,7 +33,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 24
+        minSdkVersion 21
     }
     // // Add this block at the end of the file
     // project.afterEvaluate {

@@ -36,3 +36,6 @@ android/libtorch-android*
 android/libtorch-android*/*
 android/opencv/*
 android/opencv*
+android/open_cv/*
+android/open_cv*
+

@@ -3,8 +3,8 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(pytorch_lite)
 set(CMAKE_CXX_STANDARD 14)  # needed for libtorch
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp -static-openmp")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -static-openmp")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp -static-openmp")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -static-openmp")
 # set(BUILD_WITH_HALF_PRECISION ON)
 # Add library source file(s)
 add_library(pytorch_lite SHARED ../ios/Classes/pytorch_ffi.cpp)
@@ -103,24 +103,27 @@ set(LIBTORCH_URL "https://github.com/zezo357/pytorch_lite/releases/download/libs
 set(LIBTORCH_Folder_name "libtorch-android-13.1")
 
 
-set(opencv_archive "opencv-mobile-4.6.0-android.zip")
-set(opencv_archive_URL "https://github.com/nihui/opencv-mobile/releases/download/v16/${opencv_archive}")
+# set(opencv_archive "opencv-mobile-4.6.0-android.zip")
+# set(opencv_archive_URL "https://github.com/nihui/opencv-mobile/releases/download/v16/${opencv_archive}")
+set(opencv_archive "open_cv_4.8_dynamic_libs.zip")
+set(opencv_archive_URL "https://github.com/zezo357/pytorch_lite/releases/download/libs/${opencv_archive}")
+set(opencv_Folder_name "open_cv_4.8_dynamic_libs")
 
 # Download and extract the files
 download_and_extract("${LIBTORCH_URL}" "05491f47535dc6623c823bfcd0e89c75" "${BASE_DIR}/${LIBTORCH}" "${BASE_DIR}/${LIBTORCH_Folder_name}")
-download_and_extract("${opencv_archive_URL}" "a9b147c0a5cfdaf1673a55fc4d9a82e9" "${BASE_DIR}/${opencv_archive}" "${BASE_DIR}/opencv")
+download_and_extract("${opencv_archive_URL}" "17e6da8da5f95ce52e670a4b64c19ed6" "${BASE_DIR}/${opencv_archive}" "${BASE_DIR}/${opencv_Folder_name}")
 
 # Define directories
-set(OpenCV_DIR ${BASE_DIR}/opencv/opencv-mobile-4.6.0-android/sdk/native/jni)
-# file(GLOB OpenCV_INCLUDE_DIRS "${OpenCV_DIR}/include/opencv2")
-find_package(OpenCV REQUIRED)
+set(OpenCV_DIR ${BASE_DIR}/open_cv_4.8_dynamic_libs)
+file(GLOB OpenCV_INCLUDE_DIRS "${OpenCV_DIR}/include")
+# find_package(OpenCV REQUIRED)
 
 set(LIBTORCH_SRC "${BASE_DIR}/${LIBTORCH_Folder_name}")
 set(LIBTORCH_BASE_DIR "${LIBTORCH_SRC}/${LIBTORCH_Folder_name}")
 file(GLOB PYTORCH_INCLUDE_DIRS "${LIBTORCH_BASE_DIR}/headers")
 
 set(LIBTORCH_LIB_DIR "${LIBTORCH_BASE_DIR}/jni/${ANDROID_ABI}")
-# set(OPENCV_LIB_DIR "${OpenCV_DIR}/libs/${ANDROID_ABI}")
+set(OPENCV_LIB_DIR "${OpenCV_DIR}/libs/${ANDROID_ABI}")
 
 # Function to check if a file exists
 function(check_file_exists FILE)
@@ -142,9 +145,9 @@ add_library(libpytorch_jni SHARED IMPORTED)
 set_target_properties(libpytorch_jni PROPERTIES IMPORTED_LOCATION ${LIBTORCH_LIB_DIR}/libpytorch_jni.so)
 check_file_exists(${LIBTORCH_LIB_DIR}/libpytorch_jni.so)
 
-# add_library(opencv_jni SHARED IMPORTED)
-# set_target_properties(opencv_jni PROPERTIES IMPORTED_LOCATION ${OPENCV_LIB_DIR}/libopencv_java4.so)
-# check_file_exists(${OPENCV_LIB_DIR}/libopencv_java4.so)
+add_library(opencv_jni SHARED IMPORTED)
+set_target_properties(opencv_jni PROPERTIES IMPORTED_LOCATION ${OPENCV_LIB_DIR}/libopencv_java4.so)
+check_file_exists(${OPENCV_LIB_DIR}/libopencv_java4.so)
 
 # Include directories
 target_include_directories(pytorch_lite PRIVATE
@@ -159,7 +162,7 @@ target_link_libraries(pytorch_lite
   libcplusplus
   libfbjni
   libpytorch_jni
-  ${OpenCV_LIBS}
+  opencv_jni
 )
 # target_link_libraries(pytorch_lite -fopenmp)
 # target_link_libraries(pytorch_lite dl)
