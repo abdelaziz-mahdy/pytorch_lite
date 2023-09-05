@@ -69,6 +69,18 @@ assets:
 
 Run `flutter pub get`
 
+### Then
+* Go to android/build.gradle
+* Set ```com.android.tools.build:gradle:7.3.0```
+```
+dependencies {
+    ...
+    classpath 'com.android.tools.build:gradle:7.1.2'
+    // classpath 'com.android.tools.build:gradle:7.3.0'
+    ...
+}
+```
+
 #### For release
 
 - Go to android/app/build.gradle
