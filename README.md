@@ -63,6 +63,18 @@ assets:
 
 Run `flutter pub get`
 
+### Then
+* Go to android/build.gradle
+* Set ```com.android.tools.build:gradle:7.3.0```
+```
+dependencies {
+    ...
+    classpath 'com.android.tools.build:gradle:7.1.2'
+    // classpath 'com.android.tools.build:gradle:7.3.0'
+    ...
+}
+```
+
 #### For release
 * Go to android/app/build.gradle
 * Add those next lines in the release config
@@ -142,7 +154,6 @@ final std = [0.5, 0.5, 0.5];
 String prediction = await classificationModel
         .getImagePrediction(image, mean: mean, std: std);
 ```
-
 
 
 #References 
