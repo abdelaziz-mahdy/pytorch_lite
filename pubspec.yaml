@@ -83,7 +83,7 @@ ffigen:
   output: 'lib/generated_bindings.dart'
   headers:
     entry-points:
-      - 'ios/Classes/pytorch_ffi.h'
+      - 'ios/Classes/pytorch_lite.h'
   type-map:
     native-types:
       'char':

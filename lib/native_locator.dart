@@ -36,13 +36,13 @@ final DynamicLibrary dylib = () {
   // return DynamicLibrary.executable();
   // print(Directory.current.listSync());
   if (Platform.isMacOS || Platform.isIOS) {
-    return DynamicLibrary.executable();
-    // Add from here...
+    return DynamicLibrary.process();
+    // // Add from here...
     // if (Platform.environment.containsKey('FLUTTER_TEST')) {
     //   return DynamicLibrary.open('build/macos/Build/Products/Debug'
     //       '/$_libName/$_libName.framework/$_libName');
     // }
-    // // ...to here.
+    // // // ...to here.
     // return DynamicLibrary.open('$_libName.framework/$_libName');
   }
   if (Platform.isAndroid || Platform.isLinux) {

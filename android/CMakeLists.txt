@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 14)  # needed for libtorch
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -static-openmp")
 # set(BUILD_WITH_HALF_PRECISION ON)
 # Add library source file(s)
-add_library(pytorch_lite SHARED ../ios/Classes/pytorch_ffi.cpp)
+add_library(pytorch_lite SHARED ../src/pytorch_lite.cpp)
 
 # Define function to download and extract a file
 
