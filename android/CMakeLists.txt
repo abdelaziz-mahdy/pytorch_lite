@@ -3,6 +3,8 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(pytorch_lite)
 set(CMAKE_CXX_STANDARD 14)  # needed for libtorch
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os -flto -ffunction-sections -fdata-sections")
+
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp -static-openmp")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -static-openmp")
 # set(BUILD_WITH_HALF_PRECISION ON)
@@ -157,6 +159,7 @@ target_include_directories(pytorch_lite PRIVATE
 # message(FATAL_ERROR ${OpenCV_INCLUDE_DIRS})
 
 # message(FATAL_ERROR ${OpenCV_LIBS})
+
 # Link libraries
 target_link_libraries(pytorch_lite
   libcplusplus
