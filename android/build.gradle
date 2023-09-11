@@ -1,4 +1,6 @@
-group 'com.zezo357.pytorch_lite'
+// The Android Gradle Plugin builds the native code with the Android NDK.
+
+group 'com.example.pytorch_lite'
 version '1.0'
 
 buildscript {
@@ -8,7 +10,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
+        // The Android Gradle Plugin knows how to build native code with the NDK.
+        classpath 'com.android.tools.build:gradle:7.3.0'
     }
 }
 
@@ -22,10 +25,32 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-//       configurations {
-//     extractForNativeBuild
-//   }
-    compileSdkVersion 31
+    if (project.android.hasProperty("namespace")) {
+        namespace 'com.example.pytorch_lite'
+    }
+
+    // Bumping the plugin compileSdkVersion requires all clients of this plugin
+    // to bump the version in their app.
+    compileSdkVersion 33
+
+    // Bumping the plugin ndkVersion requires all clients of this plugin to bump
+    // the version in their app and to download a newer version of the NDK.
+    ndkVersion "23.1.7779620"
+
+    // Invoke the shared CMake build with the Android Gradle Plugin.
+    externalNativeBuild {
+        cmake {
+            path "../src/CMakeLists.txt"
+
+            // The default CMake version for the Android Gradle Plugin is 3.10.2.
+            // https://developer.android.com/studio/projects/install-ndk#vanilla_cmake
+            //
+            // The Flutter tooling requires that developers have CMake 3.10 or later
+            // installed. You should not increase this version, as doing so will cause
+            // the plugin to fail to compile for some customers of the plugin.
+            // version "3.10.2"
+        }
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -33,58 +58,6 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 24
-    }
-    // // Add this block at the end of the file
-    // project.afterEvaluate {
-    //     preBuild.doLast {
-    //         // Execute your custom task here
-    //         exec {
-    //             commandLine 'cmake', '--build', '.'
-    //         }
-    //     }
-    // }
-    externalNativeBuild {
-
-        // Encapsulates your CMake build configurations.
-        cmake {
-
-            // Provides a relative path to your CMake build script.
-            path "CMakeLists.txt"
-            // arguments "-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE" // Set log level to VERBOSE
-
-        }
+        minSdkVersion 19
     }
 }
-dependencies{
-    // implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-    //  implementation 'org.pytorch:pytorch_android_lite:1.12'
-    // implementation 'org.pytorch:pytorch_android_torchvision_lite:1.12'
-    // implementation 'org.pytorch:pytorch_android:1.12'
-    // implementation 'org.pytorch:pytorch_android_torchvision:1.12'
-    // implementation 'com.facebook.soloader:nativeloader:0.10.5'
-
-    // extractForNativeBuild 'org.pytorch:pytorch_android:1.12'
-    // extractForNativeBuild 'org.pytorch:pytorch_android_torchvision:1.12'
-    
-    }
-// task extractAARForNativeBuild {
-//   doLast {
-//     configurations.extractForNativeBuild.files.each {
-//       def file = it.absoluteFile
-//       copy {
-//         from zipTree(file)
-//         into "$buildDir/$file.name"
-//         include "headers/**"
-//         include "jni/**"
-//       }
-//     }
-//   }
-// }
-
-// tasks.whenTaskAdded { task ->
-//   if (task.name.contains('externalNativeBuild')) {
-//     task.dependsOn(extractAARForNativeBuild)
-//   }
-// }

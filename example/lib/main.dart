@@ -1,10 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:pytorch_lite/native_wrapper.dart';
+import 'package:pytorch_lite/pytorch_lite.dart';
 import 'package:pytorch_lite_example/run_model_by_camera_demo.dart';
 import 'package:pytorch_lite_example/run_model_by_image_demo.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await PytorchFfi.init();
+  String pathImageModel = "assets/models/model_classification.pt";
+  //String pathCustomModel = "assets/models/custom_model.ptl";
+  String pathObjectDetectionModel = "assets/models/yolov5s.torchscript";
+  String pathObjectDetectionModelYolov8 = "assets/models/yolov8s.torchscript";
+  try {
+    await PytorchLite.loadClassificationModel(pathImageModel, 224, 224, 1000,
+        labelPath: "assets/labels/label_classification_imageNet.txt");
+    //_customModel = await PytorchLite.loadCustomModel(pathCustomModel);
+    await PytorchLite.loadObjectDetectionModel(
+        pathObjectDetectionModel, 80, 640, 640,
+        labelPath: "assets/labels/labels_objectDetection_Coco.txt");
+    await PytorchLite.loadObjectDetectionModel(
+        pathObjectDetectionModelYolov8, 80, 640, 640,
+        labelPath: "assets/labels/labels_objectDetection_Coco.txt",
+        objectDetectionModelType: ObjectDetectionModelType.yolov8);
+  } catch (e) {
+    print("Error is $e");
+  }
   runApp(const ChooseDemo());
 }
 

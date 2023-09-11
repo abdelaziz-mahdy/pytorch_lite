@@ -1,199 +1,92 @@
 # pytorch_lite
 
-- flutter package to help run pytorch lite models classification and YoloV5 and YoloV8.
+A new Flutter FFI plugin project.
 
-# example for Classification
+## Getting Started
 
-![image](https://user-images.githubusercontent.com/25157308/165343107-85bc8d7f-3db2-425e-bcbc-6a4c18c77947.png)
+This project is a starting point for a Flutter
+[FFI plugin](https://docs.flutter.dev/development/platform-integration/c-interop),
+a specialized package that includes native code directly invoked with Dart FFI.
 
-# example for Object detection
+## Project structure
 
-![image](https://user-images.githubusercontent.com/25157308/165341783-3296579c-bbb5-47ff-9588-d34fb143e6c9.png)
+This template uses the following structure:
 
-## Usage
+* `src`: Contains the native source code, and a CmakeFile.txt file for building
+  that source code into a dynamic library.
 
-## preparing the model
+* `lib`: Contains the Dart code that defines the API of the plugin, and which
+  calls into the native code using `dart:ffi`.
 
-- classification
+* platform folders (`android`, `ios`, `windows`, etc.): Contains the build files
+  for building and bundling the native code library with the platform application.
 
-```python
-import torch
-from torch.utils.mobile_optimizer import optimize_for_mobile
+## Building and bundling native code
 
-
-model = torch.load('model_scripted.pt',map_location="cpu")
-model.eval()
-example = torch.rand(1, 3, 224, 224)
-traced_script_module = torch.jit.trace(model, example)
-optimized_traced_model = optimize_for_mobile(traced_script_module)
-optimized_traced_model._save_for_lite_interpreter("model.pt")
-```
-
-- object detection (yolov5)
-
-```python
-!python export.py --weights "the weights of your model" --include torchscript --img 640 --optimize
-```
-
-example
-
-```python
-!python export.py --weights yolov5s.pt --include torchscript --img 640 --optimize
-```
-
-- object detection (yolov8)
-
-```python
-!yolo mode=export model="your model" format=torchscript optimize
-```
-
-example
-
-```python
-!yolo mode=export model=yolov8s.pt format=torchscript optimize
-```
-
-### Installation
-
-To use this plugin, add `pytorch_lite` as a [dependency in your pubspec.yaml file](https://flutter.dev/docs/development/packages-and-plugins/using-packages).
-
-Create a `assets` folder with your pytorch model and labels if needed. Modify `pubspec.yaml` accordingly.
+The `pubspec.yaml` specifies FFI plugins as follows:
 
 ```yaml
-assets:
-  - assets/models/model_classification.pt
-  - assets/labels_classification.txt
-  - assets/models/model_objectDetection.torchscript
-  - assets/labels_objectDetection.txt
+  plugin:
+    platforms:
+      some_platform:
+        ffiPlugin: true
 ```
 
-Run `flutter pub get`
+This configuration invokes the native build for the various target platforms
+and bundles the binaries in Flutter applications using these FFI plugins.
 
-#### For release
+This can be combined with dartPluginClass, such as when FFI is used for the
+implementation of one platform in a federated plugin:
 
-- Go to android/app/build.gradle
-- Add those next lines in the release config
-
-```
-shrinkResources false
-minifyEnabled false
-```
-
-example
-
-```
-    buildTypes {
-        release {
-            shrinkResources false
-            minifyEnabled false
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
-        }
-    }
+```yaml
+  plugin:
+    implements: some_other_plugin
+    platforms:
+      some_platform:
+        dartPluginClass: SomeClass
+        ffiPlugin: true
 ```
 
-### Import the library
+A plugin can have both FFI and method channels:
 
-```dart
-import 'package:pytorch_lite/pytorch_lite.dart';
+```yaml
+  plugin:
+    platforms:
+      some_platform:
+        pluginClass: SomeName
+        ffiPlugin: true
 ```
 
-### Load model
+The native build systems that are invoked by FFI (and method channel) plugins are:
 
-Either classification model:
+* For Android: Gradle, which invokes the Android NDK for native builds.
+  * See the documentation in android/build.gradle.
+* For iOS and MacOS: Xcode, via CocoaPods.
+  * See the documentation in ios/pytorch_lite.podspec.
+  * See the documentation in macos/pytorch_lite.podspec.
+* For Linux and Windows: CMake.
+  * See the documentation in linux/CMakeLists.txt.
+  * See the documentation in windows/CMakeLists.txt.
 
-```dart
-ClassificationModel classificationModel= await PytorchLite.loadClassificationModel(
-          "assets/models/model_classification.pt", 224, 224,
-          labelPath: "assets/labels/label_classification_imageNet.txt");
-```
+## Binding to native code
 
-Or objectDetection model:
+To use the native code, bindings in Dart are needed.
+To avoid writing these by hand, they are generated from the header file
+(`src/pytorch_lite.h`) by `package:ffigen`.
+Regenerate the bindings by running `flutter pub run ffigen --config ffigen.yaml`.
 
-```dart
-ModelObjectDetection objectModel = await PytorchLite.loadObjectDetectionModel(
-          "assets/models/yolov5s.torchscript", 80, 640, 640,
-          labelPath: "assets/labels/labels_objectDetection_Coco.txt",
-          objectDetectionModelType: ObjectDetectionModelType.yolov5);
-```
+## Invoking native code
 
-### Get classification prediction as label
+Very short-running native functions can be directly invoked from any isolate.
+For example, see `sum` in `lib/pytorch_lite.dart`.
 
-```dart
-String imagePrediction = await classificationModel.getImagePrediction(await File(image.path).readAsBytes());
-```
+Longer-running functions should be invoked on a helper isolate to avoid
+dropping frames in Flutter applications.
+For example, see `sumAsync` in `lib/pytorch_lite.dart`.
 
-### Get classification prediction as label from camera image
+## Flutter help
 
-```dart
-String imagePrediction = await _objectModel.getCameraImagePrediction(
-        cameraImage,
-        rotation, // check example for rotation values
-        );
-```
+For help getting started with Flutter, view our
+[online documentation](https://flutter.dev/docs), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
 
-### Get classification prediction as raw output layer
-
-```dart
-List<double>? predictionList = await _imageModel!.getImagePredictionList(
-      await File(image.path).readAsBytes(),
-    );
-```
-
-### Get classification prediction as raw output layer from camera image
-```dart
-List<double>? predictionList = await _imageModel!.getCameraImagePredictionList(
-        cameraImage,
-        rotation, // check example for rotation values
-    );
-```
-
-### Get classification prediction as Probabilities (incase model is not using softmax)
-```dart
-List<double>? predictionListProbabilities = await _imageModel!.getImagePredictionListProbabilities(
-      await File(image.path).readAsBytes(),
-    );
-```
-### Get classification prediction as Probabilities (incase model is not using softmax)
-```dart
-List<double>? predictionListProbabilities = await _imageModel!.getCameraPredictionListProbabilities(
-        cameraImage,
-        rotation, // check example for rotation values
-    );
-```
-### Get object detection prediction for an image
-```dart
- List<ResultObjectDetection> objDetect = await _objectModel.getImagePrediction(await File(image.path).readAsBytes(),
-        minimumScore: 0.1, IOUThershold: 0.3);
-```
-
-### Get object detection prediction from camera image
-
-```dart
- List<ResultObjectDetection> objDetect = await _objectModel.getCameraImagePrediction(
-        cameraImage,
-        rotation, // check example for rotation values
-        minimumScore: 0.1, IOUThershold: 0.3);
-```
-
-### Get render boxes with image
-
-```dart
-objectModel.renderBoxesOnImage(_image!, objDetect)
-```
-
-### Image prediction for an image with custom mean and std
-
-```dart
-final mean = [0.5, 0.5, 0.5];
-final std = [0.5, 0.5, 0.5];
-String prediction = await classificationModel
-        .getImagePrediction(image, mean: mean, std: std);
-```
-
-# References
-
-- Code used the same structure as the package https://pub.dev/packages/pytorch_mobile
-- While using the updated code from https://github.com/pytorch/android-demo-app
-- This repo helped a lot in getting camera to processed by opencv https://github.com/ValYouW/flutter-opencv-stream-processing

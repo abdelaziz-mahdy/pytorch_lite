@@ -1,6 +1,6 @@
 name: pytorch_lite
 description: Flutter package to help run pytorch lite models classification and yolov5 and yolov8 
-version: 4.0.0
+version: 4.0.1
 homepage: https://github.com/zezo357/pytorch_lite
 
 environment:
@@ -27,24 +27,33 @@ dev_dependencies:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
-# The following section is specific to Flutter.
+# The following section is specific to Flutter packages.
 flutter:
   # This section identifies this Flutter project as a plugin project.
-  # The 'pluginClass' and Android 'package' identifiers should not ordinarily
-  # be modified. They are used by the tooling to maintain consistency when
+  # The 'pluginClass' specifies the class (in Java, Kotlin, Swift, Objective-C, etc.)
+  # which should be registered in the plugin registry. This is required for
+  # using method channels.
+  # The Android 'package' specifies package in which the registered class is.
+  # This is required for using method channels on Android.
+  # The 'ffiPlugin' specifies that native code should be built and bundled.
+  # This is required for using `dart:ffi`.
+  # All these are used by the tooling to maintain consistency when
   # adding or updating assets for this project.
+  #
+  # Please refer to README.md for a detailed explanation.
   plugin:
     platforms:
-      # android:
-      #   ffiPlugin: true
+      android:
+        ffiPlugin: true
       ios:
         ffiPlugin: true
+      # linux:
+      #   ffiPlugin: true
+      # macos:
+      #   ffiPlugin: true
+      # windows:
+      #   ffiPlugin: true
 
-      android:
-        package: com.zezo357.pytorch_lite
-        pluginClass: PytorchLitePlugin
-      # ios:
-      #   pluginClass: PytorchLitePlugin
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
@@ -54,7 +63,7 @@ flutter:
   # https://flutter.dev/assets-and-images/#from-packages
   #
   # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware.
+  # https://flutter.dev/assets-and-images/#resolution-aware
 
   # To add custom fonts to your plugin package, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
@@ -75,7 +84,6 @@ flutter:
   #
   # For details regarding fonts in packages, see
   # https://flutter.dev/custom-fonts/#from-packages
-
 # dart run ffigen
 ffigen:
   name: NativeLibrary
@@ -83,7 +91,7 @@ ffigen:
   output: 'lib/generated_bindings.dart'
   headers:
     entry-points:
-      - 'ios/Classes/pytorch_ffi.h'
+      - 'ios/Classes/pytorch_lite.h'
   type-map:
     native-types:
       'char':

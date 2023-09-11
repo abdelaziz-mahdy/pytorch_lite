@@ -1,6 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.zezo357.pytorch_lite_example">
-   <application
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
         android:label="pytorch_lite_example"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

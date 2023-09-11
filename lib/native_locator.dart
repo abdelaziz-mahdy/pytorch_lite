@@ -28,40 +28,54 @@ import 'package:path/path.dart' as p;
 //   helperIsolateSendPort.send(request);
 //   return completer.future;
 // }
-
 const String _libName = 'pytorch_lite';
 
-/// The dynamic library in which the symbols for [FfigenAppBindings] can be found.
+/// The dynamic library in which the symbols for [PytorchLiteBindings] can be found.
 final DynamicLibrary dylib = () {
-  // return DynamicLibrary.executable();
-  // print(Directory.current.listSync());
   if (Platform.isMacOS || Platform.isIOS) {
-    return DynamicLibrary.executable();
-    // Add from here...
-    // if (Platform.environment.containsKey('FLUTTER_TEST')) {
-    //   return DynamicLibrary.open('build/macos/Build/Products/Debug'
-    //       '/$_libName/$_libName.framework/$_libName');
-    // }
-    // // ...to here.
-    // return DynamicLibrary.open('$_libName.framework/$_libName');
+    return DynamicLibrary.open('$_libName.framework/$_libName');
   }
   if (Platform.isAndroid || Platform.isLinux) {
-    // Add from here...
-    if (Platform.environment.containsKey('FLUTTER_TEST')) {
-      return DynamicLibrary.open(
-          'build/linux/x64/debug/bundle/lib/lib$_libName.so');
-    }
-    // ...to here.
     return DynamicLibrary.open('lib$_libName.so');
   }
   if (Platform.isWindows) {
-    // Add from here...
-    if (Platform.environment.containsKey('FLUTTER_TEST')) {
-      return DynamicLibrary.open(p.canonicalize(
-          p.join(r'build\windows\runner\Debug', '$_libName.dll')));
-    }
-    // ...to here.
     return DynamicLibrary.open('$_libName.dll');
   }
   throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
 }();
+// const String _libName = 'pytorch_lite';
+
+// /// The dynamic library in which the symbols for [FfigenAppBindings] can be found.
+// final DynamicLibrary dylib = () {
+//   // return DynamicLibrary.executable();
+//   // print(Directory.current.listSync());
+//   if (Platform.isMacOS || Platform.isIOS) {
+//     return DynamicLibrary.executable();
+//     // // Add from here...
+//     // if (Platform.environment.containsKey('FLUTTER_TEST')) {
+//     //   return DynamicLibrary.open('build/macos/Build/Products/Debug'
+//     //       '/$_libName/$_libName.framework/$_libName');
+//     // }
+//     // // // ...to here.
+//     // return DynamicLibrary.open('$_libName.framework/$_libName');
+//   }
+//   if (Platform.isAndroid || Platform.isLinux) {
+//     // Add from here...
+//     if (Platform.environment.containsKey('FLUTTER_TEST')) {
+//       return DynamicLibrary.open(
+//           'build/linux/x64/debug/bundle/lib/lib$_libName.so');
+//     }
+//     // ...to here.
+//     return DynamicLibrary.open('lib$_libName.so');
+//   }
+//   if (Platform.isWindows) {
+//     // Add from here...
+//     if (Platform.environment.containsKey('FLUTTER_TEST')) {
+//       return DynamicLibrary.open(p.canonicalize(
+//           p.join(r'build\windows\runner\Debug', '$_libName.dll')));
+//     }
+//     // ...to here.
+//     return DynamicLibrary.open('$_libName.dll');
+//   }
+//   throw UnsupportedError('Unknown platform: ${Platform.operatingSystem}');
+// }();

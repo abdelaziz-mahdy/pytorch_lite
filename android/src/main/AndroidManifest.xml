@@ -1,3 +1,3 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.zezo357.pytorch_lite">
+  package="com.example.pytorch_lite">
 </manifest>
