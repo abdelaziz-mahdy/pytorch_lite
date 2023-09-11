@@ -1,7 +1,10 @@
 import 'dart:ffi';
 import 'dart:io';
 import 'package:path/path.dart' as p;
-
+import 'dart:async';
+import 'dart:ffi';
+import 'dart:io';
+import 'dart:isolate';
 // /// A very short-lived native function.
 // ///
 // /// For very short-lived functions, it is fine to call them on the main isolate.
@@ -33,10 +36,11 @@ const String _libName = 'pytorch_lite';
 
 /// The dynamic library in which the symbols for [FfigenAppBindings] can be found.
 final DynamicLibrary dylib = () {
-  // return DynamicLibrary.executable();
+
+  
   // print(Directory.current.listSync());
   if (Platform.isMacOS || Platform.isIOS) {
-    return DynamicLibrary.executable();
+return DynamicLibrary.process();
     // // Add from here...
     // if (Platform.environment.containsKey('FLUTTER_TEST')) {
     //   return DynamicLibrary.open('build/macos/Build/Products/Debug'
