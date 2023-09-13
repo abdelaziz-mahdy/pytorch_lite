@@ -4,10 +4,11 @@
 //#import "TorchModule.h"
 //#import "UIImageExtension.h"
 #import <LibTorch/LibTorch.h>
+#include <vector>
 
 @interface PytorchLitePlugin () <ModelApi>
 
-@property (nonatomic, strong) NSMutableArray<Module *> *modules;
+@property (nonatomic, assign) std::vector<torch::jit::Module*> modulesVector;
 @property (nonatomic, strong) NSMutableArray<PrePostProcessor *> *prePostProcessors;
 
 @end
@@ -18,7 +19,7 @@
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   PytorchLitePlugin* instance = [[PytorchLitePlugin alloc] init];
   ModelApiSetup(registrar.messenger, instance);
-    instance.modules = [NSMutableArray array];
+    // instance.modulesVector = [NSMutableArray array];
     instance.prePostProcessors = [NSMutableArray array];
 }
 
@@ -34,14 +35,14 @@
 - (void)getPredictionCustomIndex:(nonnull NSNumber *)index input:(nonnull NSArray<NSNumber *> *)input shape:(nonnull NSArray<NSNumber *> *)shape dtype:(nonnull NSString *)dtype completion:(nonnull void (^)(NSArray * _Nullable, FlutterError * _Nullable))completion {
     // <#code#>
 }
-
 - (nullable NSNumber *)loadModelModelPath:(nonnull NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight objectDetectionModelType:(ObjectDetectionModelType)objectDetectionModelType error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
     
     NSInteger i = -1;
     @try {
-        // [modules addObject:[LiteModuleLoader load:modelPath]];
-        [modules addObject:[Module load:modelPath]];
-        if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
+        torch::jit::Module *module = new torch::jit::Module(torch::jit::load(modelPath.UTF8String));
+        self.modulesVector.push_back(module);
+        
+if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
             [prePostProcessors addObject:[[PrePostProcessor alloc] initWithNumberOfClasses:numberOfClasses.integerValue imageWidth:imageWidth.integerValue imageHeight:imageHeight.integerValue objectDetectionModelType:objectDetectionModelType]];
         } else {
             if (imageWidth != nil && imageHeight != nil) {
@@ -50,7 +51,7 @@
                 [prePostProcessors addObject:[[PrePostProcessor alloc] init]];
             }
         }
-        i = [modules count] - 1;
+        i = self.modulesVector.size() - 1;
     } @catch (NSException *e) {
         NSLog(@"%@ is not a proper model: %@", modelPath, e);
         if (error != NULL) {

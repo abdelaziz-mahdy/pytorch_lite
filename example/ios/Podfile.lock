@@ -4,17 +4,17 @@ PODS:
   - Flutter (1.0.0)
   - image_picker_ios (0.0.1):
     - Flutter
-  - LibTorch (1.8.0):
-    - LibTorch/Core (= 1.8.0)
-  - LibTorch/Core (1.8.0):
+  - LibTorch (1.13.0.1):
+    - LibTorch/Core (= 1.13.0.1)
+  - LibTorch/Core (1.13.0.1):
     - LibTorch/Torch
-  - LibTorch/Torch (1.8.0)
+  - LibTorch/Torch (1.13.0.1)
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
   - pytorch_lite (0.0.1):
     - Flutter
-    - LibTorch (~> 1.8.0)
+    - LibTorch (~> 1.13.0.1)
 
 DEPENDENCIES:
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
@@ -43,9 +43,9 @@ SPEC CHECKSUMS:
   camera_avfoundation: 3125e8cd1a4387f6f31c6c63abb8a55892a9eeeb
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   image_picker_ios: 4a8aadfbb6dc30ad5141a2ce3832af9214a705b5
-  LibTorch: d7724112589515bedd5eadf14a9db5b1d62d8a34
+  LibTorch: 8abfa5fc9d146230b31065a29b0502e1104956ea
   path_provider_foundation: eaf5b3e458fc0e5fbb9940fb09980e853fe058b8
-  pytorch_lite: aa659021a32e3fad71b3f60d43b764bea81979ea
+  pytorch_lite: 34ce2be5108fa43b0c35625ce20da72fa157531d
 
 PODFILE CHECKSUM: 7be2f5f74864d463a8ad433546ed1de7e0f29aef
 
