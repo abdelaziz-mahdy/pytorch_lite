@@ -35,7 +35,7 @@
 - (void)getPredictionCustomIndex:(nonnull NSNumber *)index input:(nonnull NSArray<NSNumber *> *)input shape:(nonnull NSArray<NSNumber *> *)shape dtype:(nonnull NSString *)dtype completion:(nonnull void (^)(NSArray * _Nullable, FlutterError * _Nullable))completion {
     // <#code#>
 }
-- (nullable NSNumber *)loadModelModelPath:(nonnull NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight objectDetectionModelType:(int)objectDetectionModelType error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+- (nullable NSNumber *)loadModelModelPath:(nonnull NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight isObjectDetection:(nullable NSNumber *)isObjectDetection objectDetectionModelType:(nullable NSNumber *)objectDetectionModelType error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
     
     NSInteger i = -1;
     @try {
@@ -43,7 +43,7 @@
         self.modulesVector.push_back(module);
         
 if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
-            [ self.prePostProcessors addObject:[[PrePostProcessor alloc] initWithNumberOfClasses:numberOfClasses.integerValue imageWidth:imageWidth.integerValue imageHeight:imageHeight.integerValue objectDetectionModelType:objectDetectionModelType]];
+            [ self.prePostProcessors addObject:[[PrePostProcessor alloc] initWithNumberOfClasses:numberOfClasses.integerValue imageWidth:imageWidth.integerValue imageHeight:imageHeight.integerValue objectDetectionModelType:objectDetectionModelType.integerValue]];
         } else {
             if (imageWidth != nil && imageHeight != nil) {
                 [ self.prePostProcessors addObject:[[PrePostProcessor alloc] initWithImageWidth:imageWidth.integerValue imageHeight:imageHeight.integerValue]];
