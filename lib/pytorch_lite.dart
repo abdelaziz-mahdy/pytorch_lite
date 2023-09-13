@@ -12,7 +12,7 @@ export 'enums/dtype.dart';
 
 const torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
 const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
-
+ enum ObjectDetectionModelType { yolov5, yolov8 }
 class PytorchLite {
   /*
   ///Sets pytorch model path and returns Model
@@ -29,7 +29,7 @@ class PytorchLite {
       {String? labelPath}) async {
     String absPathModelPath = await _getAbsolutePath(path);
     int index = await ModelApi()
-        .loadModel(absPathModelPath, null, imageWidth, imageHeight, null);
+        .loadModel(absPathModelPath, null, imageWidth, imageHeight, null,null);
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {
@@ -51,7 +51,7 @@ class PytorchLite {
     String absPathModelPath = await _getAbsolutePath(path);
 
     int index = await ModelApi().loadModel(absPathModelPath, numberOfClasses,
-        imageWidth, imageHeight, objectDetectionModelType);
+        imageWidth, imageHeight,true, objectDetectionModelType.index);
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {

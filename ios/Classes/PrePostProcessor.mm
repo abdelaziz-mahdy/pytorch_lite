@@ -15,11 +15,11 @@
 @property (nonatomic, assign) int mImageWidth;
 @property (nonatomic, assign) int mImageHeight;
 @property (nonatomic, assign) int mNmsLimit;
-@property (nonatomic, assign) ObjectDetectionModelType mObjectDetectionModelType;
+@property (nonatomic, assign) int mObjectDetectionModelType;
 
 - (instancetype)init;
 - (instancetype)initWithImageWidth:(int)imageWidth imageHeight:(int)imageHeight;
-- (instancetype)initWithNumberOfClasses:(int)numberOfClasses imageWidth:(int)imageWidth imageHeight:(int)imageHeight objectDetectionModelType:(ObjectDetectionModelType)objectDetectionModelType;
+- (instancetype)initWithNumberOfClasses:(int)numberOfClasses imageWidth:(int)imageWidth imageHeight:(int)imageHeight objectDetectionModelType:(int)objectDetectionModelType;
 
 @end
 
@@ -51,14 +51,14 @@
     return self;
 }
 
-- (instancetype)initWithNumberOfClasses:(int)numberOfClasses imageWidth:(int)imageWidth imageHeight:(int)imageHeight objectDetectionModelType:(ObjectDetectionModelType)objectDetectionModelType {
+- (instancetype)initWithNumberOfClasses:(int)numberOfClasses imageWidth:(int)imageWidth imageHeight:(int)imageHeight objectDetectionModelType:(int)objectDetectionModelType {
     self = [self init];
     if (self) {
         _mNumberOfClasses = numberOfClasses;
         _mImageWidth = imageWidth;
         _mImageHeight = imageHeight;
         _mObjectDetectionModelType = objectDetectionModelType;
-        if (objectDetectionModelType == ObjectDetectionModelTypeYolov5) {
+        if (_mObjectDetectionModelType==0) {
             _mOutputRow = 25200;
             _mOutputColumn = _mNumberOfClasses + 5;
         } else {
@@ -227,7 +227,7 @@
 }
 
 - (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictions:(float *)outputs {
-    if (self.mObjectDetectionModelType == ObjectDetectionModelTypeYolov5) {
+    if (self.mObjectDetectionModelType == 0) {
         return [self outputsToNMSPredictionsYolov5:outputs];
     } else {
         return [self outputsToNMSPredictionsYoloV8:outputs];

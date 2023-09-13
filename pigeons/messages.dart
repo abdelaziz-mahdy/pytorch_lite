@@ -4,7 +4,7 @@ import 'package:pigeon/pigeon.dart';
 
 // Build android and ios
 
-//flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart --objc_header_out ios/Classes/pigeon.h --objc_source_out ios/Classes/pigeon.m --java_out android/src/main/java/com/zezo357/pytorch_lite/Pigeon.java --java_package "com.zezo357.pytorch_lite"
+// flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart --objc_header_out ios/Classes/pigeon.h --objc_source_out ios/Classes/pigeon.mm --java_out android/src/main/java/com/zezo357/pytorch_lite/Pigeon.java --java_package "com.zezo357.pytorch_lite"
 
 class PyTorchRect {
   double left;
@@ -26,13 +26,13 @@ class ResultObjectDetection {
   ResultObjectDetection(this.classIndex, this.score, this.rect);
 }
 
-enum ObjectDetectionModelType { yolov5, yolov8 }
+// enum ObjectDetectionModelType { yolov5, yolov8 }
 
 @HostApi()
 abstract class ModelApi {
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   int loadModel(String modelPath, int? numberOfClasses, int? imageWidth,
-      int? imageHeight, ObjectDetectionModelType? objectDetectionModelType);
+      int? imageHeight, bool? isObjectDetection,int? objectDetectionModelType);
 
   ///predicts abstract number input
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)

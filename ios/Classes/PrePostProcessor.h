@@ -15,11 +15,11 @@
 @property (nonatomic, assign) int mImageWidth;
 @property (nonatomic, assign) int mImageHeight;
 @property (nonatomic, assign) int mNmsLimit;
-@property (nonatomic, assign) ObjectDetectionModelType mObjectDetectionModelType;
+@property (nonatomic, assign) int mObjectDetectionModelType;
 
 - (instancetype)init;
 - (instancetype)initWithImageWidth:(int)imageWidth imageHeight:(int)imageHeight;
-- (instancetype)initWithNumberOfClasses:(int)numberOfClasses imageWidth:(int)imageWidth imageHeight:(int)imageHeight objectDetectionModelType:(ObjectDetectionModelType)objectDetectionModelType;
+- (instancetype)initWithNumberOfClasses:(int)numberOfClasses imageWidth:(int)imageWidth imageHeight:(int)imageHeight objectDetectionModelType:(int)objectDetectionModelType;
 
 + (double)getFloatAsDouble:(float)fValue;
 - (NSMutableArray<ResultObjectDetection *> *)nonMaxSuppression:(NSMutableArray<ResultObjectDetection *> *)boxes;
