@@ -13,7 +13,7 @@ class PostProcessorObjectDetection {
   double IOUThreshold = 0.30;
   int modelImageWidth;
   int modelImageHeight;
-  int nmsLimit = 15;
+  // int nmsLimit = 15;
   ObjectDetectionModelType objectDetectionModelType;
 
   PostProcessorObjectDetection(
@@ -47,7 +47,7 @@ class PostProcessorObjectDetection {
       if (active[i]) {
         ResultObjectDetection boxA = boxes[i];
         selected.add(boxA);
-        if (selected.length >= nmsLimit) break;
+        // if (selected.length >= nmsLimit) break;
 
         for (int j = i + 1; j < boxes.length; j++) {
           if (active[j]) {
