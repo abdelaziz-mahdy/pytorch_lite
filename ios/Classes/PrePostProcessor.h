@@ -5,8 +5,8 @@
 @interface PrePostProcessor : NSObject
 
 @property (nonatomic, strong) NSArray<NSString *> *mClasses;
-@property (nonatomic, assign) float *NO_MEAN_RGB;
-@property (nonatomic, assign) float *NO_STD_RGB;
+@property (nonatomic, strong) NSArray<NSNumber *> *NO_MEAN_RGB;
+@property (nonatomic, strong) NSArray<NSNumber *> *NO_STD_RGB;
 @property (nonatomic, assign) int mNumberOfClasses;
 @property (nonatomic, assign) int mOutputRow;
 @property (nonatomic, assign) int mOutputColumn;
@@ -24,8 +24,8 @@
 + (double)getFloatAsDouble:(float)fValue;
 - (NSMutableArray<ResultObjectDetection *> *)nonMaxSuppression:(NSMutableArray<ResultObjectDetection *> *)boxes;
 - (double)IOU:(PyTorchRect *)a boxB:(PyTorchRect *)b;
-- (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictionsYoloV8:(float *)outputs;
-- (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictionsYoloV5:(float *)outputs;
-- (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictions:(float *)outputs;
+- (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictionsYoloV8:(NSArray<NSNumber *> *)outputs;
+- (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictionsYolov5:(NSArray<NSNumber *> *)outputs;
+- (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictions:(NSArray<NSNumber *> *)outputs;
 
 @end
