@@ -24,7 +24,7 @@
 }
 - (NSArray<NSNumber*>*)predictImage:(void*)imageBuffer withWidth:(int)width andHeight:(int)height atIndex:(NSInteger)moduleIndex objectDetectionFlag:(NSInteger)objectDetectionFlag {
     try {
-        torch::jit::Module* module = self.modulesVector[moduleIndex];
+        torch::jit::Module* module = _modulesVector[moduleIndex];
         at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, height, width}, at::kFloat);
 
         torch::autograd::AutoGradMode guard(false);
@@ -72,7 +72,7 @@
     NSInteger i = -1;
     @try {
         torch::jit::Module *module = new torch::jit::Module(torch::jit::load(modelPath.UTF8String));
-        self.modulesVector.push_back(module);
+        _modulesVector.push_back(module);
         
 if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
             [ self.prePostProcessors addObject:[[PrePostProcessor alloc] initWithNumberOfClasses:numberOfClasses.integerValue imageWidth:imageWidth.integerValue imageHeight:imageHeight.integerValue objectDetectionModelType:objectDetectionModelType.integerValue]];
@@ -83,7 +83,7 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
                 [ self.prePostProcessors addObject:[[PrePostProcessor alloc] init]];
             }
         }
-        i = self.modulesVector.size() - 1;
+        i = _modulesVector.size() - 1;
     } @catch (NSException *e) {
         NSLog(@"%@ is not a proper model: %@", modelPath, e);
         if (error != NULL) {
