@@ -25,12 +25,14 @@
 - (NSArray<NSNumber*>*)predictImage:(void*)imageBuffer withWidth:(int)width andHeight:(int)height atIndex:(NSInteger)moduleIndex objectDetectionFlag:(NSInteger)objectDetectionFlag {
     try {
         torch::jit::Module* module = _modulesVector[moduleIndex];
-        at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, height, width}, at::kFloat);
+        at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, height, width}, torch::kFloat32);
 
         torch::autograd::AutoGradMode guard(false);
         at::AutoNonVariableTypeMode non_var_type_mode(true);
         
         at::Tensor outputTensor;
+//        NSLog(@"objectDetectionFlag: %ld", objectDetectionFlag);
+
         if (objectDetectionFlag == 1) {
             torch::jit::IValue outputTuple = module->forward({tensor}).toTuple();
             outputTensor = outputTuple.toTuple()->elements()[0].toTensor();
@@ -97,15 +99,17 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
 - (void)getImagePredictionListIndex:(nonnull NSNumber *)index imageData:(nullable FlutterStandardTypedData *)imageData imageBytesList:(nullable NSArray<FlutterStandardTypedData *> *)imageBytesList imageWidthForBytesList:(nullable NSNumber *)imageWidthForBytesList imageHeightForBytesList:(nullable NSNumber *)imageHeightForBytesList mean:(nonnull NSArray<NSNumber *> *)mean std:(nonnull NSArray<NSNumber *> *)std completion:(nonnull void (^)(NSArray<NSNumber *> * _Nullable, FlutterError * _Nullable))completion {
     
     UIImage *bitmap = nil;
+        PrePostProcessor *prePostProcessor = self.prePostProcessors[index.intValue];
+
     if (imageData) {
         bitmap = [UIImage imageWithData:imageData.data];
-        bitmap = [UIImageExtension resize:bitmap toWidth:[imageWidthForBytesList intValue] toHeight:[imageHeightForBytesList intValue]];
+        bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
     } else {
         // Handle the scenario where you're given the byte list instead of imageData.
     }
 
     float* input = [UIImageExtension normalize:bitmap withMean:mean withSTD:std];
-    NSArray<NSNumber*> *results = [self predictImage:input withWidth:[imageWidthForBytesList intValue] andHeight:[imageHeightForBytesList intValue] atIndex:[index integerValue] objectDetectionFlag:0];
+    NSArray<NSNumber*> *results = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] objectDetectionFlag:0];
 
     if (results) {
         completion(results, nil);
@@ -130,7 +134,7 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
     }
 
     float* input = [UIImageExtension normalize:bitmap withMean:prePostProcessor.NO_MEAN_RGB withSTD:prePostProcessor.NO_STD_RGB];
-    NSArray<NSNumber*> *rawOutputs = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] objectDetectionFlag:1];
+    NSArray<NSNumber*> *rawOutputs = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] objectDetectionFlag:prePostProcessor.mObjectDetectionModelType];
 
     // Convert raw outputs to ResultObjectDetection objects
     NSMutableArray<ResultObjectDetection*> *results = [prePostProcessor outputsToNMSPredictions:rawOutputs];
