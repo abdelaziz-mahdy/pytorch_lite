@@ -207,6 +207,7 @@
                 cls = j;
             }
         }
+        if (max > self.mScoreThreshold) {
 
         PyTorchRect *rect = [PyTorchRect makeWithLeft:@([self.class getFloatAsDouble:left / self.mImageWidth])
                                                   top:@([self.class getFloatAsDouble:top / self.mImageHeight])
@@ -221,6 +222,7 @@
                                                                               rect:rect];
 
         [results addObject:result];
+        }
     }
 
     NSLog(@"PytorchLitePlugin result length before processing %lu", (unsigned long)results.count);

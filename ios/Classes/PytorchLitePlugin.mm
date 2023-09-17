@@ -105,7 +105,10 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
         bitmap = [UIImage imageWithData:imageData.data];
         bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
     } else {
-        // Handle the scenario where you're given the byte list instead of imageData.
+    FlutterStandardTypedData *typedData = imageBytesList[0];
+    uint8_t* in = (uint8_t*)[[typedData data] bytes];
+    bitmap = [UIImage imageWithData:typedData.data];
+        bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
     }
 
     float* input = [UIImageExtension normalize:bitmap withMean:mean withSTD:std];
@@ -130,6 +133,10 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
         bitmap = [UIImage imageWithData:imageData.data];
         bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
     } else {
+            FlutterStandardTypedData *typedData = imageBytesList[0];
+    uint8_t* in = (uint8_t*)[[typedData data] bytes];
+    bitmap = [UIImage imageWithData:typedData.data];
+        bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
         // Handle the scenario where you're given the byte list instead of imageData.
     }
 
