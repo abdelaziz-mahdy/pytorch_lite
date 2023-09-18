@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pytorch_lite/pigeon.dart';
 
 export 'enums/dtype.dart';
+export 'package:pytorch_lite/pigeon.dart';
 
 const torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
 const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];

@@ -1,8 +1,9 @@
+import 'dart:developer';
+import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pytorch_lite/pigeon.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
 import 'camera_view_singleton.dart';
@@ -10,11 +11,16 @@ import 'camera_view_singleton.dart';
 /// [CameraView] sends each frame for inference
 class CameraView extends StatefulWidget {
   /// Callback to pass results after inference to [HomeView]
-  final Function(List<ResultObjectDetection?> recognitions) resultsCallback;
-  final Function(String classification) resultsCallbackClassification;
+  final Function(
+          List<ResultObjectDetection> recognitions, Duration inferenceTime)
+      resultsCallback;
+  final Function(String classification, Duration inferenceTime)
+      resultsCallbackClassification;
 
   /// Constructor
-  const CameraView(this.resultsCallback, this.resultsCallbackClassification, {Key? key}) : super(key: key);
+  const CameraView(this.resultsCallback, this.resultsCallbackClassification,
+      {Key? key})
+      : super(key: key);
   @override
   _CameraViewState createState() => _CameraViewState();
 }
@@ -29,10 +35,15 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   /// true when inference is ongoing
   bool predicting = false;
 
+  /// true when inference is ongoing
+  bool predictingObjectDetection = false;
+
   ModelObjectDetection? _objectModel;
   ClassificationModel? _imageModel;
 
   bool classification = false;
+  int _camFrameRotation = 0;
+  String errorMessage = "";
   @override
   void initState() {
     super.initState();
@@ -43,7 +54,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   Future loadModel() async {
     String pathImageModel = "assets/models/model_classification.pt";
     //String pathCustomModel = "assets/models/custom_model.ptl";
-    String pathObjectDetectionModel = "assets/models/yolov5s.torchscript";
+    String pathObjectDetectionModel = "assets/models/yolov8s.torchscript";
     try {
       _imageModel = await PytorchLite.loadClassificationModel(
           pathImageModel, 224, 224,
@@ -51,7 +62,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       //_customModel = await PytorchLite.loadCustomModel(pathCustomModel);
       _objectModel = await PytorchLite.loadObjectDetectionModel(
           pathObjectDetectionModel, 80, 640, 640,
-          labelPath: "assets/labels/labels_objectDetection_Coco.txt");
+          labelPath: "assets/labels/labels_objectDetection_Coco.txt",
+          objectDetectionModelType: ObjectDetectionModelType.yolov8);
     } catch (e) {
       if (e is PlatformException) {
         print("only supported for android, Error is $e");
@@ -66,19 +78,63 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     await loadModel();
 
     // Camera initialization
-    initializeCamera();
-
+    try {
+      initializeCamera();
+    } on CameraException catch (e) {
+      switch (e.code) {
+        case 'CameraAccessDenied':
+          errorMessage = ('You have denied camera access.');
+          break;
+        case 'CameraAccessDeniedWithoutPrompt':
+          // iOS only
+          errorMessage = ('Please go to Settings app to enable camera access.');
+          break;
+        case 'CameraAccessRestricted':
+          // iOS only
+          errorMessage = ('Camera access is restricted.');
+          break;
+        case 'AudioAccessDenied':
+          errorMessage = ('You have denied audio access.');
+          break;
+        case 'AudioAccessDeniedWithoutPrompt':
+          // iOS only
+          errorMessage = ('Please go to Settings app to enable audio access.');
+          break;
+        case 'AudioAccessRestricted':
+          // iOS only
+          errorMessage = ('Audio access is restricted.');
+          break;
+        default:
+          errorMessage = (e.toString());
+          break;
+      }
+      setState(() {});
+    }
     // Initially predicting = false
-    // predicting = false;
+    setState(() {
+      predicting = false;
+    });
   }
 
   /// Initializes the camera by setting [cameraController]
   void initializeCamera() async {
     cameras = await availableCameras();
 
+    var idx =
+        cameras.indexWhere((c) => c.lensDirection == CameraLensDirection.back);
+    if (idx < 0) {
+      log("No Back camera found - weird");
+      return;
+    }
+
+    var desc = cameras[idx];
+    _camFrameRotation = Platform.isAndroid ? desc.sensorOrientation : 0;
     // cameras[0] for rear-camera
-    cameraController =
-        CameraController(cameras[0], ResolutionPreset.high, enableAudio: false);
+    cameraController = CameraController(desc, ResolutionPreset.medium,
+        imageFormatGroup: Platform.isAndroid
+            ? ImageFormatGroup.yuv420
+            : ImageFormatGroup.bgra8888,
+        enableAudio: false);
 
     cameraController?.initialize().then((_) async {
       // Stream of image passed to [onLatestImageAvailable] callback
@@ -96,7 +152,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       // same as screenWidth while maintaining the aspectRatio
       Size screenSize = MediaQuery.of(context).size;
       CameraViewSingleton.screenSize = screenSize;
-      CameraViewSingleton.ratio = screenSize.width / previewSize.height;
+      CameraViewSingleton.ratio = cameraController!.value.aspectRatio;
     });
   }
 
@@ -116,51 +172,107 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
   }
 
   runClassification(CameraImage cameraImage) async {
+    if (predicting) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      predicting = true;
+    });
     if (_imageModel != null) {
-      String imageClassifaction =
+      // Start the stopwatch
+      Stopwatch stopwatch = Stopwatch()..start();
+
+      String imageClassification =
           await _imageModel!.getImagePredictionFromBytesList(
         cameraImage.planes.map((e) => e.bytes).toList(),
         cameraImage.width,
         cameraImage.height,
       );
-
-      print("imageClassifaction $imageClassifaction");
-      widget.resultsCallbackClassification(imageClassifaction);
+      // Stop the stopwatch
+      stopwatch.stop();
+      // print("imageClassification $imageClassification");
+      widget.resultsCallbackClassification(
+          imageClassification, stopwatch.elapsed);
     }
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      predicting = false;
+    });
   }
 
-  runObjectDetection(CameraImage cameraImage) async {
-    if (_objectModel != null) {
-      List<ResultObjectDetection?> objDetect = await _objectModel!
-          .getImagePredictionFromBytesList(
-              cameraImage.planes.map((e) => e.bytes).toList(),
-              cameraImage.width,
-              cameraImage.height,
-              minimumScore: 0.3,
-              iOUThreshold: 0.3);
-
-      print("data outputted $objDetect");
-      widget.resultsCallback(objDetect);
+  Future<void> runObjectDetection(CameraImage cameraImage) async {
+    if (predictingObjectDetection) {
+      return;
     }
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      predictingObjectDetection = true;
+    });
+    if (_objectModel != null) {
+      // Start the stopwatch
+      Stopwatch stopwatch = Stopwatch()..start();
+
+      List<ResultObjectDetection> objDetect = (await _objectModel!
+              .getImagePredictionFromBytesList(
+                  cameraImage.planes.map((e) => e.bytes).toList(),
+                  cameraImage.width,
+                  cameraImage.height,
+                  minimumScore: 0.3,
+                  iOUThreshold: 0.3))
+          .where((e) => e != null)
+          .toList() as List<ResultObjectDetection>;
+
+      // Stop the stopwatch
+      stopwatch.stop();
+      // print("data outputted $objDetect");
+      widget.resultsCallback(objDetect, stopwatch.elapsed);
+    }
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      predictingObjectDetection = false;
+    });
   }
 
   /// Callback to receive each frame [CameraImage] perform inference on it
   onLatestImageAvailable(CameraImage cameraImage) async {
-    if (predicting) {
+    // Make sure we are still mounted, the background thread can return a response after we navigate away from this
+    // screen but before bg thread is killed
+    if (!mounted) {
       return;
     }
-    predicting = true;
 
-    var futures = <Future>[];
-    futures.add(runClassification(cameraImage));
-    futures.add(runObjectDetection(cameraImage));
-    await Future.wait(futures);
+    // log("will start prediction");
+    // log("Converted camera image");
 
-    predicting = false;
+    runClassification(cameraImage);
+    runObjectDetection(cameraImage);
+
+    // log("done prediction camera image");
+    // Make sure we are still mounted, the background thread can return a response after we navigate away from this
+    // screen but before bg thread is killed
+    if (!mounted) {
+      return;
+    }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (!mounted) {
+      return;
+    }
     switch (state) {
       case AppLifecycleState.paused:
         cameraController?.stopImageStream();

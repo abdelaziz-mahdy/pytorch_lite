@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:pytorch_lite/pigeon.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
 class RunModelByImageDemo extends StatefulWidget {
@@ -18,9 +17,9 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
   ClassificationModel? _imageModel;
   //CustomModel? _customModel;
   late ModelObjectDetection _objectModel;
-  late ModelObjectDetection _objectModelYolov8;
+  late ModelObjectDetection _objectModelYoloV8;
 
-  String? _imagePrediction;
+  String? textToShow;
   List? _prediction;
   File? _image;
   final ImagePicker _picker = ImagePicker();
@@ -46,7 +45,7 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
       _objectModel = await PytorchLite.loadObjectDetectionModel(
           pathObjectDetectionModel, 80, 640, 640,
           labelPath: "assets/labels/labels_objectDetection_Coco.txt");
-      _objectModelYolov8 = await PytorchLite.loadObjectDetectionModel(
+      _objectModelYoloV8 = await PytorchLite.loadObjectDetectionModel(
           pathObjectDetectionModelYolov8, 80, 640, 640,
           labelPath: "assets/labels/labels_objectDetection_Coco.txt",
           objectDetectionModelType: ObjectDetectionModelType.yolov8);
@@ -63,8 +62,12 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
   Future runObjectDetectionWithoutLabels() async {
     //pick a random image
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    Stopwatch stopwatch = Stopwatch()..start();
+
     objDetect = await _objectModel
         .getImagePredictionList(await File(image!.path).readAsBytes());
+    textToShow = inferenceTimeAsString(stopwatch);
+
     for (var element in objDetect) {
       print({
         "score": element?.score,
@@ -91,11 +94,13 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
 
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     Stopwatch stopwatch = Stopwatch()..start();
-
     objDetect = await _objectModel.getImagePrediction(
         await File(image!.path).readAsBytes(),
         minimumScore: 0.1,
         iOUThreshold: 0.3);
+    textToShow = inferenceTimeAsString(stopwatch);
+    print('object executed in ${stopwatch.elapsed.inMilliseconds} ms');
+
     for (var element in objDetect) {
       print({
         "score": element?.score,
@@ -111,23 +116,25 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
         },
       });
     }
-    print('object executed in ${stopwatch.elapsed.inMilliseconds}');
     setState(() {
       //this.objDetect = objDetect;
       _image = File(image.path);
     });
   }
 
-  Future runObjectDetectionYolov8() async {
+  Future runObjectDetectionYoloV8() async {
     //pick a random image
 
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     Stopwatch stopwatch = Stopwatch()..start();
 
-    objDetect = await _objectModelYolov8.getImagePrediction(
+    objDetect = await _objectModelYoloV8.getImagePrediction(
         await File(image!.path).readAsBytes(),
         minimumScore: 0.1,
         iOUThreshold: 0.3);
+    textToShow = inferenceTimeAsString(stopwatch);
+
+    print('object executed in ${stopwatch.elapsed.inMilliseconds} ms');
     for (var element in objDetect) {
       print({
         "score": element?.score,
@@ -143,12 +150,15 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
         },
       });
     }
-    print('object executed in ${stopwatch.elapsed.inMilliseconds}');
+
     setState(() {
       //this.objDetect = objDetect;
       _image = File(image.path);
     });
   }
+
+  String inferenceTimeAsString(Stopwatch stopwatch) =>
+      "Inference Took ${stopwatch.elapsed.inMilliseconds} ms";
 
   Future runClassification() async {
     objDetect = [];
@@ -157,34 +167,37 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
     //get prediction
     //labels are 1000 random english words for show purposes
     print(image!.path);
-    _imagePrediction = await _imageModel!
+    Stopwatch stopwatch = Stopwatch()..start();
+
+    textToShow = await _imageModel!
         .getImagePrediction(await File(image.path).readAsBytes());
+    textToShow = "${textToShow ?? ""}, ${inferenceTimeAsString(stopwatch)}";
 
     List<double?>? predictionList = await _imageModel!.getImagePredictionList(
       await File(image.path).readAsBytes(),
     );
 
     print(predictionList);
-    List<double?>? predictionListProbabilities =
-        await _imageModel!.getImagePredictionListProbabilities(
-      await File(image.path).readAsBytes(),
-    );
-    //Gettting the highest Probability
-    double maxScoreProbability = double.negativeInfinity;
-    double sumOfProbabilities = 0;
-    int index = 0;
-    for (int i = 0; i < predictionListProbabilities!.length; i++) {
-      if (predictionListProbabilities[i]! > maxScoreProbability) {
-        maxScoreProbability = predictionListProbabilities[i]!;
-        sumOfProbabilities =
-            sumOfProbabilities + predictionListProbabilities[i]!;
-        index = i;
-      }
-    }
-    print(predictionListProbabilities);
-    print(index);
-    print(sumOfProbabilities);
-    print(maxScoreProbability);
+    // List<double?>? predictionListProbabilities =
+    //     await _imageModel!.getImagePredictionListProbabilities(
+    //   await File(image.path).readAsBytes(),
+    // );
+    // //Gettting the highest Probability
+    // double maxScoreProbability = double.negativeInfinity;
+    // double sumOfProbabilities = 0;
+    // int index = 0;
+    // for (int i = 0; i < predictionListProbabilities!.length; i++) {
+    //   if (predictionListProbabilities[i]! > maxScoreProbability) {
+    //     maxScoreProbability = predictionListProbabilities[i]!;
+    //     sumOfProbabilities =
+    //         sumOfProbabilities + predictionListProbabilities[i]!;
+    //     index = i;
+    //   }
+    // }
+    // print(predictionListProbabilities);
+    // print(index);
+    // print(sumOfProbabilities);
+    // print(maxScoreProbability);
 
     setState(() {
       //this.objDetect = objDetect;
@@ -222,8 +235,11 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
             ),
             Center(
               child: Visibility(
-                visible: _imagePrediction != null,
-                child: Text("$_imagePrediction"),
+                visible: textToShow != null,
+                child: Text(
+                  "$textToShow",
+                  maxLines: 3,
+                ),
               ),
             ),
             /*
@@ -268,12 +284,12 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
               ),
             ),
             TextButton(
-              onPressed: runObjectDetectionYolov8,
+              onPressed: runObjectDetectionYoloV8,
               style: TextButton.styleFrom(
                 backgroundColor: Colors.blue,
               ),
               child: const Text(
-                "Run object detection yolov8 with labels",
+                "Run object detection YoloV8 with labels",
                 style: TextStyle(
                   color: Colors.white,
                 ),
