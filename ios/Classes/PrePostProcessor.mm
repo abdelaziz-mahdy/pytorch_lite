@@ -188,6 +188,9 @@
 - (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictionsYolov5:(NSArray<NSNumber *> *)outputs {
     NSMutableArray<ResultObjectDetection *> *results = [NSMutableArray array];
     for (int i = 0; i < self.mOutputRow; i++) {
+ float score = [outputs[i*self.mOutputColumn + 4] floatValue];
+
+    if (score > self.mScoreThreshold) {
         float x = [outputs[i * self.mOutputColumn] floatValue];
         float y = [outputs[i * self.mOutputColumn + 1] floatValue];
         float w = [outputs[i * self.mOutputColumn + 2] floatValue];
@@ -207,7 +210,6 @@
                 cls = j;
             }
         }
-        if (max > self.mScoreThreshold) {
 
         PyTorchRect *rect = [PyTorchRect makeWithLeft:@([self.class getFloatAsDouble:left / self.mImageWidth])
                                                   top:@([self.class getFloatAsDouble:top / self.mImageHeight])

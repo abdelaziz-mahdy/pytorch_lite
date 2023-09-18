@@ -22,7 +22,59 @@
     // instance.modulesVector = [NSMutableArray array];
     instance.prePostProcessors = [NSMutableArray array];
 }
-- (NSArray<NSNumber*>*)predictImage:(void*)imageBuffer withWidth:(int)width andHeight:(int)height atIndex:(NSInteger)moduleIndex objectDetectionFlag:(NSInteger)objectDetectionFlag {
+//- (NSArray<NSNumber*>*)predictImage:(void*)imageBuffer withWidth:(int)width andHeight:(int)height atIndex:(NSInteger)moduleIndex objectDetectionFlag:(NSInteger)objectDetectionFlag {
+//    try {
+//        torch::jit::Module* module = _modulesVector[moduleIndex];
+//        at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, height, width}, torch::kFloat32);
+//
+//        torch::autograd::AutoGradMode guard(false);
+//        at::AutoNonVariableTypeMode non_var_type_mode(true);
+//
+//        at::Tensor outputTensor;
+////        NSLog(@"objectDetectionFlag: %ld", objectDetectionFlag);
+//
+//        if (objectDetectionFlag == 1) {
+//            torch::jit::IValue outputTuple = module->forward({tensor}).toTuple();
+//            outputTensor = outputTuple.toTuple()->elements()[0].toTensor();
+//        } else {
+//            outputTensor = module->forward({tensor}).toTensor();
+//        }
+//
+//        float *floatBuffer = outputTensor.data_ptr<float>();
+//        if(!floatBuffer){
+//            return nil;
+//        }
+//
+//        int prod = 1;
+//        for(int i = 0; i < outputTensor.sizes().size(); i++) {
+//            prod *= outputTensor.sizes().data()[i];
+//        }
+//
+//        NSMutableArray<NSNumber*>* results = [[NSMutableArray<NSNumber*> alloc] init];
+//        for (int i = 0; i < prod; i++) {
+//            [results addObject: @(floatBuffer[i])];
+//        }
+//
+//        return [results copy];
+//
+//    } catch (const std::exception& e) {
+//        NSLog(@"%s", e.what());
+//        return nil; // Make sure to return nil in the case of an exception.
+//    }
+//}
+
+
+
+
+- (void)getPredictionCustomIndex:(nonnull NSNumber *)index input:(nonnull NSArray<NSNumber *> *)input shape:(nonnull NSArray<NSNumber *> *)shape dtype:(nonnull NSString *)dtype completion:(nonnull void (^)(NSArray * _Nullable, FlutterError * _Nullable))completion {
+    // <#code#>
+}
+- (NSArray<NSNumber*>*)predictImage:(void*)imageBuffer 
+                          withWidth:(int)width 
+                         andHeight:(int)height 
+                           atIndex:(NSInteger)moduleIndex 
+                 isObjectDetection:(BOOL)isObjectDetection 
+                 objectDetectionType:(NSInteger)objectDetectionType {
     try {
         torch::jit::Module* module = _modulesVector[moduleIndex];
         at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, height, width}, torch::kFloat32);
@@ -31,11 +83,15 @@
         at::AutoNonVariableTypeMode non_var_type_mode(true);
         
         at::Tensor outputTensor;
-//        NSLog(@"objectDetectionFlag: %ld", objectDetectionFlag);
+//        NSLog(@"isObjectDetection: %d, objectDetectionType: %ld", isObjectDetection, objectDetectionType);
 
-        if (objectDetectionFlag == 1) {
-            torch::jit::IValue outputTuple = module->forward({tensor}).toTuple();
-            outputTensor = outputTuple.toTuple()->elements()[0].toTensor();
+        if (isObjectDetection) {
+            if (objectDetectionType == 0) {
+                torch::jit::IValue outputTuple = module->forward({tensor}).toTuple();
+                outputTensor = outputTuple.toTuple()->elements()[0].toTensor();
+            } else {
+                outputTensor = module->forward({tensor}).toTensor();
+            }
         } else {
             outputTensor = module->forward({tensor}).toTensor();
         }
@@ -63,12 +119,6 @@
     }
 }
 
-
-
-
-- (void)getPredictionCustomIndex:(nonnull NSNumber *)index input:(nonnull NSArray<NSNumber *> *)input shape:(nonnull NSArray<NSNumber *> *)shape dtype:(nonnull NSString *)dtype completion:(nonnull void (^)(NSArray * _Nullable, FlutterError * _Nullable))completion {
-    // <#code#>
-}
 - (nullable NSNumber *)loadModelModelPath:(nonnull NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight isObjectDetection:(nullable NSNumber *)isObjectDetection objectDetectionModelType:(nullable NSNumber *)objectDetectionModelType error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
     
     NSInteger i = -1;
@@ -95,7 +145,6 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
 
     return [NSNumber numberWithInteger:i];
 }
-
 - (void)getImagePredictionListIndex:(nonnull NSNumber *)index imageData:(nullable FlutterStandardTypedData *)imageData imageBytesList:(nullable NSArray<FlutterStandardTypedData *> *)imageBytesList imageWidthForBytesList:(nullable NSNumber *)imageWidthForBytesList imageHeightForBytesList:(nullable NSNumber *)imageHeightForBytesList mean:(nonnull NSArray<NSNumber *> *)mean std:(nonnull NSArray<NSNumber *> *)std completion:(nonnull void (^)(NSArray<NSNumber *> * _Nullable, FlutterError * _Nullable))completion {
     
     UIImage *bitmap = nil;
@@ -112,7 +161,7 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
     }
 
     float* input = [UIImageExtension normalize:bitmap withMean:mean withSTD:std];
-    NSArray<NSNumber*> *results = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] objectDetectionFlag:0];
+    NSArray<NSNumber*> *results = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:FALSE objectDetectionType:0];
 
     if (results) {
         completion(results, nil);
@@ -141,7 +190,7 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
     }
 
     float* input = [UIImageExtension normalize:bitmap withMean:prePostProcessor.NO_MEAN_RGB withSTD:prePostProcessor.NO_STD_RGB];
-    NSArray<NSNumber*> *rawOutputs = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] objectDetectionFlag:prePostProcessor.mObjectDetectionModelType];
+    NSArray<NSNumber*> *rawOutputs = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:TRUE objectDetectionType:prePostProcessor.mObjectDetectionModelType];
 
     // Convert raw outputs to ResultObjectDetection objects
     NSMutableArray<ResultObjectDetection*> *results = [prePostProcessor outputsToNMSPredictions:rawOutputs];
@@ -153,6 +202,9 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
         completion(nil, error);
     }
 }
+
+
+
 
 
 

@@ -63,7 +63,7 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
     @Override
     public Long loadModel(String modelPath, Long numberOfClasses, Long imageWidth, Long imageHeight,
-            Pigeon.ObjectDetectionModelType objectDetectionModelType) {
+            int objectDetectionModelType) {
         int i = -1;
         try {
             // modules.add(LiteModuleLoader.load(modelPath));

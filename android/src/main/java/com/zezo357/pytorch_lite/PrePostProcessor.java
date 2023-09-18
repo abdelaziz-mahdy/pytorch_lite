@@ -25,8 +25,8 @@ public class PrePostProcessor {
     float mIOUThreshold = 0.30f; // IOU thershold
     int mImageWidth = 640;
     int mImageHeight = 640;
-    int mNmsLimit = 15;
-    Pigeon.ObjectDetectionModelType mObjectDetectionModelType;
+    // int mNmsLimit = 15;
+    int mObjectDetectionModelType;
 
     PrePostProcessor() {
     }
@@ -90,8 +90,8 @@ public class PrePostProcessor {
             if (active[i]) {
                 Pigeon.ResultObjectDetection boxA = boxes.get(i);
                 selected.add(boxA);
-                if (selected.size() >= mNmsLimit)
-                    break;
+                // if (selected.size() >= mNmsLimit)
+                //     break;
 
                 for (int j = i + 1; j < boxes.size(); j++) {
                     if (active[j]) {
@@ -235,7 +235,7 @@ public class PrePostProcessor {
 
     ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictions(float[] outputs) {
         // passed on model return value
-        if (mObjectDetectionModelType == Pigeon.ObjectDetectionModelType.YOLOV5) {
+        if (mObjectDetectionModelType == 0) {
             return outputsToNMSPredictionsYolov5(outputs);
         } else {
             return outputsToNMSPredictionsYoloV8(outputs);

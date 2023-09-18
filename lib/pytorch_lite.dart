@@ -12,7 +12,7 @@ export 'enums/dtype.dart';
 
 const torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
 const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
- enum ObjectDetectionModelType {yolov8, yolov5  }
+ enum ObjectDetectionModelType {yolov5,yolov8  }
 class PytorchLite {
   /*
   ///Sets pytorch model path and returns Model
