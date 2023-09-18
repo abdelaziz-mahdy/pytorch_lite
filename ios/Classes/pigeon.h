@@ -48,7 +48,7 @@ NSObject<FlutterMessageCodec> *ModelApiGetCodec(void);
 
 @protocol ModelApi
 /// @return `nil` only when `error != nil`.
-- (nullable NSNumber *)loadModelModelPath:(NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight isObjectDetection:(nullable NSNumber *)isObjectDetection objectDetectionModelType:(nullable NSNumber *)objectDetectionModelType error:(FlutterError *_Nullable *_Nonnull)error;
+- (nullable NSNumber *)loadModelModelPath:(NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight objectDetectionModelType:(nullable NSNumber *)objectDetectionModelType error:(FlutterError *_Nullable *_Nonnull)error;
 ///predicts abstract number input
 - (void)getPredictionCustomIndex:(NSNumber *)index input:(NSArray<NSNumber *> *)input shape:(NSArray<NSNumber *> *)shape dtype:(NSString *)dtype completion:(void (^)(NSArray *_Nullable, FlutterError *_Nullable))completion;
 ///predicts image but returns the raw net output

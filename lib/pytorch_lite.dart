@@ -30,7 +30,7 @@ class PytorchLite {
       {String? labelPath}) async {
     String absPathModelPath = await _getAbsolutePath(path);
     int index = await ModelApi()
-        .loadModel(absPathModelPath, null, imageWidth, imageHeight, null,null);
+        .loadModel(absPathModelPath, null, imageWidth, imageHeight,null);
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {
@@ -52,7 +52,7 @@ class PytorchLite {
     String absPathModelPath = await _getAbsolutePath(path);
 
     int index = await ModelApi().loadModel(absPathModelPath, numberOfClasses,
-        imageWidth, imageHeight,true, objectDetectionModelType.index);
+        imageWidth, imageHeight, objectDetectionModelType.index);
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {

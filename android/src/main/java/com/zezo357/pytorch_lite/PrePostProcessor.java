@@ -25,7 +25,7 @@ public class PrePostProcessor {
     float mIOUThreshold = 0.30f; // IOU thershold
     int mImageWidth = 640;
     int mImageHeight = 640;
-    // int mNmsLimit = 15;
+    int mNmsLimit = 15;
     int mObjectDetectionModelType;
 
     PrePostProcessor() {
@@ -37,12 +37,12 @@ public class PrePostProcessor {
     }
 
     PrePostProcessor(int numberOfClasses, int imageWidth, int imageHeight,
-            Pigeon.ObjectDetectionModelType objectDetectionModelType) {
+           int objectDetectionModelType) {
         mNumberOfClasses = numberOfClasses;
         mImageWidth = imageWidth;
         mImageHeight = imageHeight;
         mObjectDetectionModelType = objectDetectionModelType;
-        if (objectDetectionModelType == Pigeon.ObjectDetectionModelType.YOLOV5) {
+        if (objectDetectionModelType == 0) {
             mOutputRow = 25200; // as decided by the YOLOv5 model for input image of size 640*640
             mOutputColumn = (mNumberOfClasses + 5); // left, top, right, bottom, score and 80 class probability
         } else {
@@ -90,8 +90,8 @@ public class PrePostProcessor {
             if (active[i]) {
                 Pigeon.ResultObjectDetection boxA = boxes.get(i);
                 selected.add(boxA);
-                // if (selected.size() >= mNmsLimit)
-                //     break;
+                if (selected.size() >= mNmsLimit)
+                    break;
 
                 for (int j = i + 1; j < boxes.size(); j++) {
                     if (active[j]) {

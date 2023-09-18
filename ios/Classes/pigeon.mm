@@ -183,17 +183,16 @@ void ModelApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<ModelApi
         codec:ModelApiGetCodec()
 taskQueue:taskQueue];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(loadModelModelPath:numberOfClasses:imageWidth:imageHeight:isObjectDetection:objectDetectionModelType:error:)], @"ModelApi api (%@) doesn't respond to @selector(loadModelModelPath:numberOfClasses:imageWidth:imageHeight:isObjectDetection:objectDetectionModelType:error:)", api);
+      NSCAssert([api respondsToSelector:@selector(loadModelModelPath:numberOfClasses:imageWidth:imageHeight:objectDetectionModelType:error:)], @"ModelApi api (%@) doesn't respond to @selector(loadModelModelPath:numberOfClasses:imageWidth:imageHeight:objectDetectionModelType:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
         NSString *arg_modelPath = GetNullableObjectAtIndex(args, 0);
         NSNumber *arg_numberOfClasses = GetNullableObjectAtIndex(args, 1);
         NSNumber *arg_imageWidth = GetNullableObjectAtIndex(args, 2);
         NSNumber *arg_imageHeight = GetNullableObjectAtIndex(args, 3);
-        NSNumber *arg_isObjectDetection = GetNullableObjectAtIndex(args, 4);
-        NSNumber *arg_objectDetectionModelType = GetNullableObjectAtIndex(args, 5);
+        NSNumber *arg_objectDetectionModelType = GetNullableObjectAtIndex(args, 4);
         FlutterError *error;
-        NSNumber *output = [api loadModelModelPath:arg_modelPath numberOfClasses:arg_numberOfClasses imageWidth:arg_imageWidth imageHeight:arg_imageHeight isObjectDetection:arg_isObjectDetection objectDetectionModelType:arg_objectDetectionModelType error:&error];
+        NSNumber *output = [api loadModelModelPath:arg_modelPath numberOfClasses:arg_numberOfClasses imageWidth:arg_imageWidth imageHeight:arg_imageHeight objectDetectionModelType:arg_objectDetectionModelType error:&error];
         callback(wrapResult(output, error));
       }];
     } else {

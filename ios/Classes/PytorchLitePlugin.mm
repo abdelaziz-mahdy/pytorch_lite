@@ -119,7 +119,7 @@
     }
 }
 
-- (nullable NSNumber *)loadModelModelPath:(nonnull NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight isObjectDetection:(nullable NSNumber *)isObjectDetection objectDetectionModelType:(nullable NSNumber *)objectDetectionModelType error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+- (nullable NSNumber *)loadModelModelPath:(nonnull NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight objectDetectionModelType:(nullable NSNumber *)objectDetectionModelType error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
     
     NSInteger i = -1;
     @try {
@@ -177,7 +177,10 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
     
     UIImage *bitmap = nil;
     PrePostProcessor *prePostProcessor = self.prePostProcessors[index.intValue];
-
+    prePostProcessor.mNmsLimit = boxesLimit.intValue;
+    prePostProcessor.mScoreThreshold = minimumScore.floatValue;
+    prePostProcessor.mIOUThreshold = IOUThreshold.floatValue;
+    
     if (imageData) {
         bitmap = [UIImage imageWithData:imageData.data];
         bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];

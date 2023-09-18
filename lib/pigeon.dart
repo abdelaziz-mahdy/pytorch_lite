@@ -128,12 +128,12 @@ class ModelApi {
 
   static const MessageCodec<Object?> codec = _ModelApiCodec();
 
-  Future<int> loadModel(String arg_modelPath, int? arg_numberOfClasses, int? arg_imageWidth, int? arg_imageHeight, bool? arg_isObjectDetection, int? arg_objectDetectionModelType) async {
+  Future<int> loadModel(String arg_modelPath, int? arg_numberOfClasses, int? arg_imageWidth, int? arg_imageHeight, int? arg_objectDetectionModelType) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.pytorch_lite.ModelApi.loadModel', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_modelPath, arg_numberOfClasses, arg_imageWidth, arg_imageHeight, arg_isObjectDetection, arg_objectDetectionModelType]) as List<Object?>?;
+        await channel.send(<Object?>[arg_modelPath, arg_numberOfClasses, arg_imageWidth, arg_imageHeight, arg_objectDetectionModelType]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',

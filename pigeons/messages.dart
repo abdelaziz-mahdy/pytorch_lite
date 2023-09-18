@@ -32,7 +32,7 @@ class ResultObjectDetection {
 abstract class ModelApi {
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   int loadModel(String modelPath, int? numberOfClasses, int? imageWidth,
-      int? imageHeight, bool? isObjectDetection,int? objectDetectionModelType);
+      int? imageHeight,int? objectDetectionModelType);
 
   ///predicts abstract number input
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)

@@ -63,14 +63,14 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
     @Override
     public Long loadModel(String modelPath, Long numberOfClasses, Long imageWidth, Long imageHeight,
-            int objectDetectionModelType) {
+                          Long objectDetectionModelType) {
         int i = -1;
         try {
             // modules.add(LiteModuleLoader.load(modelPath));
             modules.add(Module.load(modelPath));
             if (numberOfClasses != null && imageWidth != null && imageHeight != null) {
                 prePostProcessors.add(new PrePostProcessor(numberOfClasses.intValue(), imageWidth.intValue(),
-                        imageHeight.intValue(), objectDetectionModelType));
+                        imageHeight.intValue(), objectDetectionModelType.intValue()));
             } else {
                 if (imageWidth != null && imageHeight != null) {
                     prePostProcessors.add(new PrePostProcessor(imageWidth.intValue(), imageHeight.intValue()));
@@ -85,6 +85,9 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
         return (long) i;
     }
+
+
+  
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @java.lang.Override
@@ -226,7 +229,7 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
             final Tensor imageInputTensor = TensorImageUtils.bitmapToFloat32Tensor(bitmap, prePostProcessor.NO_MEAN_RGB,
                     prePostProcessor.NO_STD_RGB);
             Tensor outputTensor = null;
-            if (prePostProcessor.mObjectDetectionModelType == Pigeon.ObjectDetectionModelType.YOLOV5) {
+            if (prePostProcessor.mObjectDetectionModelType == 0) {
                 IValue[] outputTuple = imageModule.forward(IValue.from(imageInputTensor)).toTuple();
                 outputTensor = outputTuple[0].toTensor();
             } else {

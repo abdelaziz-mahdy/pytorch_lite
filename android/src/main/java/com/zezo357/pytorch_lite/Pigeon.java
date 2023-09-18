@@ -386,7 +386,7 @@ public class Pigeon {
   public interface ModelApi {
 
     @NonNull 
-    Long loadModel(@NonNull String modelPath, @Nullable Long numberOfClasses, @Nullable Long imageWidth, @Nullable Long imageHeight, @Nullable Boolean isObjectDetection, @Nullable Long objectDetectionModelType);
+    Long loadModel(@NonNull String modelPath, @Nullable Long numberOfClasses, @Nullable Long imageWidth, @Nullable Long imageHeight, @Nullable Long objectDetectionModelType);
     /**predicts abstract number input */
     void getPredictionCustom(@NonNull Long index, @NonNull List<Double> input, @NonNull List<Long> shape, @NonNull String dtype, @NonNull Result<List<Object>> result);
     /**predicts image but returns the raw net output */
@@ -414,10 +414,9 @@ public class Pigeon {
                 Number numberOfClassesArg = (Number) args.get(1);
                 Number imageWidthArg = (Number) args.get(2);
                 Number imageHeightArg = (Number) args.get(3);
-                Boolean isObjectDetectionArg = (Boolean) args.get(4);
-                Number objectDetectionModelTypeArg = (Number) args.get(5);
+                Number objectDetectionModelTypeArg = (Number) args.get(4);
                 try {
-                  Long output = api.loadModel(modelPathArg, (numberOfClassesArg == null) ? null : numberOfClassesArg.longValue(), (imageWidthArg == null) ? null : imageWidthArg.longValue(), (imageHeightArg == null) ? null : imageHeightArg.longValue(), isObjectDetectionArg, (objectDetectionModelTypeArg == null) ? null : objectDetectionModelTypeArg.longValue());
+                  Long output = api.loadModel(modelPathArg, (numberOfClassesArg == null) ? null : numberOfClassesArg.longValue(), (imageWidthArg == null) ? null : imageWidthArg.longValue(), (imageHeightArg == null) ? null : imageHeightArg.longValue(), (objectDetectionModelTypeArg == null) ? null : objectDetectionModelTypeArg.longValue());
                   wrapped.add(0, output);
                 }
  catch (Throwable exception) {
