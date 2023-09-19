@@ -1,7 +1,5 @@
 import 'dart:developer';
 import 'dart:io';
-import 'dart:developer';
-import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -185,15 +183,20 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       predicting = true;
     });
     if (_imageModel != null) {
-      String imageClassifaction =
+      // Start the stopwatch
+      Stopwatch stopwatch = Stopwatch()..start();
+
+      String imageClassification =
           await _imageModel!.getImagePredictionFromBytesList(
         cameraImage.planes.map((e) => e.bytes).toList(),
         cameraImage.width,
         cameraImage.height,
       );
-
-      print("imageClassifaction $imageClassifaction");
-      widget.resultsCallbackClassification(imageClassifaction);
+      // Stop the stopwatch
+      stopwatch.stop();
+      // print("imageClassification $imageClassification");
+      widget.resultsCallbackClassification(
+          imageClassification, stopwatch.elapsed);
     }
     if (!mounted) {
       return;
@@ -216,16 +219,23 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       predictingObjectDetection = true;
     });
     if (_objectModel != null) {
-      List<ResultObjectDetection?> objDetect = await _objectModel!
-          .getImagePredictionFromBytesList(
-              cameraImage.planes.map((e) => e.bytes).toList(),
-              cameraImage.width,
-              cameraImage.height,
-              minimumScore: 0.3,
-              iOUThreshold: 0.3);
+      // Start the stopwatch
+      Stopwatch stopwatch = Stopwatch()..start();
 
-      print("data outputted $objDetect");
-      widget.resultsCallback(objDetect);
+      List<ResultObjectDetection> objDetect = (await _objectModel!
+              .getImagePredictionFromBytesList(
+                  cameraImage.planes.map((e) => e.bytes).toList(),
+                  cameraImage.width,
+                  cameraImage.height,
+                  minimumScore: 0.3,
+                  iOUThreshold: 0.3))
+          .where((e) => e != null)
+          .toList() as List<ResultObjectDetection>;
+
+      // Stop the stopwatch
+      stopwatch.stop();
+      // print("data outputted $objDetect");
+      widget.resultsCallback(objDetect, stopwatch.elapsed);
     }
     if (!mounted) {
       return;

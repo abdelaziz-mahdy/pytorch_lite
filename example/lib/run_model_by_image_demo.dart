@@ -39,7 +39,7 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
     String pathObjectDetectionModelYolov8 = "assets/models/yolov8s.torchscript";
     try {
       _imageModel = await PytorchLite.loadClassificationModel(
-          pathImageModel, 224, 224, 1000,
+          pathImageModel, 224, 224,
           labelPath: "assets/labels/label_classification_imageNet.txt");
       //_customModel = await PytorchLite.loadCustomModel(pathCustomModel);
       _objectModel = await PytorchLite.loadObjectDetectionModel(
