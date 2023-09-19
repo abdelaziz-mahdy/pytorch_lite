@@ -1,56 +1,35 @@
 package com.zezo357.pytorch_lite;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
-import android.graphics.Matrix;
-import android.graphics.Rect;
-import android.graphics.YuvImage;
-import android.os.Build;
-import android.util.Log;
-
-import androidx.annotation.RequiresApi;
-// import org.pytorch.LiteModuleLoader;
-import org.pytorch.DType;
-import org.pytorch.IValue;
-import org.pytorch.Module;
-import org.pytorch.Tensor;
-import org.pytorch.torchvision.TensorImageUtils;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import androidx.annotation.NonNull;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
-import io.flutter.plugin.common.BinaryMessenger;
-import io.flutter.view.TextureRegistry;
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
+import io.flutter.plugin.common.MethodChannel.Result;
 
-/**
- * PytorchLitePlugin
- */
+/** PytorchLitePlugin */
+public class PytorchLitePlugin implements FlutterPlugin, MethodCallHandler {
+  /// The MethodChannel that will the communication between Flutter and native Android
+  ///
+  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
+  /// when the Flutter Engine is detached from the Activity
+  private MethodChannel channel;
 
-public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
+  @Override
+  public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "pytorch_lite");
+    channel.setMethodCallHandler(this);
+  }
 
-    private static final String TAG = "PytorchLitePlugin";
-    ArrayList<Module> modules = new ArrayList<>();
-    ArrayList<PrePostProcessor> prePostProcessors = new ArrayList<>();
-
-    private FlutterState flutterState;
-
-    @Override
-    public void onAttachedToEngine(FlutterPluginBinding binding) {
-
-        this.flutterState = new FlutterState(
-                binding.getApplicationContext(),
-                binding.getBinaryMessenger(),
-                binding.getTextureRegistry());
-        flutterState.startListening(this, binding.getBinaryMessenger());
+  @Override
+  public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
+    if (call.method.equals("getPlatformVersion")) {
+      result.success("Android " + android.os.Build.VERSION.RELEASE);
+    } else {
+      result.notImplemented();
     }
+  }
 
     @Override
     public void onDetachedFromEngine(FlutterPluginBinding binding) {

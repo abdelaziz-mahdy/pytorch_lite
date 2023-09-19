@@ -2,6 +2,7 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
 # Run `pod lib lint pytorch_lite.podspec' to validate before publishing.
 #
+
 Pod::Spec.new do |s|
   s.name             = 'pytorch_lite'
   s.version          = '0.0.1'
@@ -13,6 +14,7 @@ A new Flutter plugin project.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
+
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'

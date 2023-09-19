@@ -1,3 +1,30 @@
+## 4.0.0
+* image processing is done using opencv to improve performance
+* camera image decoding is done using opencv to improve performance
+* camera images can be ran using getCameraImage* methods
+* improving the performance of object detection by moving all the processing to isolate
+* Fixed: CAMERA image boxes are shifted upwards in example
+* Improving example
+## 3.0.4
+* improved speed of inference
+* improve build speed on android
+## 3.0.3
+* windows extracting using tar instead of powershell since powershell is so slow
+## 3.0.2
+* improving cmake for windows extraction (thanks https://github.com/ZhaoXinZhang for pointing it out).
+## 3.0.1
+* fix android build on Windows.
+## 3.0.0+1
+* Converted to work on ffi (for improved performance, and ios support)
+* Improved isolates to stop ui frame drops
+* Added ImageUtilsIsolate to process camera images in isolate instead of ui thread
+* Updated Camera example
+* Better memory usage and freeing
+* Fixed camera example usage
+* Breaking changes
+* getImagePredictionFromBytesList Removed, (check camera example for new usage)
+
+
 ## 2.0.5
 * fixed dart analyses problems (renamed some variables to follow convention)
 ## 2.0.4

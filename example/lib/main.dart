@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:pytorch_lite/native_wrapper.dart';
 import 'package:pytorch_lite_example/run_model_by_camera_demo.dart';
 import 'package:pytorch_lite_example/run_model_by_image_demo.dart';
 
-void main() => runApp(const ChooseDemo());
+Future<void> main() async {
+  await PytorchFfi.init();
+  runApp(const ChooseDemo());
+}
 
 class ChooseDemo extends StatefulWidget {
   const ChooseDemo({Key? key}) : super(key: key);

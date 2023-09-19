@@ -27,3 +27,12 @@
 .dart_tool/
 .packages
 build/
+android/.cxx/
+android/.cxx/*
+android/libtorch-android/
+android/libtorch-android.zip
+android/libtorch-android*
+
+android/libtorch-android*/*
+android/opencv/*
+android/opencv*
