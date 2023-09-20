@@ -12,11 +12,11 @@ dependencies:
     sdk: flutter
   path_provider: ^2.0.2
   path: ^1.8.0
-  ffi: ^2.0.1
+  # ffi: ^2.0.1
   image: ^4.0.15
   camera: ^0.10.5+2
   # isolate_manager: ^4.0.0
-  computer: ^3.2.1
+  # computer: ^3.2.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -36,14 +36,14 @@ flutter:
     platforms:
       # android:
       #   ffiPlugin: true
-      ios:
-        ffiPlugin: true
+      # ios:
+      #   ffiPlugin: true
 
       android:
         package: com.zezo357.pytorch_lite
         pluginClass: PytorchLitePlugin
-      # ios:
-      #   pluginClass: PytorchLitePlugin
+      ios:
+        pluginClass: PytorchLitePlugin
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
