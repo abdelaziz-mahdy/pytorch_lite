@@ -1,4 +1,4 @@
-## 4.1.0
+## 4.1.0-dev
 * Converting package to use native methods instead of ffi (fixing ios)
 
 ## 4.0.0
