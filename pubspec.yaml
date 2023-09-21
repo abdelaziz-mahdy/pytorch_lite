@@ -17,6 +17,7 @@ dependencies:
   camera: ^0.10.5+2
   # isolate_manager: ^4.0.0
   computer: ^3.2.1
+  collection: ">1.0.0 <2.3.0"
 dev_dependencies:
   flutter_test:
     sdk: flutter
