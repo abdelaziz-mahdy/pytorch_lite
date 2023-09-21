@@ -173,10 +173,10 @@ class ClassificationModel {
     assert(mean.length == 3, "mean should have size of 3");
     assert(std.length == 3, "std should have size of 3");
 
-    final List<double>? prediction = await ModelApi().getImagePredictionList(
-        _index, imageAsBytes, null, null, null, mean, std) as List<double>?;
+    final List<double> prediction = (await ModelApi().getImagePredictionList(
+        _index, imageAsBytes, null, null, null, mean, std)).whereNotNull().toList();
 
-    int maxScoreIndex = softMax(prediction!);
+    int maxScoreIndex = softMax(prediction);
     return labels[maxScoreIndex];
   }
 
