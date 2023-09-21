@@ -43,7 +43,7 @@ abstract class ModelApi {
   ///predicts image but returns the raw net output
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   @async
-  List<double>? getImagePredictionList(
+  List<double> getImagePredictionList(
       int index,
       Uint8List? imageData,
       List<Uint8List>? imageBytesList,

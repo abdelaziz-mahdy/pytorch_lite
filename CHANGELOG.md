@@ -1,3 +1,6 @@
+## 4.1.0
+* Converting package to use native methods instead of ffi (fixing ios)
+
 ## 4.0.0
 * image processing is done using opencv to improve performance
 * camera image decoding is done using opencv to improve performance

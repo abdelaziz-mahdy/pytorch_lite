@@ -57,7 +57,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     String pathObjectDetectionModel = "assets/models/yolov8s.torchscript";
     try {
       _imageModel = await PytorchLite.loadClassificationModel(
-          pathImageModel, 224, 224,
+          pathImageModel, 224, 224, 1000,
           labelPath: "assets/labels/label_classification_imageNet.txt");
       //_customModel = await PytorchLite.loadCustomModel(pathCustomModel);
       _objectModel = await PytorchLite.loadObjectDetectionModel(
@@ -186,12 +186,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       // Start the stopwatch
       Stopwatch stopwatch = Stopwatch()..start();
 
-      String imageClassification =
-          await _imageModel!.getImagePredictionFromBytesList(
-        cameraImage.planes.map((e) => e.bytes).toList(),
-        cameraImage.width,
-        cameraImage.height,
-      );
+      String imageClassification = await _imageModel!
+          .getCameraImagePrediction(cameraImage, _camFrameRotation);
       // Stop the stopwatch
       stopwatch.stop();
       // print("imageClassification $imageClassification");
@@ -222,15 +218,13 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       // Start the stopwatch
       Stopwatch stopwatch = Stopwatch()..start();
 
-      List<ResultObjectDetection> objDetect = (await _objectModel!
-              .getImagePredictionFromBytesList(
-                  cameraImage.planes.map((e) => e.bytes).toList(),
-                  cameraImage.width,
-                  cameraImage.height,
-                  minimumScore: 0.3,
-                  iOUThreshold: 0.3))
-          .where((e) => e != null)
-          .toList() as List<ResultObjectDetection>;
+      List<ResultObjectDetection> objDetect =
+          await _objectModel!.getCameraImagePrediction(
+        cameraImage,
+        _camFrameRotation,
+        minimumScore: 0.3,
+        iOUThreshold: 0.3,
+      );
 
       // Stop the stopwatch
       stopwatch.stop();

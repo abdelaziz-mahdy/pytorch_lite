@@ -191,9 +191,3 @@ final std = [0.5, 0.5, 0.5];
 String prediction = await classificationModel
         .getImagePrediction(image, mean: mean, std: std);
 ```
-
-# References
-
-- Code used the same structure as the package https://pub.dev/packages/pytorch_mobile
-- While using the updated code from https://github.com/pytorch/android-demo-app
-- This repo helped a lot in getting camera to processed by opencv https://github.com/ValYouW/flutter-opencv-stream-processing

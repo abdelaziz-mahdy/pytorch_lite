@@ -179,7 +179,7 @@ class ModelApi {
   }
 
   ///predicts image but returns the raw net output
-  Future<List<double?>?> getImagePredictionList(int arg_index, Uint8List? arg_imageData, List<Uint8List?>? arg_imageBytesList, int? arg_imageWidthForBytesList, int? arg_imageHeightForBytesList, List<double?> arg_mean, List<double?> arg_std) async {
+  Future<List<double?>> getImagePredictionList(int arg_index, Uint8List? arg_imageData, List<Uint8List?>? arg_imageBytesList, int? arg_imageWidthForBytesList, int? arg_imageHeightForBytesList, List<double?> arg_mean, List<double?> arg_std) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.pytorch_lite.ModelApi.getImagePredictionList', codec,
         binaryMessenger: _binaryMessenger);
@@ -196,8 +196,13 @@ class ModelApi {
         message: replyList[1] as String?,
         details: replyList[2],
       );
+    } else if (replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
     } else {
-      return (replyList[0] as List<Object?>?)?.cast<double?>();
+      return (replyList[0] as List<Object?>?)!.cast<double?>();
     }
   }
 
