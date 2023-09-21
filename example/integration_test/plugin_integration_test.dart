@@ -41,7 +41,7 @@ void main() {
     testWidgets('Load Classification Model', (WidgetTester tester) async {
       int startTime = DateTime.now().millisecondsSinceEpoch;
       imageModel = await PytorchLite.loadClassificationModel(
-          pathClassificationModel, 224, 224,
+          pathClassificationModel, 224, 224,1000,
           labelPath: labelPathClassification);
       int endTime = DateTime.now().millisecondsSinceEpoch;
       print(
