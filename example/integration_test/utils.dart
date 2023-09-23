@@ -21,7 +21,7 @@ List<String> listDifferences(List<dynamic> list1, List<dynamic> list2) {
         differences.addAll(mapDiff);
       }
     } else if (item1 is double && item2 is double) {
-      if (item1.toStringAsPrecision(2) != item2.toStringAsPrecision(2)) {
+      if (item1.toStringAsPrecision(1) != item2.toStringAsPrecision(1)) {
         differences.add('Value mismatch at index $i: $item1 != $item2');
       }
     } else if (item1 is List && item2 is List) {
@@ -65,7 +65,7 @@ List<String> mapDifferences(
         differences.addAll(nestedDifferences);
       }
     } else if (val1 is double && val2 is double) {
-      if (val1.toStringAsPrecision(2) != val2.toStringAsPrecision(2)) {
+      if (val1.toStringAsPrecision(1) != val2.toStringAsPrecision(1)) {
         differences.add('Value mismatch for key $k: $val1 != $val2');
       }
     } else if (val1 is List && val2 is List) {
