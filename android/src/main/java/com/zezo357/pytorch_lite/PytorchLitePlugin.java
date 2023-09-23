@@ -182,7 +182,7 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
             Double[] scoresDouble = new Double[scores.length];
             for (int i = 0; i < scoresDouble.length; i++) {
 
-                scoresDouble[i] = Double.valueOf(Float.valueOf(scores[i]).toString());
+                scoresDouble[i] = Double.valueOf(Float.valueOf(scores[i]));
             }
             result.success(Arrays.asList(scoresDouble));
         } catch (Exception e) {
