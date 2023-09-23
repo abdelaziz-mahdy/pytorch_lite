@@ -16,7 +16,7 @@ PODS:
     - FlutterMacOS
   - pytorch_lite (0.0.1):
     - Flutter
-    - LibTorch (~> 1.13.0.1)
+    - LibTorch (~> 1.12)
 
 DEPENDENCIES:
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
@@ -51,7 +51,7 @@ SPEC CHECKSUMS:
   integration_test: 13825b8a9334a850581300559b8839134b124670
   LibTorch: 8abfa5fc9d146230b31065a29b0502e1104956ea
   path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
-  pytorch_lite: 918b8dcad2cc52b17e24297a2e2b4c05fd921df2
+  pytorch_lite: 9d5620b522e61373c0827530c07e2fe21147b24f
 
 PODFILE CHECKSUM: 7be2f5f74864d463a8ad433546ed1de7e0f29aef
 
