@@ -11,7 +11,7 @@ class ImageUtilsIsolate {
 
   static bool initiated = false;
 
-  static Future<void> init() async {
+  static Future<void> init({int workersCount = 2}) async {
     if (ImageUtilsIsolate.initiated) {
       return;
     }
@@ -19,28 +19,38 @@ class ImageUtilsIsolate {
     ImageUtilsIsolate.initiated = true;
     ImageUtilsIsolate.computer = Computer.create(); //Or Computer.shared()
     await ImageUtilsIsolate.computer.turnOn(
-      workersCount: 1, // optional, default 2
+      workersCount: workersCount, // optional, default 2
       verbose: false, // optional, default false
     );
   }
 
-  /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format and encodes to jpg and return bytes
+  /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format
+  static Future<Image?> convertCameraImage(CameraImage cameraImage) async {
+    Uint8List? bytes = (await convertCameraImageToBytes(cameraImage));
+    if (bytes != null) {
+      return decodeJpg(bytes);
+    } else {
+      return null;
+    }
+  }
+
   static TransferableTypedData? _convertCameraImageToBytes(dynamic values) {
     ImageFormatGroup imageFormatGroup = values[0];
-    int uvRowStride = values[1];
-    int uvPixelStride = values[2];
-    List<Uint8List> planes = values[3];
+    int? uvRowStride = values[1];
+    int? uvPixelStride = values[2];
+    List<Uint8List>? planes = values[3];
     int width = values[4];
     int height = values[5];
     Image? image;
     if (imageFormatGroup == ImageFormatGroup.yuv420) {
       image = convertYUV420ToImage(
-          uvRowStride, uvPixelStride, planes, width, height);
+          uvRowStride!, uvPixelStride!, planes!, width, height);
     } else if (imageFormatGroup == ImageFormatGroup.bgra8888) {
-      image = convertBGRA8888ToImage(width, height, planes[0]);
+      image = convertBGRA8888ToImage(width, height, planes![0]);
     } else {
       image = null;
     }
+
     if (image != null) {
       if (Platform.isIOS) {
         // ios, default camera image is portrait view
@@ -56,32 +66,39 @@ class ImageUtilsIsolate {
     return null;
   }
 
+  static List<dynamic> getParamsBasedOnType(CameraImage cameraImage) {
+    if (cameraImage.format.group == ImageFormatGroup.yuv420) {
+      return [
+        cameraImage.format.group,
+        cameraImage.planes[1].bytesPerRow,
+        cameraImage.planes[1].bytesPerPixel ?? 0,
+        cameraImage.planes.map((e) => e.bytes).toList(),
+        cameraImage.width,
+        cameraImage.height
+      ];
+    } else if (cameraImage.format.group == ImageFormatGroup.bgra8888) {
+      return [
+        cameraImage.format.group,
+        null,
+        null,
+        cameraImage.planes.map((e) => e.bytes).toList(),
+        cameraImage.width,
+        cameraImage.height
+      ];
+    }
+    // You can add more formats as needed
+    return [];
+  }
+
   /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format
   static Future<Uint8List?> convertCameraImageToBytes(
       CameraImage cameraImage) async {
     await ImageUtilsIsolate.init();
 
-    return (await ImageUtilsIsolate.computer.compute(
-      _convertCameraImageToBytes,param:[
-      cameraImage.format.group,
-      cameraImage.planes[1].bytesPerRow,
-      cameraImage.planes[1].bytesPerPixel ?? 0,
-      cameraImage.planes.map((e) => e.bytes).toList(),
-      cameraImage.width,
-      cameraImage.height
-    ]) as TransferableTypedData?)
+    return (await ImageUtilsIsolate.computer.compute(_convertCameraImageToBytes,
+            param: getParamsBasedOnType(cameraImage)) as TransferableTypedData?)
         ?.materialize()
         .asUint8List();
-  }
-
-  /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format
-  static Future<Image?> convertCameraImage(CameraImage cameraImage) async {
-    Uint8List? bytes = (await convertCameraImageToBytes(cameraImage));
-    if (bytes != null) {
-      return decodeJpg(bytes);
-    } else {
-      return null;
-    }
   }
 
   static Uint8List imageToUint8List(

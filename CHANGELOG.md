@@ -1,3 +1,5 @@
+## 4.1.1-dev
+* Fixing ios camera image decoding
 ## 4.1.0-dev
 * Converting package to use native methods instead of ffi (fixing ios)
 
