@@ -1,5 +1,8 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+
 import 'package:pigeon/pigeon.dart';
-// Build android only
+
+//Build android only
 // flutter pub run pigeon --input pigeons/messages.dart --dart_out lib/pigeon.dart  --java_out android/src/main/java/com/zezo357/pytorch_lite/Pigeon.java --java_package "com.zezo357.pytorch_lite"
 
 // Build android and ios
@@ -17,13 +20,14 @@ class PyTorchRect {
       this.left, this.top, this.width, this.height, this.right, this.bottom);
 }
 
-class ResultObjectDetection {
+class  ResultObjectDetection {
   int classIndex;
   String? className;
   double score;
   PyTorchRect rect;
 
-  ResultObjectDetection(this.classIndex, this.score, this.rect);
+  ResultObjectDetection(
+      this.classIndex, this.score, this.rect);
 }
 
 // enum ObjectDetectionModelType { yolov5, yolov8 }

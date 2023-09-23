@@ -9,12 +9,13 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pytorch_lite/enums/model_type.dart';
 import 'package:pytorch_lite/image_utils_isolate.dart';
+import 'package:pytorch_lite/extensions/to_map_json.dart';
 import 'package:pytorch_lite/pigeon.dart';
 import 'package:collection/collection.dart';
 
 export 'enums/dtype.dart';
 export 'package:pytorch_lite/pigeon.dart';
-
+export 'extensions/to_map_json.dart';
 const torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
 const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
 
