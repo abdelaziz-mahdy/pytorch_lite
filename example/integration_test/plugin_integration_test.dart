@@ -175,6 +175,7 @@ Future<void> runTestWithWrapper({
 
   } else {
     print("Warning: Results for '$testName' not found.");
+    printWrapped("please add to data: ${json.encode({testName: result})}");
     // This test was not previously run, so store its result
     testResults[testName] = result;
   }
@@ -226,6 +227,17 @@ void main() {
   });
 
   group('Testing Model Runs', () {
+        testWidgets('Run Classification Model on Small Image (raw list)',
+        (WidgetTester tester) async {
+      await runTestWithWrapper(
+          tester: tester,
+          testName: 'Run Classification Model on Small Image (raw list)',
+          testBody: () async {
+            Uint8List smallImageData =
+                await _getImageBytes(pathToSmallTestImage);
+            return await imageModel.getImagePredictionList(smallImageData);
+          });
+    });
     testWidgets('Run Classification Model on Small Image',
         (WidgetTester tester) async {
       await runTestWithWrapper(
