@@ -1,7 +1,7 @@
 Map<String, dynamic> data = {
   "Run Classification Model on Small Image": "Siamese cat, Siamese",
   "Run Classification Model on Large Image": "jigsaw puzzle",
-  "Run Object Detection Model on SmallImage": [
+  "Run Object Detection Model on Small Image": [
     {
       "classIndex": 16,
       "className": "dog",
@@ -16,7 +16,7 @@ Map<String, dynamic> data = {
       }
     }
   ],
-  "Run Object Detection Model on LargeImage": [
+  "Run Object Detection Model on Large Image": [
     {
       "classIndex": 0,
       "className": "person",
@@ -83,7 +83,7 @@ Map<String, dynamic> data = {
       }
     }
   ],
-  "Run Object Detection Model YOLOv8 on SmallImage": [
+  "Run Object Detection Model YOLOv8 on Small Image": [
     {
       "classIndex": 15,
       "className": "cat",
