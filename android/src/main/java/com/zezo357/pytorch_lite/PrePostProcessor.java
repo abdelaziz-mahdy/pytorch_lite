@@ -56,7 +56,7 @@ public class PrePostProcessor {
     // https://github.com/hollance/YOLO-CoreML-MPSNNGraph/blob/master/Common/Helpers.swift
 
     public static Double getFloatAsDouble(Float fValue) {
-        return Double.valueOf(fValue.toString());
+        return Double.valueOf(fValue);
     }
 
     /**
