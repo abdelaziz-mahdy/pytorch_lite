@@ -19,6 +19,8 @@ import 'package:pytorch_lite/pytorch_lite.dart';
 import 'data.dart';
 import 'package:collection/collection.dart';
 
+import 'utils.dart';
+
 // Defining global paths
 const String pathClassificationModel = "assets/models/model_classification.pt";
 const String pathObjectDetectionModel = "assets/models/yolov5s.torchscript";
@@ -75,78 +77,8 @@ void saveResults() {
   printWrapped("file data is ${data}");
   file.writeAsStringSync(data);
 }
-List<String> _mapDifferences(Map<String, dynamic> map1, Map<String, dynamic> map2) {
-  List<String> differences = [];
-
-  if (map1.keys.length != map2.keys.length) {
-    differences.add('Maps have different number of keys.');
-    return differences;
-  }
-
-  for (String k in map1.keys) {
-    if (!map2.containsKey(k)) {
-      differences.add('Key $k is missing in second map.');
-      continue;
-    }
-
-    if (map1[k] is Map && map2[k] is Map) {
-      List<String> nestedDifferences = _mapDifferences(map1[k], map2[k]);
-      if (nestedDifferences.isNotEmpty) {
-        differences.add('Differences in nested map for key $k:');
-        differences.addAll(nestedDifferences);
-      }
-    } else if (map1[k] is double && map2[k] is double) {
-      if ((map1[k] as double).toStringAsPrecision(2) !=
-          (map2[k] as double).toStringAsPrecision(2)) {
-        differences.add('Value mismatch for key $k: ${map1[k]} != ${map2[k]}');
-      }
-    } else {
-      if (map1[k] != map2[k]) {
-        differences.add('Value mismatch for key $k: ${map1[k]} != ${map2[k]}');
-      }
-    }
-  }
-
-  return differences;
-}
 
 
-
-bool _mapEquals(Map<String, dynamic> map1, Map<String, dynamic> map2) {
-  List<String> differences = _mapDifferences(map1, map2);
-  return differences.isEmpty;
-}
-bool _listOfMapsEquals(
-    List<Map<String, dynamic>> list1, List<Map<String, dynamic>> list2) {
-  if (list1.length != list2.length) return false;
-
-  for (int i = 0; i < list1.length; i++) {
-    if (!_mapEquals(list1[i], list2[i])) return false;
-  }
-
-  return true;
-}
-
-
-List<String> _listOfMapsDifferences(
-    List<Map<String, dynamic>> list1, List<Map<String, dynamic>> list2) {
-  List<String> differences = [];
-
-  if (list1.length != list2.length) {
-    differences.add('Lists have different lengths: ${list1.length} != ${list2.length}');
-    return differences;
-  }
-
-  for (int i = 0; i < list1.length; i++) {
-    List<String> mapDiff = _mapDifferences(list1[i], list2[i]);
-    if (mapDiff.isNotEmpty) {
-      differences.add('Differences in map $i:');
-      differences.addAll(mapDiff);
-    }
-  }
-
-  return differences;
-}
 
 Future<void> runTestWithWrapper({
   required WidgetTester tester,
@@ -167,12 +99,18 @@ Future<void> runTestWithWrapper({
     final previousResult = testResults[testName];
     if (result is List<ResultObjectDetection>) {
       result = result.map((e) => e.toMap()).toList();
-      expect(_listOfMapsEquals(result, previousResult), true,
-          reason: _listOfMapsDifferences(result, previousResult).join("\n"));
+      expect(listEquals(result, previousResult), true,
+          reason: listDifferences(result, previousResult).join("\n"));
     } else {
+      if (result is List) {
+        expect(listEquals(result, previousResult), true,
+            reason: listDifferences(result, previousResult).join("\n"));
+      } else {
       expect(result, previousResult);
-    }
 
+      }
+
+    }
   } else {
     print("Warning: Results for '$testName' not found.");
     printWrapped("please add to data: ${json.encode({testName: result})}");
@@ -227,7 +165,7 @@ void main() {
   });
 
   group('Testing Model Runs', () {
-        testWidgets('Run Classification Model on Small Image (raw list)',
+    testWidgets('Run Classification Model on Small Image (raw list)',
         (WidgetTester tester) async {
       await runTestWithWrapper(
           tester: tester,
