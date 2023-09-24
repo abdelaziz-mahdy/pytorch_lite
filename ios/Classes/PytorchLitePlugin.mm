@@ -77,7 +77,7 @@
                  objectDetectionType:(NSInteger)objectDetectionType {
     try {
         torch::jit::Module* module = _modulesVector[moduleIndex];
-        at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, height, width}, torch::kFloat32);
+        at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, height, width}, at::kFloat);
 
         torch::autograd::AutoGradMode guard(false);
         at::AutoNonVariableTypeMode non_var_type_mode(true);
