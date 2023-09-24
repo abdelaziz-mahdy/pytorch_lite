@@ -161,7 +161,7 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
     }
 
     float* input = [UIImageExtension normalize:bitmap withMean:mean withSTD:std];
-    NSArray<NSNumber*> *results = [self predictImage:bitmap withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:FALSE objectDetectionType:0];
+    NSArray<NSNumber*> *results = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:FALSE objectDetectionType:0];
 
     if (results) {
         completion(results, nil);
