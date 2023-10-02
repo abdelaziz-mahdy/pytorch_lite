@@ -30,7 +30,7 @@ jobs:
           channel: "stable"
           cache: true
       - run: flutter pub get
-      - run: flutter build apk --split-per-abi --verbose
+      - run: flutter build apk --split-per-abi 
   android_macos:
     name: Android_macos
     runs-on: macos-latest
@@ -46,7 +46,7 @@ jobs:
           channel: "stable"
           cache: true
       - run: flutter pub get
-      - run: flutter build apk --split-per-abi --verbose
+      - run: flutter build apk --split-per-abi 
   
   ios:
     name: iOS
@@ -60,6 +60,6 @@ jobs:
           channel: "stable"
           cache: true
       - run: flutter pub get
-      - run: flutter build ios --verbose --no-codesign
+      - run: flutter build ios --no-codesign
 
 
