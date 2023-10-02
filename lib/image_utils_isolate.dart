@@ -101,8 +101,10 @@ class ImageUtilsIsolate {
         .asUint8List();
   }
 
-  static Future<Float64List> convertImageBytesToFloatBuffer(
+  static Future<Uint8List> convertImageBytesToFloatBuffer(
     Uint8List bytes,
+    int width,
+    int height,
     List<double> mean,
     List<double> std,
   ) async {
@@ -110,30 +112,35 @@ class ImageUtilsIsolate {
 
     return (await ImageUtilsIsolate.computer.compute(
             _convertImageBytesToFloatBuffer,
-            param: [bytes, mean, std]) as TransferableTypedData)
+            param: [bytes, width, height, mean, std]) as TransferableTypedData)
         .materialize()
-        .asFloat64List();
+        .asUint8List();
   }
 
   static TransferableTypedData _convertImageBytesToFloatBuffer(
       List<dynamic> params) {
     final bytes = params[0];
-    final mean = params[1];
-    final std = params[2];
+    final width = params[1];
+    final height = params[2];
+    final mean = params[3];
+    final std = params[4];
     // Extract other variables from params as needed
 
     Image? img = decodeImage(bytes);
     if (img == null) {
       throw Exception("Unable to process image bytes");
     }
-    return TransferableTypedData.fromList([imageToUint8List(img, mean, std)]);
+    Image scaledImageBytes = copyResize(img, width: width, height: height);
+
+    return TransferableTypedData.fromList(
+        [imageToUint8List(scaledImageBytes, mean, std)]);
   }
 
-  static Float64List imageToUint8List(
+  static Uint8List imageToUint8List(
       Image image, List<double> mean, List<double> std,
       {bool contiguous = true}) {
-    var bytes = Float64List(1 * image.height * image.width * 3);
-    var buffer = Float64List.view(bytes.buffer);
+    var bytes = Float32List(1 * image.height * image.width * 3);
+    var buffer = Float32List.view(bytes.buffer);
 
     if (contiguous) {
       int offsetG = image.height * image.width;
@@ -159,8 +166,8 @@ class ImageUtilsIsolate {
         }
       }
     }
-
-    return bytes;
+   
+    return bytes.buffer.asUint8List();
   }
 
   static Image convertBGRA8888ToImage(int width, int height, Uint8List bytes) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +57,7 @@ class PytorchLite {
       }
     }
 
-    return ClassificationModel(index, labels);
+    return ClassificationModel(index, labels, imageWidth, imageHeight);
   }
 
   ///Sets pytorch object detection model (path and lables) and returns Model
@@ -137,7 +138,12 @@ class CustomModel {
 class ClassificationModel {
   final int _index;
   final List<String> labels;
-  ClassificationModel(this._index, this.labels);
+  final int imageWidth;
+  final int imageHeight;
+
+  ClassificationModel(
+      this._index, this.labels, this.imageWidth, this.imageHeight);
+
   int softMax(List<double?> prediction) {
     double maxScore = double.negativeInfinity;
     int maxScoreIndex = -1;
@@ -195,10 +201,9 @@ class ClassificationModel {
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
     if (preProcessingMethod == PreProcessingMethod.imageLib) {
-      return (await ModelApi().getRawImagePredictionList(
-              _index,
-              await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
-                  imageAsBytes, mean, std)))
+      Uint8List data = await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
+          imageAsBytes, imageWidth, imageHeight, mean, std);
+      return (await ModelApi().getRawImagePredictionList(_index, data))
           .whereNotNull()
           .toList();
     }
@@ -387,10 +392,11 @@ class ModelObjectDetection {
       PreProcessingMethod preProcessingMethod =
           PreProcessingMethod.imageLib}) async {
     if (preProcessingMethod == PreProcessingMethod.imageLib) {
+      Uint8List data = await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
+          imageAsBytes, imageWidth, imageHeight, noMeanRGB, noSTDRGB);
       return (await ModelApi().getRawImagePredictionListObjectDetection(
               _index,
-              await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
-                  imageAsBytes, noMeanRGB, noSTDRGB),
+              data,
               minimumScore,
               iOUThreshold,
               boxesLimit))

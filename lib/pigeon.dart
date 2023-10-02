@@ -179,7 +179,7 @@ class ModelApi {
   }
 
   ///predicts raw image but returns the raw net output
-  Future<List<double?>> getRawImagePredictionList(int arg_index, Float64List arg_imageData) async {
+  Future<List<double?>> getRawImagePredictionList(int arg_index, Uint8List arg_imageData) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.pytorch_lite.ModelApi.getRawImagePredictionList', codec,
         binaryMessenger: _binaryMessenger);
@@ -207,7 +207,7 @@ class ModelApi {
   }
 
   ///predicts raw image but returns the raw net output
-  Future<List<ResultObjectDetection?>> getRawImagePredictionListObjectDetection(int arg_index, Float64List arg_imageData, double arg_minimumScore, double arg_IOUThreshold, int arg_boxesLimit) async {
+  Future<List<ResultObjectDetection?>> getRawImagePredictionListObjectDetection(int arg_index, Uint8List arg_imageData, double arg_minimumScore, double arg_IOUThreshold, int arg_boxesLimit) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.pytorch_lite.ModelApi.getRawImagePredictionListObjectDetection', codec,
         binaryMessenger: _binaryMessenger);
