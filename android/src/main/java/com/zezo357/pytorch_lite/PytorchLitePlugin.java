@@ -135,7 +135,8 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
     }
 
     @Override
-    public void getRawImagePredictionList(Long index, byte[] imageData, Pigeon.Result<List<Double>> result) {
+    public void getRawImagePredictionList(Long index, double[] imageData, Pigeon.Result<List<Double>> result) {
+
         PrePostProcessor prePostProcessor = null;
         Module imageModule = null;
 
@@ -167,7 +168,7 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
     }
 
     @Override
-    public void getRawImagePredictionListObjectDetection(Long index, byte[] imageData, Double minimumScore, Double IOUThreshold, Long boxesLimit, Pigeon.Result<List<Pigeon.ResultObjectDetection>> result) {
+    public void getRawImagePredictionListObjectDetection(Long index, double[] imageData, Double minimumScore, Double IOUThreshold, Long boxesLimit, Pigeon.Result<List<Pigeon.ResultObjectDetection>> result) {
         Module imageModule = null;
         PrePostProcessor prePostProcessor = null;
         try {

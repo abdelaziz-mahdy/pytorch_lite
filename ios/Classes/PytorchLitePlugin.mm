@@ -209,7 +209,7 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
 - (void)getRawImagePredictionListIndex:(nonnull NSNumber *)index imageData:(nonnull FlutterStandardTypedData *)imageData completion:(nonnull void (^)(NSArray<NSNumber *> * _Nullable, FlutterError * _Nullable))completion { 
     PrePostProcessor *prePostProcessor = self.prePostProcessors[index.intValue];
 
-    NSArray<NSNumber*> *results = [self predictImage:imageData.data withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:FALSE objectDetectionType:0];
+    NSArray<NSNumber*> *results = [self predictImage:(void *)[imageData.data bytes] withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:FALSE objectDetectionType:0];
 
     if (results) {
         completion(results, nil);
@@ -227,7 +227,7 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
     prePostProcessor.mScoreThreshold = minimumScore.floatValue;
     prePostProcessor.mIOUThreshold = IOUThreshold.floatValue;
     
-    NSArray<NSNumber*> *rawOutputs = [self predictImage:imageData.data withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:TRUE objectDetectionType:prePostProcessor.mObjectDetectionModelType];
+    NSArray<NSNumber*> *rawOutputs = [self predictImage:(void *)[imageData.data bytes] withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:TRUE objectDetectionType:prePostProcessor.mObjectDetectionModelType];
 
     // Convert raw outputs to ResultObjectDetection objects
     NSMutableArray<ResultObjectDetection*> *results = [prePostProcessor outputsToNMSPredictions:rawOutputs];
