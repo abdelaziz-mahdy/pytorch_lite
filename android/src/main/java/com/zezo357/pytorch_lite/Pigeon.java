@@ -389,6 +389,10 @@ public class Pigeon {
     Long loadModel(@NonNull String modelPath, @Nullable Long numberOfClasses, @Nullable Long imageWidth, @Nullable Long imageHeight, @Nullable Long objectDetectionModelType);
     /**predicts abstract number input */
     void getPredictionCustom(@NonNull Long index, @NonNull List<Double> input, @NonNull List<Long> shape, @NonNull String dtype, @NonNull Result<List<Object>> result);
+    /**predicts raw image but returns the raw net output */
+    void getRawImagePredictionList(@NonNull Long index, @NonNull double[] imageData, @NonNull Result<List<Double>> result);
+    /**predicts raw image but returns the raw net output */
+    void getRawImagePredictionListObjectDetection(@NonNull Long index, @NonNull double[] imageData, @NonNull Double minimumScore, @NonNull Double IOUThreshold, @NonNull Long boxesLimit, @NonNull Result<List<ResultObjectDetection>> result);
     /**predicts image but returns the raw net output */
     void getImagePredictionList(@NonNull Long index, @Nullable byte[] imageData, @Nullable List<byte[]> imageBytesList, @Nullable Long imageWidthForBytesList, @Nullable Long imageHeightForBytesList, @NonNull List<Double> mean, @NonNull List<Double> std, @NonNull Result<List<Double>> result);
     /**predicts image but returns the output detections */
@@ -457,6 +461,71 @@ public class Pigeon {
                     };
 
                 api.getPredictionCustom((indexArg == null) ? null : indexArg.longValue(), inputArg, shapeArg, dtypeArg, resultCallback);
+              });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BinaryMessenger.TaskQueue taskQueue = binaryMessenger.makeBackgroundTaskQueue();
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(
+                binaryMessenger, "dev.flutter.pigeon.pytorch_lite.ModelApi.getRawImagePredictionList", getCodec(), taskQueue);
+        if (api != null) {
+          channel.setMessageHandler(
+              (message, reply) -> {
+                ArrayList<Object> wrapped = new ArrayList<Object>();
+                ArrayList<Object> args = (ArrayList<Object>) message;
+                Number indexArg = (Number) args.get(0);
+                double[] imageDataArg = (double[]) args.get(1);
+                Result<List<Double>> resultCallback =
+                    new Result<List<Double>>() {
+                      public void success(List<Double> result) {
+                        wrapped.add(0, result);
+                        reply.reply(wrapped);
+                      }
+
+                      public void error(Throwable error) {
+                        ArrayList<Object> wrappedError = wrapError(error);
+                        reply.reply(wrappedError);
+                      }
+                    };
+
+                api.getRawImagePredictionList((indexArg == null) ? null : indexArg.longValue(), imageDataArg, resultCallback);
+              });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BinaryMessenger.TaskQueue taskQueue = binaryMessenger.makeBackgroundTaskQueue();
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(
+                binaryMessenger, "dev.flutter.pigeon.pytorch_lite.ModelApi.getRawImagePredictionListObjectDetection", getCodec(), taskQueue);
+        if (api != null) {
+          channel.setMessageHandler(
+              (message, reply) -> {
+                ArrayList<Object> wrapped = new ArrayList<Object>();
+                ArrayList<Object> args = (ArrayList<Object>) message;
+                Number indexArg = (Number) args.get(0);
+                double[] imageDataArg = (double[]) args.get(1);
+                Double minimumScoreArg = (Double) args.get(2);
+                Double IOUThresholdArg = (Double) args.get(3);
+                Number boxesLimitArg = (Number) args.get(4);
+                Result<List<ResultObjectDetection>> resultCallback =
+                    new Result<List<ResultObjectDetection>>() {
+                      public void success(List<ResultObjectDetection> result) {
+                        wrapped.add(0, result);
+                        reply.reply(wrapped);
+                      }
+
+                      public void error(Throwable error) {
+                        ArrayList<Object> wrappedError = wrapError(error);
+                        reply.reply(wrappedError);
+                      }
+                    };
+
+                api.getRawImagePredictionListObjectDetection((indexArg == null) ? null : indexArg.longValue(), imageDataArg, minimumScoreArg, IOUThresholdArg, (boxesLimitArg == null) ? null : boxesLimitArg.longValue(), resultCallback);
               });
         } else {
           channel.setMessageHandler(null);

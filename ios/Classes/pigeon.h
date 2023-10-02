@@ -51,6 +51,10 @@ NSObject<FlutterMessageCodec> *ModelApiGetCodec(void);
 - (nullable NSNumber *)loadModelModelPath:(NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight objectDetectionModelType:(nullable NSNumber *)objectDetectionModelType error:(FlutterError *_Nullable *_Nonnull)error;
 ///predicts abstract number input
 - (void)getPredictionCustomIndex:(NSNumber *)index input:(NSArray<NSNumber *> *)input shape:(NSArray<NSNumber *> *)shape dtype:(NSString *)dtype completion:(void (^)(NSArray *_Nullable, FlutterError *_Nullable))completion;
+///predicts raw image but returns the raw net output
+- (void)getRawImagePredictionListIndex:(NSNumber *)index imageData:(FlutterStandardTypedData *)imageData completion:(void (^)(NSArray<NSNumber *> *_Nullable, FlutterError *_Nullable))completion;
+///predicts raw image but returns the raw net output
+- (void)getRawImagePredictionListObjectDetectionIndex:(NSNumber *)index imageData:(FlutterStandardTypedData *)imageData minimumScore:(NSNumber *)minimumScore IOUThreshold:(NSNumber *)IOUThreshold boxesLimit:(NSNumber *)boxesLimit completion:(void (^)(NSArray<ResultObjectDetection *> *_Nullable, FlutterError *_Nullable))completion;
 ///predicts image but returns the raw net output
 - (void)getImagePredictionListIndex:(NSNumber *)index imageData:(nullable FlutterStandardTypedData *)imageData imageBytesList:(nullable NSArray<FlutterStandardTypedData *> *)imageBytesList imageWidthForBytesList:(nullable NSNumber *)imageWidthForBytesList imageHeightForBytesList:(nullable NSNumber *)imageHeightForBytesList mean:(NSArray<NSNumber *> *)mean std:(NSArray<NSNumber *> *)std completion:(void (^)(NSArray<NSNumber *> *_Nullable, FlutterError *_Nullable))completion;
 ///predicts image but returns the output detections

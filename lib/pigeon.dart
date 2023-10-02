@@ -178,6 +178,62 @@ class ModelApi {
     }
   }
 
+  ///predicts raw image but returns the raw net output
+  Future<List<double?>> getRawImagePredictionList(int arg_index, Float64List arg_imageData) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.pytorch_lite.ModelApi.getRawImagePredictionList', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_index, arg_imageData]) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else if (replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyList[0] as List<Object?>?)!.cast<double?>();
+    }
+  }
+
+  ///predicts raw image but returns the raw net output
+  Future<List<ResultObjectDetection?>> getRawImagePredictionListObjectDetection(int arg_index, Float64List arg_imageData, double arg_minimumScore, double arg_IOUThreshold, int arg_boxesLimit) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.pytorch_lite.ModelApi.getRawImagePredictionListObjectDetection', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_index, arg_imageData, arg_minimumScore, arg_IOUThreshold, arg_boxesLimit]) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else if (replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyList[0] as List<Object?>?)!.cast<ResultObjectDetection?>();
+    }
+  }
+
   ///predicts image but returns the raw net output
   Future<List<double?>> getImagePredictionList(int arg_index, Uint8List? arg_imageData, List<Uint8List?>? arg_imageBytesList, int? arg_imageWidthForBytesList, int? arg_imageHeightForBytesList, List<double?> arg_mean, List<double?> arg_std) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(

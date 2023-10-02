@@ -16,8 +16,11 @@ import 'package:collection/collection.dart';
 export 'enums/dtype.dart';
 export 'package:pytorch_lite/pigeon.dart';
 export 'extensions/to_map_json.dart';
-const torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
-const torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
+
+const List<double> torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
+const List<double> torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
+const List<double> noMeanRGB = [0, 0, 0];
+const List<double> noSTDRGB = [1, 1, 1];
 
 enum ObjectDetectionModelType { yolov5, yolov8 }
 
@@ -169,13 +172,14 @@ class ClassificationModel {
   ///predicts image and returns the supposed label belonging to it
   Future<String> getImagePrediction(Uint8List imageAsBytes,
       {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB}) async {
+      List<double> std = torchVisionNormSTDRGB,
+      PreProcessingMethod preProcessingMethod =
+          PreProcessingMethod.imageLib}) async {
     // Assert mean std
     assert(mean.length == 3, "mean should have size of 3");
     assert(std.length == 3, "std should have size of 3");
-
-    final List<double> prediction = (await ModelApi().getImagePredictionList(
-        _index, imageAsBytes, null, null, null, mean, std)).whereNotNull().toList();
+    final List<double> prediction = await getImagePredictionList(imageAsBytes,
+        mean: mean, std: std, preProcessingMethod: preProcessingMethod);
 
     int maxScoreIndex = softMax(prediction);
     return labels[maxScoreIndex];
@@ -184,15 +188,24 @@ class ClassificationModel {
   ///predicts image but returns the raw net output
   Future<List<double>> getImagePredictionList(Uint8List imageAsBytes,
       {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB}) async {
+      List<double> std = torchVisionNormSTDRGB,
+      PreProcessingMethod preProcessingMethod =
+          PreProcessingMethod.imageLib}) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
-    final List<double> prediction = (await ModelApi().getImagePredictionList(
+    if (preProcessingMethod == PreProcessingMethod.imageLib) {
+      return (await ModelApi().getRawImagePredictionList(
+              _index,
+              await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
+                  imageAsBytes, mean, std)))
+          .whereNotNull()
+          .toList();
+    }
+    return (await ModelApi().getImagePredictionList(
             _index, imageAsBytes, null, null, null, mean, std))
         .whereNotNull()
         .toList();
-    return prediction;
   }
 
   ///predicts image but returns the output as probabilities
@@ -200,9 +213,11 @@ class ClassificationModel {
   Future<List<double>> getImagePredictionListProbabilities(
       Uint8List imageAsBytes,
       {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB}) async {
-    List<double> prediction =
-        await getImagePredictionList(imageAsBytes, mean: mean, std: std);
+      List<double> std = torchVisionNormSTDRGB,
+      PreProcessingMethod preProcessingMethod =
+          PreProcessingMethod.imageLib}) async {
+    List<double> prediction = await getImagePredictionList(imageAsBytes,
+        mean: mean, std: std, preProcessingMethod: preProcessingMethod);
 
     return getProbabilities(prediction);
   }
@@ -250,19 +265,21 @@ class ClassificationModel {
 
   ///predicts image but returns the raw net output
   Future<List<double>> getCameraImagePredictionList(
-    CameraImage cameraImage,
-    int rotation, {
-    List<double> mean = torchVisionNormMeanRGB,
-    List<double> std = torchVisionNormSTDRGB,
-    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
-  }) async {
-    if (preProcessingMethod == PreProcessingMethod.imageLib) {
+      CameraImage cameraImage, int rotation,
+      {List<double> mean = torchVisionNormMeanRGB,
+      List<double> std = torchVisionNormSTDRGB,
+      CameraPreProcessingMethod cameraPreProcessingMethod =
+          CameraPreProcessingMethod.imageLib,
+      PreProcessingMethod preProcessingMethod =
+          PreProcessingMethod.imageLib}) async {
+    if (cameraPreProcessingMethod == CameraPreProcessingMethod.imageLib) {
       Uint8List? bytes =
           await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage);
       if (bytes == null) {
         throw Exception("Unable to process image bytes");
       }
-      return await getImagePredictionList(bytes, mean: mean, std: std);
+      return await getImagePredictionList(bytes,
+          mean: mean, std: std, preProcessingMethod: preProcessingMethod);
     }
     return await getImagePredictionListFromBytesList(
         cameraImage.planes.map((e) => e.bytes).toList(),
@@ -273,16 +290,19 @@ class ClassificationModel {
   }
 
   ///predicts image and returns the supposed label belonging to it
-  Future<String> getCameraImagePrediction(
-    CameraImage cameraImage,
-    int rotation, {
-    List<double> mean = torchVisionNormMeanRGB,
-    List<double> std = torchVisionNormSTDRGB,
-    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
-  }) async {
+  Future<String> getCameraImagePrediction(CameraImage cameraImage, int rotation,
+      {List<double> mean = torchVisionNormMeanRGB,
+      List<double> std = torchVisionNormSTDRGB,
+      CameraPreProcessingMethod cameraPreProcessingMethod =
+          CameraPreProcessingMethod.imageLib,
+      PreProcessingMethod preProcessingMethod =
+          PreProcessingMethod.imageLib}) async {
     final List<double> prediction = await getCameraImagePredictionList(
         cameraImage, rotation,
-        mean: mean, std: std, preProcessingMethod: preProcessingMethod);
+        mean: mean,
+        std: std,
+        cameraPreProcessingMethod: cameraPreProcessingMethod,
+        preProcessingMethod: preProcessingMethod);
 
     int maxScoreIndex = softMax(prediction);
     return labels[maxScoreIndex];
@@ -290,15 +310,19 @@ class ClassificationModel {
 
   ///predicts image and returns the supposed label belonging to it
   Future<List<double>> getCameraImagePredictionProbabilities(
-    CameraImage cameraImage,
-    int rotation, {
-    List<double> mean = torchVisionNormMeanRGB,
-    List<double> std = torchVisionNormSTDRGB,
-    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
-  }) async {
+      CameraImage cameraImage, int rotation,
+      {List<double> mean = torchVisionNormMeanRGB,
+      List<double> std = torchVisionNormSTDRGB,
+      CameraPreProcessingMethod cameraPreProcessingMethod =
+          CameraPreProcessingMethod.imageLib,
+      PreProcessingMethod preProcessingMethod =
+          PreProcessingMethod.imageLib}) async {
     final List<double> prediction = await getCameraImagePredictionList(
         cameraImage, rotation,
-        mean: mean, std: std, preProcessingMethod: preProcessingMethod);
+        mean: mean,
+        std: std,
+        cameraPreProcessingMethod: cameraPreProcessingMethod,
+        preProcessingMethod: preProcessingMethod);
 
     return getProbabilities(prediction);
   }
@@ -323,12 +347,15 @@ class ModelObjectDetection {
   Future<List<ResultObjectDetection>> getImagePrediction(Uint8List imageAsBytes,
       {double minimumScore = 0.5,
       double iOUThreshold = 0.5,
-      int boxesLimit = 10}) async {
+      int boxesLimit = 10,
+      PreProcessingMethod preProcessingMethod =
+          PreProcessingMethod.imageLib}) async {
     List<ResultObjectDetection> prediction = await getImagePredictionList(
         imageAsBytes,
         minimumScore: minimumScore,
         iOUThreshold: iOUThreshold,
-        boxesLimit: boxesLimit);
+        boxesLimit: boxesLimit,
+        preProcessingMethod: preProcessingMethod);
     addLabels(prediction);
 
     return prediction;
@@ -356,22 +383,42 @@ class ModelObjectDetection {
       Uint8List imageAsBytes,
       {double minimumScore = 0.5,
       double iOUThreshold = 0.5,
-      int boxesLimit = 10}) async {
-    final List<ResultObjectDetection> prediction = (await ModelApi()
-            .getImagePredictionListObjectDetection(_index, imageAsBytes, null,
-                null, null, minimumScore, iOUThreshold, boxesLimit))
+      int boxesLimit = 10,
+      PreProcessingMethod preProcessingMethod =
+          PreProcessingMethod.imageLib}) async {
+    if (preProcessingMethod == PreProcessingMethod.imageLib) {
+      return (await ModelApi().getRawImagePredictionListObjectDetection(
+              _index,
+              await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
+                  imageAsBytes, noMeanRGB, noSTDRGB),
+              minimumScore,
+              iOUThreshold,
+              boxesLimit))
+          .whereNotNull()
+          .toList();
+    }
+    return (await ModelApi().getImagePredictionListObjectDetection(
+            _index,
+            imageAsBytes,
+            null,
+            null,
+            null,
+            minimumScore,
+            iOUThreshold,
+            boxesLimit))
         .whereNotNull()
         .toList();
-    ;
-    return prediction;
   }
 
   ///predicts image but returns the raw net output
   Future<List<ResultObjectDetection>> getImagePredictionListFromBytesList(
-      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {double minimumScore = 0.5,
-      double iOUThreshold = 0.5,
-      int boxesLimit = 10}) async {
+    List<Uint8List> imageAsBytesList,
+    int imageWidth,
+    int imageHeight, {
+    double minimumScore = 0.5,
+    double iOUThreshold = 0.5,
+    int boxesLimit = 10,
+  }) async {
     final List<ResultObjectDetection> prediction = (await ModelApi()
             .getImagePredictionListObjectDetection(
                 _index,
@@ -384,20 +431,21 @@ class ModelObjectDetection {
                 boxesLimit))
         .whereNotNull()
         .toList();
-    ;
+
     return prediction;
   }
 
   ///predicts image but returns the raw net output
   Future<List<ResultObjectDetection>> getCameraImagePredictionList(
-    CameraImage cameraImage,
-    int rotation, {
-    double minimumScore = 0.5,
-    double iOUThreshold = 0.5,
-    int boxesLimit = 10,
-    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
-  }) async {
-    if (preProcessingMethod == PreProcessingMethod.imageLib) {
+      CameraImage cameraImage, int rotation,
+      {double minimumScore = 0.5,
+      double iOUThreshold = 0.5,
+      int boxesLimit = 10,
+      CameraPreProcessingMethod cameraPreProcessingMethod =
+          CameraPreProcessingMethod.imageLib,
+      PreProcessingMethod preProcessingMethod =
+          PreProcessingMethod.imageLib}) async {
+    if (cameraPreProcessingMethod == CameraPreProcessingMethod.imageLib) {
       Uint8List? bytes =
           await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage);
       if (bytes == null) {
@@ -406,7 +454,8 @@ class ModelObjectDetection {
       return await getImagePredictionList(bytes,
           minimumScore: minimumScore,
           iOUThreshold: iOUThreshold,
-          boxesLimit: boxesLimit);
+          boxesLimit: boxesLimit,
+          preProcessingMethod: preProcessingMethod);
     }
     return await getImagePredictionFromBytesList(
         cameraImage.planes.map((e) => e.bytes).toList(),
@@ -419,18 +468,20 @@ class ModelObjectDetection {
 
   ///predicts image and returns the supposed label belonging to it
   Future<List<ResultObjectDetection>> getCameraImagePrediction(
-    CameraImage cameraImage,
-    int rotation, {
-    double minimumScore = 0.5,
-    double iOUThreshold = 0.5,
-    int boxesLimit = 10,
-    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
-  }) async {
+      CameraImage cameraImage, int rotation,
+      {double minimumScore = 0.5,
+      double iOUThreshold = 0.5,
+      int boxesLimit = 10,
+      CameraPreProcessingMethod cameraPreProcessingMethod =
+          CameraPreProcessingMethod.imageLib,
+      PreProcessingMethod preProcessingMethod =
+          PreProcessingMethod.imageLib}) async {
     final List<ResultObjectDetection> prediction =
         await getCameraImagePredictionList(cameraImage, rotation,
             minimumScore: minimumScore,
             iOUThreshold: iOUThreshold,
             boxesLimit: boxesLimit,
+            cameraPreProcessingMethod: cameraPreProcessingMethod,
             preProcessingMethod: preProcessingMethod);
     addLabels(prediction);
     return prediction;

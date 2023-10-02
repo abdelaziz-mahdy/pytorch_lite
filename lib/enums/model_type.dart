@@ -2,8 +2,11 @@ enum ObjectDetectionModelType {
   yolov5,
   yolov8,
 }
-
-enum PreProcessingMethod{
+enum PreProcessingMethod {
+  imageLib,
+  native,
+}
+enum CameraPreProcessingMethod {
   imageLib,
   byteList,
 }

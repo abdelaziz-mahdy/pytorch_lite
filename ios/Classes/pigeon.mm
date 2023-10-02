@@ -224,6 +224,55 @@ taskQueue:taskQueue];
       [channel setMessageHandler:nil];
     }
   }
+  ///predicts raw image but returns the raw net output
+  {
+    NSObject<FlutterTaskQueue> *taskQueue = [binaryMessenger makeBackgroundTaskQueue];
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.pytorch_lite.ModelApi.getRawImagePredictionList"
+        binaryMessenger:binaryMessenger
+        codec:ModelApiGetCodec()
+taskQueue:taskQueue];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(getRawImagePredictionListIndex:imageData:completion:)], @"ModelApi api (%@) doesn't respond to @selector(getRawImagePredictionListIndex:imageData:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSNumber *arg_index = GetNullableObjectAtIndex(args, 0);
+        FlutterStandardTypedData *arg_imageData = GetNullableObjectAtIndex(args, 1);
+        [api getRawImagePredictionListIndex:arg_index imageData:arg_imageData completion:^(NSArray<NSNumber *> *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  ///predicts raw image but returns the raw net output
+  {
+    NSObject<FlutterTaskQueue> *taskQueue = [binaryMessenger makeBackgroundTaskQueue];
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.pytorch_lite.ModelApi.getRawImagePredictionListObjectDetection"
+        binaryMessenger:binaryMessenger
+        codec:ModelApiGetCodec()
+taskQueue:taskQueue];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(getRawImagePredictionListObjectDetectionIndex:imageData:minimumScore:IOUThreshold:boxesLimit:completion:)], @"ModelApi api (%@) doesn't respond to @selector(getRawImagePredictionListObjectDetectionIndex:imageData:minimumScore:IOUThreshold:boxesLimit:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSNumber *arg_index = GetNullableObjectAtIndex(args, 0);
+        FlutterStandardTypedData *arg_imageData = GetNullableObjectAtIndex(args, 1);
+        NSNumber *arg_minimumScore = GetNullableObjectAtIndex(args, 2);
+        NSNumber *arg_IOUThreshold = GetNullableObjectAtIndex(args, 3);
+        NSNumber *arg_boxesLimit = GetNullableObjectAtIndex(args, 4);
+        [api getRawImagePredictionListObjectDetectionIndex:arg_index imageData:arg_imageData minimumScore:arg_minimumScore IOUThreshold:arg_IOUThreshold boxesLimit:arg_boxesLimit completion:^(NSArray<ResultObjectDetection *> *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
   ///predicts image but returns the raw net output
   {
     NSObject<FlutterTaskQueue> *taskQueue = [binaryMessenger makeBackgroundTaskQueue];

@@ -20,14 +20,13 @@ class PyTorchRect {
       this.left, this.top, this.width, this.height, this.right, this.bottom);
 }
 
-class  ResultObjectDetection {
+class ResultObjectDetection {
   int classIndex;
   String? className;
   double score;
   PyTorchRect rect;
 
-  ResultObjectDetection(
-      this.classIndex, this.score, this.rect);
+  ResultObjectDetection(this.classIndex, this.score, this.rect);
 }
 
 // enum ObjectDetectionModelType { yolov5, yolov8 }
@@ -43,6 +42,22 @@ abstract class ModelApi {
   @async
   List? getPredictionCustom(
       int index, List<double> input, List<int> shape, String dtype);
+
+  ///predicts raw image but returns the raw net output
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  @async
+  List<double> getRawImagePredictionList(
+      int index, Float64List imageData);
+
+  ///predicts raw image but returns the raw net output
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  @async
+  List<ResultObjectDetection> getRawImagePredictionListObjectDetection(
+      int index,
+      Float64List imageData,
+      double minimumScore,
+      double IOUThreshold,
+      int boxesLimit);
 
   ///predicts image but returns the raw net output
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)

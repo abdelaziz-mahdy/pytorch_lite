@@ -5,11 +5,11 @@ import 'package:camera/camera.dart';
 import 'package:image/image.dart';
 
 class ImageUtils {
-  static Uint8List imageToUint8List(
+  static Float64List imageToFloatBuffer(
       Image image, List<double> mean, List<double> std,
       {bool contiguous = true}) {
-    var bytes = Float32List(1 * image.height * image.width * 3);
-    var buffer = Float32List.view(bytes.buffer);
+    var bytes = Float64List(1 * image.height * image.width * 3);
+    var buffer = Float64List.view(bytes.buffer);
 
     if (contiguous) {
       int offsetG = image.height * image.width;
@@ -36,7 +36,7 @@ class ImageUtils {
       }
     }
 
-    return bytes.buffer.asUint8List();
+    return bytes;
   }
 
   /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format

@@ -14,6 +14,7 @@ import androidx.annotation.RequiresApi;
 // import org.pytorch.LiteModuleLoader;
 import org.pytorch.DType;
 import org.pytorch.IValue;
+import org.pytorch.MemoryFormat;
 import org.pytorch.Module;
 import org.pytorch.Tensor;
 import org.pytorch.torchvision.TensorImageUtils;
@@ -132,6 +133,80 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
         }
         result.success(Collections.singletonList(outputTensor));
     }
+
+    @Override
+    public void getRawImagePredictionList(Long index, byte[] imageData, Pigeon.Result<List<Double>> result) {
+        PrePostProcessor prePostProcessor = null;
+        Module imageModule = null;
+
+        try{
+            imageModule = modules.get(index.intValue());
+
+            prePostProcessor = prePostProcessors.get(index.intValue());
+    } catch (Exception e) {
+        Log.e(TAG, "error reading image", e);
+    }
+        try {
+            final Tensor imageInputTensor =   Tensor.fromBlob(imageData, new long[] {1, 3, prePostProcessor.mImageHeight, prePostProcessor.mImageWidth}, MemoryFormat.CONTIGUOUS);
+
+
+            final Tensor imageOutputTensor = imageModule.forward(IValue.from(imageInputTensor)).toTensor();
+
+            // getting tensor content as java array of doubles
+            float[] scores = imageOutputTensor.getDataAsFloatArray();
+
+            Double[] scoresDouble = new Double[scores.length];
+            for (int i = 0; i < scoresDouble.length; i++) {
+
+                scoresDouble[i] = Double.valueOf(Float.valueOf(scores[i]));
+            }
+            result.success(Arrays.asList(scoresDouble));
+        } catch (Exception e) {
+            Log.e(TAG, "error classifying image", e);
+        }
+    }
+
+    @Override
+    public void getRawImagePredictionListObjectDetection(Long index, byte[] imageData, Double minimumScore, Double IOUThreshold, Long boxesLimit, Pigeon.Result<List<Pigeon.ResultObjectDetection>> result) {
+        Module imageModule = null;
+        PrePostProcessor prePostProcessor = null;
+        try {
+
+            imageModule = modules.get(index.intValue());
+
+            prePostProcessor = prePostProcessors.get(index.intValue());
+            prePostProcessor.mNmsLimit = boxesLimit.intValue();
+            prePostProcessor.mScoreThreshold = minimumScore.floatValue();
+            prePostProcessor.mIOUThreshold = IOUThreshold.floatValue();
+
+
+
+        } catch (Exception e) {
+            Log.e(TAG, "error reading image", e);
+        }
+
+        try {
+
+            final Tensor imageInputTensor =   Tensor.fromBlob(imageData, new long[] {1, 3, prePostProcessor.mImageHeight, prePostProcessor.mImageWidth}, MemoryFormat.CONTIGUOUS);
+
+            Tensor outputTensor = null;
+            if (prePostProcessor.mObjectDetectionModelType == 0) {
+                IValue[] outputTuple = imageModule.forward(IValue.from(imageInputTensor)).toTuple();
+                outputTensor = outputTuple[0].toTensor();
+            } else {
+                outputTensor = imageModule.forward(IValue.from(imageInputTensor)).toTensor();
+            }
+
+            final float[] outputs = outputTensor.getDataAsFloatArray();
+
+            final ArrayList<Pigeon.ResultObjectDetection> results = prePostProcessor.outputsToNMSPredictions(outputs);
+
+            result.success(results);
+        } catch (Exception e) {
+            Log.e(TAG, "error classifying image", e);
+        }
+    }
+
 
     @Override
     public void getImagePredictionList(Long index, byte[] imageData, List<byte[]> imageBytesList,

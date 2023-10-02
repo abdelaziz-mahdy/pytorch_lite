@@ -206,6 +206,42 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
     }
 }
 
+- (void)getRawImagePredictionListIndex:(nonnull NSNumber *)index imageData:(nonnull FlutterStandardTypedData *)imageData completion:(nonnull void (^)(NSArray<NSNumber *> * _Nullable, FlutterError * _Nullable))completion { 
+    PrePostProcessor *prePostProcessor = self.prePostProcessors[index.intValue];
+
+    NSArray<NSNumber*> *results = [self predictImage:imageData.data withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:FALSE objectDetectionType:0];
+
+    if (results) {
+        completion(results, nil);
+    } else {
+        FlutterError *error = [FlutterError errorWithCode:@"PREDICTION_ERROR" message:@"Prediction failed" details:nil];
+        completion(nil, error);
+    }
+    
+}
+
+
+- (void)getRawImagePredictionListObjectDetectionIndex:(nonnull NSNumber *)index imageData:(nonnull FlutterStandardTypedData *)imageData minimumScore:(nonnull NSNumber *)minimumScore IOUThreshold:(nonnull NSNumber *)IOUThreshold boxesLimit:(nonnull NSNumber *)boxesLimit completion:(nonnull void (^)(NSArray<ResultObjectDetection *> * _Nullable, FlutterError * _Nullable))completion { 
+    PrePostProcessor *prePostProcessor = self.prePostProcessors[index.intValue];
+    prePostProcessor.mNmsLimit = boxesLimit.intValue;
+    prePostProcessor.mScoreThreshold = minimumScore.floatValue;
+    prePostProcessor.mIOUThreshold = IOUThreshold.floatValue;
+    
+    NSArray<NSNumber*> *rawOutputs = [self predictImage:imageData.data withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:TRUE objectDetectionType:prePostProcessor.mObjectDetectionModelType];
+
+    // Convert raw outputs to ResultObjectDetection objects
+    NSMutableArray<ResultObjectDetection*> *results = [prePostProcessor outputsToNMSPredictions:rawOutputs];
+    
+    if (results) {
+        completion(results, nil);
+    } else {
+        FlutterError *error = [FlutterError errorWithCode:@"PREDICTION_ERROR" message:@"Prediction failed" details:nil];
+        completion(nil, error);
+    }
+    
+}
+
+
 
 
 
