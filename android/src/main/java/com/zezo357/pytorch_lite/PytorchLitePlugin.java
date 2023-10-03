@@ -26,7 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
+import java.nio.FloatBuffer;
+import java.nio.ByteOrder;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.view.TextureRegistry;
@@ -147,7 +148,16 @@ result.error(e);
         Log.e(TAG, "error reading image", e);
     }
         try {
-            final Tensor imageInputTensor =   Tensor.fromBlob(imageData, new long[] {1, 3, prePostProcessor.mImageHeight, prePostProcessor.mImageWidth}, MemoryFormat.CONTIGUOUS);
+
+            final FloatBuffer floatBuffer = Tensor.allocateFloatBuffer(3 * prePostProcessor.mImageWidth * prePostProcessor.mImageHeight);
+            ByteBuffer byteBuffer = ByteBuffer.wrap(imageData);
+            byteBuffer.order(ByteOrder.nativeOrder());
+            FloatBuffer tempFloatBuffer = byteBuffer.asFloatBuffer();
+
+            floatBuffer.put(tempFloatBuffer);
+            floatBuffer.flip();  // Reset the buffer's position to 0
+
+            final Tensor imageInputTensor =   Tensor.fromBlob(floatBuffer, new long[] {1, 3, prePostProcessor.mImageHeight, prePostProcessor.mImageWidth}, MemoryFormat.CONTIGUOUS);
 
 
             final Tensor imageOutputTensor = imageModule.forward(IValue.from(imageInputTensor)).toTensor();
@@ -188,8 +198,15 @@ result.error(e);
         }
 
         try {
+            final FloatBuffer floatBuffer = Tensor.allocateFloatBuffer(3 * prePostProcessor.mImageWidth * prePostProcessor.mImageHeight);
+            ByteBuffer byteBuffer = ByteBuffer.wrap(imageData);
+            byteBuffer.order(ByteOrder.nativeOrder());
+            FloatBuffer tempFloatBuffer = byteBuffer.asFloatBuffer();
 
-            final Tensor imageInputTensor =   Tensor.fromBlob(imageData, new long[] {1, 3, prePostProcessor.mImageHeight, prePostProcessor.mImageWidth}, MemoryFormat.CONTIGUOUS);
+            floatBuffer.put(tempFloatBuffer);
+            floatBuffer.flip();  // Reset the buffer's position to 0
+
+            final Tensor imageInputTensor =   Tensor.fromBlob(floatBuffer, new long[] {1, 3, prePostProcessor.mImageHeight, prePostProcessor.mImageWidth}, MemoryFormat.CONTIGUOUS);
 
             Tensor outputTensor = null;
             if (prePostProcessor.mObjectDetectionModelType == 0) {
