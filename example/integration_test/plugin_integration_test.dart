@@ -75,10 +75,10 @@ void saveResults() {
     },
   );
   printWrapped("file data is ${data}");
+  log("file data is ${data}");
+
   file.writeAsStringSync(data);
 }
-
-
 
 Future<void> runTestWithWrapper({
   required WidgetTester tester,
@@ -94,7 +94,6 @@ Future<void> runTestWithWrapper({
   final elapsedTime = endTime - startTime;
 
   print("Time taken for '$testName': $elapsedTime ms");
-
   if (testResults.containsKey(testName)) {
     final previousResult = testResults[testName];
     if (result is List<ResultObjectDetection>) {
@@ -106,10 +105,8 @@ Future<void> runTestWithWrapper({
         expect(listEquals(result, previousResult), true,
             reason: listDifferences(result, previousResult).join("\n"));
       } else {
-      expect(result, previousResult);
-
+        expect(result, previousResult);
       }
-
     }
   } else {
     print("Warning: Results for '$testName' not found.");
