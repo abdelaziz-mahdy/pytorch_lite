@@ -220,7 +220,7 @@
 
         ResultObjectDetection *result = [ResultObjectDetection makeWithClassIndex:@(cls)
                                                                           className:nil
-                                                                             score:@([self.class getFloatAsDouble:max])
+                                                                             score:@([self.class getFloatAsDouble:[outputs[i * self.mOutputColumn + 4] floatValue]])
                                                                               rect:rect];
 
         [results addObject:result];
