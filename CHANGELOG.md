@@ -1,3 +1,6 @@
+## 4.2.0+2
+* Fix formatting
+
 ## 4.2.0+1
 * Adding license
 * Adding docstring for all functions

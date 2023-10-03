@@ -96,7 +96,8 @@ class ImageUtilsIsolate {
     await ImageUtilsIsolate.init();
 
     return (await ImageUtilsIsolate.computer.compute(_convertCameraImageToBytes,
-            param: _getParamsBasedOnType(cameraImage)) as TransferableTypedData?)
+                param: _getParamsBasedOnType(cameraImage))
+            as TransferableTypedData?)
         ?.materialize()
         .asUint8List();
   }

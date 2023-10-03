@@ -714,5 +714,4 @@ class ModelObjectDetection {
       );
     });
   }
-
 }
