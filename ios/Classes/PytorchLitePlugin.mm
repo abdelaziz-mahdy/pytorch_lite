@@ -118,8 +118,8 @@
         return nil; // Make sure to return nil in the case of an exception.
     }
 }
+- (void)loadModelModelPath:(NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight objectDetectionModelType:(nullable NSNumber *)objectDetectionModelType completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
 
-- (nullable NSNumber *)loadModelModelPath:(nonnull NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight objectDetectionModelType:(nullable NSNumber *)objectDetectionModelType error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
     
     NSInteger i = -1;
     @try {
@@ -136,14 +136,15 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
             }
         }
         i = _modulesVector.size() - 1;
+        completion(i, nil);
     } @catch (NSException *e) {
         NSLog(@"%@ is not a proper model: %@", modelPath, e);
-        if (error != NULL) {
-            *error = [FlutterError errorWithCode:@"ModelLoadingError" message:[NSString stringWithFormat:@"%@ is not a proper model", modelPath] details:e];
-        }
+
+          FlutterError *error = = [FlutterError errorWithCode:@"ModelLoadingError" message:[NSString stringWithFormat:@"%@ is not a proper model", modelPath] details:e];
+        completion(nil, error);
+        
     }
 
-    return [NSNumber numberWithInteger:i];
 }
 - (void)getImagePredictionListIndex:(nonnull NSNumber *)index imageData:(nullable FlutterStandardTypedData *)imageData imageBytesList:(nullable NSArray<FlutterStandardTypedData *> *)imageBytesList imageWidthForBytesList:(nullable NSNumber *)imageWidthForBytesList imageHeightForBytesList:(nullable NSNumber *)imageHeightForBytesList mean:(nonnull NSArray<NSNumber *> *)mean std:(nonnull NSArray<NSNumber *> *)std completion:(nonnull void (^)(NSArray<NSNumber *> * _Nullable, FlutterError * _Nullable))completion {
     

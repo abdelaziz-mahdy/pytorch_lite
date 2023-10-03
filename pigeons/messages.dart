@@ -34,6 +34,7 @@ class ResultObjectDetection {
 @HostApi()
 abstract class ModelApi {
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  @async
   int loadModel(String modelPath, int? numberOfClasses, int? imageWidth,
       int? imageHeight, int? objectDetectionModelType);
 
@@ -46,8 +47,7 @@ abstract class ModelApi {
   ///predicts raw image but returns the raw net output
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   @async
-  List<double> getRawImagePredictionList(
-      int index, Uint8List imageData);
+  List<double> getRawImagePredictionList(int index, Uint8List imageData);
 
   ///predicts raw image but returns the raw net output
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)

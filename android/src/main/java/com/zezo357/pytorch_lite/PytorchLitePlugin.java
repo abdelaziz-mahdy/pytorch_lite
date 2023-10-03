@@ -61,10 +61,8 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
         flutterState.stopListening(binding.getBinaryMessenger());
         flutterState = null;
     }
-
     @Override
-    public Long loadModel(String modelPath, Long numberOfClasses, Long imageWidth, Long imageHeight,
-                          Long objectDetectionModelType) {
+    public void loadModel(String modelPath, Long numberOfClasses, Long imageWidth, Long imageHeight, Long objectDetectionModelType, Pigeon.Result<Long> result) {
         int i = -1;
         try {
             // modules.add(LiteModuleLoader.load(modelPath));
@@ -80,15 +78,16 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
                 }
             }
             i = (modules.size() - 1);
+            result.success((long) i);
         } catch (Exception e) {
             Log.e(TAG, modelPath + " is not a proper model", e);
+
+result.error(e);
         }
 
-        return (long) i;
     }
 
 
-  
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @java.lang.Override
@@ -129,7 +128,7 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
         } catch (RuntimeException e) {
             Log.e(TAG, "Your input type " + dtype_enum.toString().toLowerCase() + " (" + Convert.dtypeAsPrimitive(dtype)
                     + ") " + "does not match with model input type", e);
-            result.success(null);
+            result.error(e);
         }
         result.success(Collections.singletonList(outputTensor));
     }
@@ -164,6 +163,8 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
             result.success(Arrays.asList(scoresDouble));
         } catch (Exception e) {
             Log.e(TAG, "error classifying image", e);
+            result.error(e);
+
         }
     }
 
@@ -205,6 +206,7 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
             result.success(results);
         } catch (Exception e) {
             Log.e(TAG, "error classifying image", e);
+            result.error(e);
         }
     }
 
@@ -245,6 +247,8 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
         } catch (Exception e) {
             Log.e(TAG, "error reading image", e);
+            result.error(e);
+
         }
 
         try {
@@ -263,6 +267,8 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
             result.success(Arrays.asList(scoresDouble));
         } catch (Exception e) {
             Log.e(TAG, "error classifying image", e);
+            result.error(e);
+
         }
     }
 
@@ -298,6 +304,7 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
 
         } catch (Exception e) {
             Log.e(TAG, "error reading image", e);
+            result.error(e);
         }
 
         try {
@@ -319,6 +326,7 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
             result.success(results);
         } catch (Exception e) {
             Log.e(TAG, "error classifying image", e);
+            result.error(e);
         }
     }
 

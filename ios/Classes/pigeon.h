@@ -47,8 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 NSObject<FlutterMessageCodec> *ModelApiGetCodec(void);
 
 @protocol ModelApi
-/// @return `nil` only when `error != nil`.
-- (nullable NSNumber *)loadModelModelPath:(NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight objectDetectionModelType:(nullable NSNumber *)objectDetectionModelType error:(FlutterError *_Nullable *_Nonnull)error;
+- (void)loadModelModelPath:(NSString *)modelPath numberOfClasses:(nullable NSNumber *)numberOfClasses imageWidth:(nullable NSNumber *)imageWidth imageHeight:(nullable NSNumber *)imageHeight objectDetectionModelType:(nullable NSNumber *)objectDetectionModelType completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 ///predicts abstract number input
 - (void)getPredictionCustomIndex:(NSNumber *)index input:(NSArray<NSNumber *> *)input shape:(NSArray<NSNumber *> *)shape dtype:(NSString *)dtype completion:(void (^)(NSArray *_Nullable, FlutterError *_Nullable))completion;
 ///predicts raw image but returns the raw net output

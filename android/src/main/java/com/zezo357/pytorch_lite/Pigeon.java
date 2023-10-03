@@ -385,8 +385,7 @@ public class Pigeon {
   /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
   public interface ModelApi {
 
-    @NonNull 
-    Long loadModel(@NonNull String modelPath, @Nullable Long numberOfClasses, @Nullable Long imageWidth, @Nullable Long imageHeight, @Nullable Long objectDetectionModelType);
+    void loadModel(@NonNull String modelPath, @Nullable Long numberOfClasses, @Nullable Long imageWidth, @Nullable Long imageHeight, @Nullable Long objectDetectionModelType, @NonNull Result<Long> result);
     /**predicts abstract number input */
     void getPredictionCustom(@NonNull Long index, @NonNull List<Double> input, @NonNull List<Long> shape, @NonNull String dtype, @NonNull Result<List<Object>> result);
     /**predicts raw image but returns the raw net output */
@@ -419,15 +418,20 @@ public class Pigeon {
                 Number imageWidthArg = (Number) args.get(2);
                 Number imageHeightArg = (Number) args.get(3);
                 Number objectDetectionModelTypeArg = (Number) args.get(4);
-                try {
-                  Long output = api.loadModel(modelPathArg, (numberOfClassesArg == null) ? null : numberOfClassesArg.longValue(), (imageWidthArg == null) ? null : imageWidthArg.longValue(), (imageHeightArg == null) ? null : imageHeightArg.longValue(), (objectDetectionModelTypeArg == null) ? null : objectDetectionModelTypeArg.longValue());
-                  wrapped.add(0, output);
-                }
- catch (Throwable exception) {
-                  ArrayList<Object> wrappedError = wrapError(exception);
-                  wrapped = wrappedError;
-                }
-                reply.reply(wrapped);
+                Result<Long> resultCallback =
+                    new Result<Long>() {
+                      public void success(Long result) {
+                        wrapped.add(0, result);
+                        reply.reply(wrapped);
+                      }
+
+                      public void error(Throwable error) {
+                        ArrayList<Object> wrappedError = wrapError(error);
+                        reply.reply(wrappedError);
+                      }
+                    };
+
+                api.loadModel(modelPathArg, (numberOfClassesArg == null) ? null : numberOfClassesArg.longValue(), (imageWidthArg == null) ? null : imageWidthArg.longValue(), (imageHeightArg == null) ? null : imageHeightArg.longValue(), (objectDetectionModelTypeArg == null) ? null : objectDetectionModelTypeArg.longValue(), resultCallback);
               });
         } else {
           channel.setMessageHandler(null);
