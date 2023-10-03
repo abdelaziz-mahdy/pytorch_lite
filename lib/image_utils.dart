@@ -112,6 +112,4 @@ class ImageUtils {
     return image;
     // processImage(inputImage);
   }
-
- 
 }

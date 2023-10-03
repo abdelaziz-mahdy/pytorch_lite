@@ -39,6 +39,7 @@ List<String> listDifferences(List<dynamic> list1, List<dynamic> list2) {
 
   return differences;
 }
+
 List<String> mapDifferences(
     Map<String, dynamic> map1, Map<String, dynamic> map2) {
   List<String> differences = [];
@@ -88,4 +89,3 @@ bool listEquals(List<dynamic> list1, List<dynamic> list2) {
   List<String> differences = listDifferences(list1, list2);
   return differences.isEmpty;
 }
-

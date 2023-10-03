@@ -1,4 +1,6 @@
-
+## 4.2.0+1
+* Adding license
+* Adding docstring for all functions
 ## 4.2.0
 * Fixing ios camera image decoding
 * Converting package to use native methods instead of ffi (fixing ios)

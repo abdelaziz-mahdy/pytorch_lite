@@ -66,7 +66,7 @@ class ImageUtilsIsolate {
     return null;
   }
 
-  static List<dynamic> getParamsBasedOnType(CameraImage cameraImage) {
+  static List<dynamic> _getParamsBasedOnType(CameraImage cameraImage) {
     if (cameraImage.format.group == ImageFormatGroup.yuv420) {
       return [
         cameraImage.format.group,
@@ -96,7 +96,7 @@ class ImageUtilsIsolate {
     await ImageUtilsIsolate.init();
 
     return (await ImageUtilsIsolate.computer.compute(_convertCameraImageToBytes,
-            param: getParamsBasedOnType(cameraImage)) as TransferableTypedData?)
+            param: _getParamsBasedOnType(cameraImage)) as TransferableTypedData?)
         ?.materialize()
         .asUint8List();
   }
@@ -166,7 +166,7 @@ class ImageUtilsIsolate {
         }
       }
     }
-   
+
     return bytes.buffer.asUint8List();
   }
 

@@ -17,7 +17,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
 import 'data.dart';
-import 'package:collection/collection.dart';
 
 import 'utils.dart';
 
@@ -74,8 +73,8 @@ void saveResults() {
       return object.toMap();
     },
   );
-  printWrapped("file data is ${data}");
-  log("file data is ${data}");
+  printWrapped("file data is $data");
+  log("file data is $data");
 
   file.writeAsStringSync(data);
 }
