@@ -61,8 +61,8 @@ dependencies{
 
     //  implementation 'org.pytorch:pytorch_android_lite:1.12'
     // implementation 'org.pytorch:pytorch_android_torchvision_lite:1.12'
-    implementation 'org.pytorch:pytorch_android:1.12'
-    implementation 'org.pytorch:pytorch_android_torchvision:1.12'
+    implementation 'org.pytorch:pytorch_android:1.13.0.1'
+    implementation 'org.pytorch:pytorch_android_torchvision:1.13.0.1'
     implementation 'com.facebook.soloader:nativeloader:0.10.5'
 
     // extractForNativeBuild 'org.pytorch:pytorch_android:1.12'
