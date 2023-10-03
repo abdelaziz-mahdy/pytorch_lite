@@ -33,7 +33,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 24
+        minSdkVersion 21
     }
     // // Add this block at the end of the file
     // project.afterEvaluate {
@@ -44,26 +44,26 @@ android {
     //         }
     //     }
     // }
-    externalNativeBuild {
+    // externalNativeBuild {
 
-        // Encapsulates your CMake build configurations.
-        cmake {
+    //     // Encapsulates your CMake build configurations.
+    //     cmake {
 
-            // Provides a relative path to your CMake build script.
-            path "CMakeLists.txt"
-            // arguments "-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE" // Set log level to VERBOSE
+    //         // Provides a relative path to your CMake build script.
+    //         path "CMakeLists.txt"
+    //         // arguments "-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE" // Set log level to VERBOSE
 
-        }
-    }
+    //     }
+    // }
 }
 dependencies{
     // implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     //  implementation 'org.pytorch:pytorch_android_lite:1.12'
     // implementation 'org.pytorch:pytorch_android_torchvision_lite:1.12'
-    // implementation 'org.pytorch:pytorch_android:1.12'
-    // implementation 'org.pytorch:pytorch_android_torchvision:1.12'
-    // implementation 'com.facebook.soloader:nativeloader:0.10.5'
+    implementation 'org.pytorch:pytorch_android:1.13.1'
+    implementation 'org.pytorch:pytorch_android_torchvision:1.13.1'
+    implementation 'com.facebook.soloader:nativeloader:0.10.5'
 
     // extractForNativeBuild 'org.pytorch:pytorch_android:1.12'
     // extractForNativeBuild 'org.pytorch:pytorch_android_torchvision:1.12'

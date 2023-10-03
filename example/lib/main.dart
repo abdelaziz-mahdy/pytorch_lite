@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:pytorch_lite/native_wrapper.dart';
 import 'package:pytorch_lite_example/run_model_by_camera_demo.dart';
 import 'package:pytorch_lite_example/run_model_by_image_demo.dart';
 
 Future<void> main() async {
-  await PytorchFfi.init();
   runApp(const ChooseDemo());
 }
 

@@ -1,7 +1,7 @@
 name: Integration_tests
 on:
   push:
-    branches: [ master, testing-ffi ]
+    branches: [ master, testing-ffi]
     paths:
       - '**'
       - '!README.md'
