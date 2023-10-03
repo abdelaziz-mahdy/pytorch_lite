@@ -221,7 +221,7 @@ public class PrePostProcessor {
                                 getFloatAsDouble(right / mImageWidth))
                         .build();
                 Pigeon.ResultObjectDetection result = new Pigeon.ResultObjectDetection.Builder()
-                        .setClassIndex((long) cls).setScore(getFloatAsDouble(outputs[i * mOutputColumn + 4]))
+                        .setClassIndex((long) cls).setScore(getFloatAsDouble(max))
                         .setRect(rect).build();
 
                 results.add(result);
