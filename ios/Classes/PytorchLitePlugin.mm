@@ -136,11 +136,11 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
             }
         }
         i = _modulesVector.size() - 1;
-        completion(i, nil);
+completion([NSNumber numberWithInteger:i], nil);
     } @catch (NSException *e) {
         NSLog(@"%@ is not a proper model: %@", modelPath, e);
 
-          FlutterError *error = = [FlutterError errorWithCode:@"ModelLoadingError" message:[NSString stringWithFormat:@"%@ is not a proper model", modelPath] details:e];
+          FlutterError *error = [FlutterError errorWithCode:@"ModelLoadingError" message:[NSString stringWithFormat:@"%@ is not a proper model", modelPath] details:e];
         completion(nil, error);
         
     }
