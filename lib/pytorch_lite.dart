@@ -203,17 +203,26 @@ class ClassificationModel {
   /// The [mean] and [std] parameters are optional and default to the values of [torchVisionNormMeanRGB] and [torchVisionNormSTDRGB].
   /// The [preProcessingMethod] parameter is optional and defaults to [PreProcessingMethod.imageLib].
   /// Returns a [Future] that completes with a [String] representing the predicted image label.
-  Future<String> getImagePrediction(Uint8List imageAsBytes,
-      {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB,
-      PreProcessingMethod preProcessingMethod =
-          PreProcessingMethod.imageLib}) async {
+  Future<String> getImagePrediction(
+    Uint8List imageAsBytes, {
+    List<double> mean = torchVisionNormMeanRGB,
+    List<double> std = torchVisionNormSTDRGB,
+    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
+  }) async {
     // Assert mean std
     assert(mean.length == 3, "mean should have size of 3");
     assert(std.length == 3, "std should have size of 3");
 
-    final List<double> prediction = await getImagePredictionList(imageAsBytes,
-        mean: mean, std: std, preProcessingMethod: preProcessingMethod);
+    final List<double> prediction = await getImagePredictionList(
+      imageAsBytes,
+      mean: mean,
+      std: std,
+      preProcessingMethod: preProcessingMethod,
+      isTupleOutput: isTupleOutput,
+      tupleIndex: tupleIndex,
+    );
 
     int maxScoreIndex = softMax(prediction);
     return labels[maxScoreIndex];
@@ -224,11 +233,14 @@ class ClassificationModel {
   /// The [mean] and [std] parameters are optional and default to the values of [torchVisionNormMeanRGB] and [torchVisionNormSTDRGB].
   /// The [preProcessingMethod] parameter is optional and defaults to [PreProcessingMethod.imageLib].
   /// Returns a [Future] that completes with a [List<double>] representing the predicted scores.
-  Future<List<double>> getImagePredictionList(Uint8List imageAsBytes,
-      {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB,
-      PreProcessingMethod preProcessingMethod =
-          PreProcessingMethod.imageLib}) async {
+  Future<List<double>> getImagePredictionList(
+    Uint8List imageAsBytes, {
+    List<double> mean = torchVisionNormMeanRGB,
+    List<double> std = torchVisionNormSTDRGB,
+    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
+  }) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
@@ -236,12 +248,26 @@ class ClassificationModel {
     if (preProcessingMethod == PreProcessingMethod.imageLib) {
       Uint8List data = await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
           imageAsBytes, imageWidth, imageHeight, mean, std);
-      return (await ModelApi().getRawImagePredictionList(_index, data))
+      return (await ModelApi().getRawImagePredictionList(
+        _index,
+        data,
+        isTupleOutput: isTupleOutput,
+        tupleIndex: tupleIndex,
+      ))
           .whereNotNull()
           .toList();
     }
     return (await ModelApi().getImagePredictionList(
-            _index, imageAsBytes, null, null, null, mean, std))
+      _index,
+      imageAsBytes,
+      null,
+      null,
+      null,
+      mean,
+      std,
+      isTupleOutput: isTupleOutput,
+      tupleIndex: tupleIndex,
+    ))
         .whereNotNull()
         .toList();
   }
@@ -252,13 +278,21 @@ class ClassificationModel {
   /// The [preProcessingMethod] parameter is optional and defaults to [PreProcessingMethod.imageLib].
   /// Returns a [Future] that completes with a [List<double>] representing the predicted probabilities.
   Future<List<double>> getImagePredictionListProbabilities(
-      Uint8List imageAsBytes,
-      {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB,
-      PreProcessingMethod preProcessingMethod =
-          PreProcessingMethod.imageLib}) async {
-    List<double> prediction = await getImagePredictionList(imageAsBytes,
-        mean: mean, std: std, preProcessingMethod: preProcessingMethod);
+    Uint8List imageAsBytes, {
+    List<double> mean = torchVisionNormMeanRGB,
+    List<double> std = torchVisionNormSTDRGB,
+    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
+  }) async {
+    List<double> prediction = await getImagePredictionList(
+      imageAsBytes,
+      mean: mean,
+      std: std,
+      preProcessingMethod: preProcessingMethod,
+      isTupleOutput: isTupleOutput,
+      tupleIndex: tupleIndex,
+    );
 
     return getProbabilities(prediction);
   }
@@ -269,16 +303,30 @@ class ClassificationModel {
   /// The optional [mean] and [std] parameters can be used to normalize the image.
   /// Returns a [Future] that resolves to a list of [double] values representing the predictions.
   Future<List<double>> getImagePredictionListFromBytesList(
-      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB}) async {
+    List<Uint8List> imageAsBytesList,
+    int imageWidth,
+    int imageHeight, {
+    List<double> mean = torchVisionNormMeanRGB,
+    List<double> std = torchVisionNormSTDRGB,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
+  }) async {
     // Assert mean std
     assert(mean.length == 3, "Mean should have size of 3");
     assert(std.length == 3, "STD should have size of 3");
 
     // Call the getImagePredictionList method of the ModelApi class to get the predictions
     final List<double> prediction = (await ModelApi().getImagePredictionList(
-            _index, null, imageAsBytesList, imageWidth, imageHeight, mean, std))
+      _index,
+      null,
+      imageAsBytesList,
+      imageWidth,
+      imageHeight,
+      mean,
+      std,
+      isTupleOutput: isTupleOutput,
+      tupleIndex: tupleIndex,
+    ))
         .whereNotNull()
         .toList();
 
@@ -291,13 +339,24 @@ class ClassificationModel {
   /// The optional [mean] and [std] parameters can be used to normalize the image.
   /// Returns a [Future] that resolves to a [String] representing the predicted label.
   Future<String> getImagePredictionFromBytesList(
-      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB}) async {
+    List<Uint8List> imageAsBytesList,
+    int imageWidth,
+    int imageHeight, {
+    List<double> mean = torchVisionNormMeanRGB,
+    List<double> std = torchVisionNormSTDRGB,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
+  }) async {
     // Get the predictions using the getImagePredictionListFromBytesList method
     final List<double> prediction = await getImagePredictionListFromBytesList(
-        imageAsBytesList, imageWidth, imageHeight,
-        mean: mean, std: std);
+      imageAsBytesList,
+      imageWidth,
+      imageHeight,
+      mean: mean,
+      std: std,
+      isTupleOutput: isTupleOutput,
+      tupleIndex: tupleIndex,
+    );
 
     // Find the index of the prediction with the maximum score
     int maxScoreIndex = softMax(prediction);
@@ -312,13 +371,24 @@ class ClassificationModel {
   /// The optional [mean] and [std] parameters can be used to normalize the image.
   /// Returns a [Future] that resolves to a list of [double] values representing the probabilities.
   Future<List<double>> getImagePredictionListProbabilitiesFromBytesList(
-      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB}) async {
+    List<Uint8List> imageAsBytesList,
+    int imageWidth,
+    int imageHeight, {
+    List<double> mean = torchVisionNormMeanRGB,
+    List<double> std = torchVisionNormSTDRGB,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
+  }) async {
     // Get the predictions using the getImagePredictionListFromBytesList method
     final List<double> prediction = await getImagePredictionListFromBytesList(
-        imageAsBytesList, imageWidth, imageHeight,
-        mean: mean, std: std);
+      imageAsBytesList,
+      imageWidth,
+      imageHeight,
+      mean: mean,
+      std: std,
+      isTupleOutput: isTupleOutput,
+      tupleIndex: tupleIndex,
+    );
 
     // Return the probabilities derived from the predictions
     return getProbabilities(prediction);
@@ -331,13 +401,16 @@ class ClassificationModel {
   /// Returns a [Future] that resolves to a [List] of [double] values representing the predictions.
   /// Throws an [Exception] if unable to process the image bytes.
   Future<List<double>> getCameraImagePredictionList(
-      CameraImage cameraImage, int rotation,
-      {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB,
-      CameraPreProcessingMethod cameraPreProcessingMethod =
-          CameraPreProcessingMethod.imageLib,
-      PreProcessingMethod preProcessingMethod =
-          PreProcessingMethod.imageLib}) async {
+    CameraImage cameraImage,
+    int rotation, {
+    List<double> mean = torchVisionNormMeanRGB,
+    List<double> std = torchVisionNormSTDRGB,
+    CameraPreProcessingMethod cameraPreProcessingMethod =
+        CameraPreProcessingMethod.imageLib,
+    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
+  }) async {
     // Perform preprocessing based on the chosen camera pre-processing method
     if (cameraPreProcessingMethod == CameraPreProcessingMethod.imageLib) {
       Uint8List? bytes =
@@ -346,16 +419,25 @@ class ClassificationModel {
         throw Exception("Unable to process image bytes");
       }
       // Retrieve the image predictions for the preprocessed image bytes
-      return await getImagePredictionList(bytes,
-          mean: mean, std: std, preProcessingMethod: preProcessingMethod);
+      return await getImagePredictionList(
+        bytes,
+        mean: mean,
+        std: std,
+        preProcessingMethod: preProcessingMethod,
+        isTupleOutput: isTupleOutput,
+        tupleIndex: tupleIndex,
+      );
     }
     // Retrieve the image predictions for the camera image planes
     return await getImagePredictionListFromBytesList(
-        cameraImage.planes.map((e) => e.bytes).toList(),
-        cameraImage.width,
-        cameraImage.height,
-        mean: mean,
-        std: std);
+      cameraImage.planes.map((e) => e.bytes).toList(),
+      cameraImage.width,
+      cameraImage.height,
+      mean: mean,
+      std: std,
+      isTupleOutput: isTupleOutput,
+      tupleIndex: tupleIndex,
+    );
   }
 
   /// Retrieves the top prediction label for a camera image.
@@ -363,20 +445,28 @@ class ClassificationModel {
   /// Takes a [cameraImage] and [rotation] as input. Optional parameters include [mean], [std],
   /// [cameraPreProcessingMethod], and [preProcessingMethod].
   /// Returns a [Future] that resolves to a [String] representing the top prediction label.
-  Future<String> getCameraImagePrediction(CameraImage cameraImage, int rotation,
-      {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB,
-      CameraPreProcessingMethod cameraPreProcessingMethod =
-          CameraPreProcessingMethod.imageLib,
-      PreProcessingMethod preProcessingMethod =
-          PreProcessingMethod.imageLib}) async {
+  Future<String> getCameraImagePrediction(
+    CameraImage cameraImage,
+    int rotation, {
+    List<double> mean = torchVisionNormMeanRGB,
+    List<double> std = torchVisionNormSTDRGB,
+    CameraPreProcessingMethod cameraPreProcessingMethod =
+        CameraPreProcessingMethod.imageLib,
+    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
+  }) async {
     // Retrieve the prediction list for the camera image
     final List<double> prediction = await getCameraImagePredictionList(
-        cameraImage, rotation,
-        mean: mean,
-        std: std,
-        cameraPreProcessingMethod: cameraPreProcessingMethod,
-        preProcessingMethod: preProcessingMethod);
+      cameraImage,
+      rotation,
+      mean: mean,
+      std: std,
+      cameraPreProcessingMethod: cameraPreProcessingMethod,
+      preProcessingMethod: preProcessingMethod,
+      isTupleOutput: isTupleOutput,
+      tupleIndex: tupleIndex,
+    );
 
     // Get the index of the maximum score from the prediction list
     int maxScoreIndex = softMax(prediction);
@@ -390,20 +480,27 @@ class ClassificationModel {
   /// [cameraPreProcessingMethod], and [preProcessingMethod].
   /// Returns a [Future] that resolves to a [List] of [double] values representing the prediction probabilities.
   Future<List<double>> getCameraImagePredictionProbabilities(
-      CameraImage cameraImage, int rotation,
-      {List<double> mean = torchVisionNormMeanRGB,
-      List<double> std = torchVisionNormSTDRGB,
-      CameraPreProcessingMethod cameraPreProcessingMethod =
-          CameraPreProcessingMethod.imageLib,
-      PreProcessingMethod preProcessingMethod =
-          PreProcessingMethod.imageLib}) async {
+    CameraImage cameraImage,
+    int rotation, {
+    List<double> mean = torchVisionNormMeanRGB,
+    List<double> std = torchVisionNormSTDRGB,
+    CameraPreProcessingMethod cameraPreProcessingMethod =
+        CameraPreProcessingMethod.imageLib,
+    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
+  }) async {
     // Retrieve the prediction list for the camera image
     final List<double> prediction = await getCameraImagePredictionList(
-        cameraImage, rotation,
-        mean: mean,
-        std: std,
-        cameraPreProcessingMethod: cameraPreProcessingMethod,
-        preProcessingMethod: preProcessingMethod);
+      cameraImage,
+      rotation,
+      mean: mean,
+      std: std,
+      cameraPreProcessingMethod: cameraPreProcessingMethod,
+      preProcessingMethod: preProcessingMethod,
+      isTupleOutput: isTupleOutput,
+      tupleIndex: tupleIndex,
+    );
 
     return getProbabilities(prediction);
   }
