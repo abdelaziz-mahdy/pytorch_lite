@@ -250,8 +250,8 @@ class ClassificationModel {
       return (await ModelApi().getRawImagePredictionList(
         _index,
         data,
-        isTupleOutput: isTupleOutput,
-        tupleIndex: tupleIndex,
+        isTupleOutput,
+        tupleIndex,
       ))
           .whereNotNull()
           .toList();
@@ -264,8 +264,8 @@ class ClassificationModel {
       null,
       mean,
       std,
-      isTupleOutput: isTupleOutput,
-      tupleIndex: tupleIndex,
+      isTupleOutput,
+      tupleIndex,
     ))
         .whereNotNull()
         .toList();
@@ -323,8 +323,8 @@ class ClassificationModel {
       imageHeight,
       mean,
       std,
-      isTupleOutput: isTupleOutput,
-      tupleIndex: tupleIndex,
+      isTupleOutput,
+      tupleIndex,
     ))
         .whereNotNull()
         .toList();
@@ -541,12 +541,15 @@ class ModelObjectDetection {
   ///
   /// Returns:
   /// A list of [ResultObjectDetection] containing the detected objects and their bounding boxes.
-  Future<List<ResultObjectDetection>> getImagePrediction(Uint8List imageAsBytes,
-      {double minimumScore = 0.5,
-      double iOUThreshold = 0.5,
-      int boxesLimit = 10,
-      PreProcessingMethod preProcessingMethod =
-          PreProcessingMethod.imageLib}) async {
+  Future<List<ResultObjectDetection>> getImagePrediction(
+    Uint8List imageAsBytes, {
+    double minimumScore = 0.5,
+    double iOUThreshold = 0.5,
+    int boxesLimit = 10,
+    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
+  }) async {
     // Perform object detection on the image
     List<ResultObjectDetection> prediction = await getImagePredictionList(
         imageAsBytes,
@@ -575,16 +578,26 @@ class ModelObjectDetection {
   /// Returns:
   /// A list of [ResultObjectDetection] containing the detected objects and their bounding boxes.
   Future<List<ResultObjectDetection>> getImagePredictionFromBytesList(
-      List<Uint8List> imageAsBytesList, int imageWidth, int imageHeight,
-      {double minimumScore = 0.5,
-      double iOUThreshold = 0.5,
-      int boxesLimit = 10}) async {
+    List<Uint8List> imageAsBytesList,
+    int imageWidth,
+    int imageHeight, {
+    double minimumScore = 0.5,
+    double iOUThreshold = 0.5,
+    int boxesLimit = 10,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
+  }) async {
     List<ResultObjectDetection> prediction =
         await getImagePredictionListFromBytesList(
-            imageAsBytesList, imageWidth, imageHeight,
-            minimumScore: minimumScore,
-            iOUThreshold: iOUThreshold,
-            boxesLimit: boxesLimit);
+      imageAsBytesList,
+      imageWidth,
+      imageHeight,
+      minimumScore: minimumScore,
+      iOUThreshold: iOUThreshold,
+      boxesLimit: boxesLimit,
+      isTupleOutput: isTupleOutput,
+      tupleIndex: tupleIndex,
+    );
     addLabels(prediction);
 
     return prediction;
@@ -604,29 +617,41 @@ class ModelObjectDetection {
   /// Returns a list of [ResultObjectDetection] where each result has a score
   /// greater than or equal to [minimumScore].
   Future<List<ResultObjectDetection>> getImagePredictionList(
-      Uint8List imageAsBytes,
-      {double minimumScore = 0.5,
-      double iOUThreshold = 0.5,
-      int boxesLimit = 10,
-      PreProcessingMethod preProcessingMethod =
-          PreProcessingMethod.imageLib}) async {
+    Uint8List imageAsBytes, {
+    double minimumScore = 0.5,
+    double iOUThreshold = 0.5,
+    int boxesLimit = 10,
+    PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
+  }) async {
     if (preProcessingMethod == PreProcessingMethod.imageLib) {
       Uint8List data = await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
           imageAsBytes, imageWidth, imageHeight, noMeanRGB, noSTDRGB);
       return (await ModelApi().getRawImagePredictionListObjectDetection(
-              _index, data, minimumScore, iOUThreshold, boxesLimit))
+        _index,
+        data,
+        minimumScore,
+        iOUThreshold,
+        boxesLimit,
+        isTupleOutput,
+        tupleIndex,
+      ))
           .whereNotNull()
           .toList();
     }
     return (await ModelApi().getImagePredictionListObjectDetection(
-            _index,
-            imageAsBytes,
-            null,
-            null,
-            null,
-            minimumScore,
-            iOUThreshold,
-            boxesLimit))
+      _index,
+      imageAsBytes,
+      null,
+      null,
+      null,
+      minimumScore,
+      iOUThreshold,
+      boxesLimit,
+      isTupleOutput,
+      tupleIndex,
+    ))
         .whereNotNull()
         .toList();
   }
@@ -651,19 +676,24 @@ class ModelObjectDetection {
     double minimumScore = 0.5,
     double iOUThreshold = 0.5,
     int boxesLimit = 10,
+    bool isTupleOutput = false,
+    int tupleIndex = 0,
   }) async {
-    final List<ResultObjectDetection> prediction = (await ModelApi()
-            .getImagePredictionListObjectDetection(
-                _index,
-                null,
-                imageAsBytesList,
-                imageWidth,
-                imageHeight,
-                minimumScore,
-                iOUThreshold,
-                boxesLimit))
-        .whereNotNull()
-        .toList();
+    final List<ResultObjectDetection> prediction =
+        (await ModelApi().getImagePredictionListObjectDetection(
+      _index,
+      null,
+      imageAsBytesList,
+      imageWidth,
+      imageHeight,
+      minimumScore,
+      iOUThreshold,
+      boxesLimit,
+      isTupleOutput,
+      tupleIndex,
+    ))
+            .whereNotNull()
+            .toList();
 
     return prediction;
   }
