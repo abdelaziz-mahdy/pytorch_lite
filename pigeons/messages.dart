@@ -50,8 +50,8 @@ abstract class ModelApi {
   List<double> getRawImagePredictionList(
     int index,
     Uint8List imageData,
-    bool? isTupleOutput,
-    int? tupleIndex,
+    bool isTupleOutput,
+    int tupleIndex,
   );
 
   ///predicts raw image but returns the raw net output
@@ -63,8 +63,8 @@ abstract class ModelApi {
     double minimumScore,
     double IOUThreshold,
     int boxesLimit,
-    bool? isTupleOutput,
-    int? tupleIndex,
+    bool isTupleOutput,
+    int tupleIndex,
   );
 
   ///predicts image but returns the raw net output
@@ -78,8 +78,8 @@ abstract class ModelApi {
     int? imageHeightForBytesList,
     List<double> mean,
     List<double> std,
-    bool? isTupleOutput,
-    int? tupleIndex,
+    bool isTupleOutput,
+    int tupleIndex,
   );
 
   ///predicts image but returns the output detections
@@ -94,7 +94,7 @@ abstract class ModelApi {
     double minimumScore,
     double IOUThreshold,
     int boxesLimit,
-    bool? isTupleOutput,
-    int? tupleIndex,
+    bool isTupleOutput,
+    int tupleIndex,
   );
 }
