@@ -71,10 +71,12 @@
 }
 - (NSArray<NSNumber*>*)predictImage:(void*)imageBuffer 
                           withWidth:(int)width 
-                         andHeight:(int)height 
-                           atIndex:(NSInteger)moduleIndex 
-                 isObjectDetection:(BOOL)isObjectDetection 
-                 objectDetectionType:(NSInteger)objectDetectionType {
+                          andHeight:(int)height 
+                            atIndex:(NSInteger)moduleIndex 
+                  isObjectDetection:(BOOL)isObjectDetection
+                objectDetectionType:(NSInteger)objectDetectionType 
+                      isTupleOutput:(NSNumber *)isTupleOutput
+                         tupleIndex:(NSNumber *)tupleIndex {
     try {
         torch::jit::Module* module = _modulesVector[moduleIndex];
         at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, height, width}, at::kFloat);
@@ -93,7 +95,11 @@
                 outputTensor = module->forward({tensor}).toTensor();
             }
         } else {
-            outputTensor = module->forward({tensor}).toTensor();
+            if (isTupleOutput.boolValue) {
+                outputTensor = module->forward({tensor}).toTuple()->elements()[tupleIndex.integerValue].toTensor();
+            } else {
+                outputTensor = module->forward({tensor}).toTensor();
+            }
         }
 
         float *floatBuffer = outputTensor.data_ptr<float>();
@@ -105,6 +111,7 @@
         for(int i = 0; i < outputTensor.sizes().size(); i++) {
             prod *= outputTensor.sizes().data()[i];  
         }
+
 
         NSMutableArray<NSNumber*>* results = [[NSMutableArray<NSNumber*> alloc] init];
         for (int i = 0; i < prod; i++) {
@@ -146,7 +153,7 @@ completion([NSNumber numberWithInteger:i], nil);
     }
 
 }
-- (void)getImagePredictionListIndex:(nonnull NSNumber *)index imageData:(nullable FlutterStandardTypedData *)imageData imageBytesList:(nullable NSArray<FlutterStandardTypedData *> *)imageBytesList imageWidthForBytesList:(nullable NSNumber *)imageWidthForBytesList imageHeightForBytesList:(nullable NSNumber *)imageHeightForBytesList mean:(nonnull NSArray<NSNumber *> *)mean std:(nonnull NSArray<NSNumber *> *)std completion:(nonnull void (^)(NSArray<NSNumber *> * _Nullable, FlutterError * _Nullable))completion {
+- (void)getImagePredictionListIndex:(nonnull NSNumber *)index imageData:(nullable FlutterStandardTypedData *)imageData imageBytesList:(nullable NSArray<FlutterStandardTypedData *> *)imageBytesList imageWidthForBytesList:(nullable NSNumber *)imageWidthForBytesList imageHeightForBytesList:(nullable NSNumber *)imageHeightForBytesList mean:(nonnull NSArray<NSNumber *> *)mean std:(nonnull NSArray<NSNumber *> *)std isTupleOutput:(nonnull NSNumber *)isTupleOutput tupleIndex:(nonnull NSNumber *)tupleIndex completion:(nonnull void (^)(NSArray<NSNumber *> * _Nullable, FlutterError * _Nullable))completion {
     
     UIImage *bitmap = nil;
         PrePostProcessor *prePostProcessor = self.prePostProcessors[index.intValue];
@@ -162,7 +169,7 @@ completion([NSNumber numberWithInteger:i], nil);
     }
 
     float* input = [UIImageExtension normalize:bitmap withMean:mean withSTD:std];
-    NSArray<NSNumber*> *results = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:FALSE objectDetectionType:0];
+    NSArray<NSNumber*> *results = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:FALSE objectDetectionType:0 isTupleOutput:isTupleOutput tupleIndex:tupleIndex ];
 
     if (results) {
         completion(results, nil);
@@ -174,7 +181,7 @@ completion([NSNumber numberWithInteger:i], nil);
 
 
 
-- (void)getImagePredictionListObjectDetectionIndex:(nonnull NSNumber *)index imageData:(nullable FlutterStandardTypedData *)imageData imageBytesList:(nullable NSArray<FlutterStandardTypedData *> *)imageBytesList imageWidthForBytesList:(nullable NSNumber *)imageWidthForBytesList imageHeightForBytesList:(nullable NSNumber *)imageHeightForBytesList minimumScore:(nonnull NSNumber *)minimumScore IOUThreshold:(nonnull NSNumber *)IOUThreshold boxesLimit:(nonnull NSNumber *)boxesLimit completion:(nonnull void (^)(NSArray<ResultObjectDetection *> * _Nullable, FlutterError * _Nullable))completion {
+- (void)getImagePredictionListObjectDetectionIndex:(nonnull NSNumber *)index imageData:(nullable FlutterStandardTypedData *)imageData imageBytesList:(nullable NSArray<FlutterStandardTypedData *> *)imageBytesList imageWidthForBytesList:(nullable NSNumber *)imageWidthForBytesList imageHeightForBytesList:(nullable NSNumber *)imageHeightForBytesList minimumScore:(nonnull NSNumber *)minimumScore IOUThreshold:(nonnull NSNumber *)IOUThreshold boxesLimit:(nonnull NSNumber *)boxesLimit isTupleOutput:(nonnull NSNumber *)isTupleOutput tupleIndex:(nonnull NSNumber *)tupleIndex completion:(nonnull void (^)(NSArray<ResultObjectDetection *> * _Nullable, FlutterError * _Nullable))completion {
     
     UIImage *bitmap = nil;
     PrePostProcessor *prePostProcessor = self.prePostProcessors[index.intValue];
@@ -194,7 +201,7 @@ completion([NSNumber numberWithInteger:i], nil);
     }
 
     float* input = [UIImageExtension normalize:bitmap withMean:prePostProcessor.NO_MEAN_RGB withSTD:prePostProcessor.NO_STD_RGB];
-    NSArray<NSNumber*> *rawOutputs = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:TRUE objectDetectionType:prePostProcessor.mObjectDetectionModelType];
+    NSArray<NSNumber*> *rawOutputs = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:TRUE objectDetectionType:prePostProcessor.mObjectDetectionModelType isTupleOutput:isTupleOutput tupleIndex:tupleIndex];
 
     // Convert raw outputs to ResultObjectDetection objects
     NSMutableArray<ResultObjectDetection*> *results = [prePostProcessor outputsToNMSPredictions:rawOutputs];
@@ -207,10 +214,10 @@ completion([NSNumber numberWithInteger:i], nil);
     }
 }
 
-- (void)getRawImagePredictionListIndex:(nonnull NSNumber *)index imageData:(nonnull FlutterStandardTypedData *)imageData completion:(nonnull void (^)(NSArray<NSNumber *> * _Nullable, FlutterError * _Nullable))completion { 
+- (void)getRawImagePredictionListIndex:(nonnull NSNumber *)index imageData:(nonnull FlutterStandardTypedData *)imageData isTupleOutput:(nonnull NSNumber *)isTupleOutput tupleIndex:(nonnull NSNumber *)tupleIndex completion:(nonnull void (^)(NSArray<NSNumber *> * _Nullable, FlutterError * _Nullable))completion { 
     PrePostProcessor *prePostProcessor = self.prePostProcessors[index.intValue];
 
-    NSArray<NSNumber*> *results = [self predictImage:(float *)[imageData.data bytes] withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:FALSE objectDetectionType:0];
+    NSArray<NSNumber*> *results = [self predictImage:(float *)[imageData.data bytes] withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:FALSE objectDetectionType:0 isTupleOutput:isTupleOutput tupleIndex:tupleIndex];
 
     if (results) {
         completion(results, nil);
@@ -222,13 +229,13 @@ completion([NSNumber numberWithInteger:i], nil);
 }
 
 
-- (void)getRawImagePredictionListObjectDetectionIndex:(nonnull NSNumber *)index imageData:(nonnull FlutterStandardTypedData *)imageData minimumScore:(nonnull NSNumber *)minimumScore IOUThreshold:(nonnull NSNumber *)IOUThreshold boxesLimit:(nonnull NSNumber *)boxesLimit completion:(nonnull void (^)(NSArray<ResultObjectDetection *> * _Nullable, FlutterError * _Nullable))completion { 
+- (void)getRawImagePredictionListObjectDetectionIndex:(nonnull NSNumber *)index imageData:(nonnull FlutterStandardTypedData *)imageData minimumScore:(nonnull NSNumber *)minimumScore IOUThreshold:(nonnull NSNumber *)IOUThreshold boxesLimit:(nonnull NSNumber *)boxesLimit isTupleOutput:(nonnull NSNumber *)isTupleOutput tupleIndex:(nonnull NSNumber *)tupleIndex completion:(nonnull void (^)(NSArray<ResultObjectDetection *> * _Nullable, FlutterError * _Nullable))completion { 
     PrePostProcessor *prePostProcessor = self.prePostProcessors[index.intValue];
     prePostProcessor.mNmsLimit = boxesLimit.intValue;
     prePostProcessor.mScoreThreshold = minimumScore.floatValue;
     prePostProcessor.mIOUThreshold = IOUThreshold.floatValue;
     
-    NSArray<NSNumber*> *rawOutputs = [self predictImage:(float *)[imageData.data bytes] withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:TRUE objectDetectionType:prePostProcessor.mObjectDetectionModelType];
+    NSArray<NSNumber*> *rawOutputs = [self predictImage:(float *)[imageData.data bytes] withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:TRUE objectDetectionType:prePostProcessor.mObjectDetectionModelType isTupleOutput:isTupleOutput tupleIndex:tupleIndex];
 
     // Convert raw outputs to ResultObjectDetection objects
     NSMutableArray<ResultObjectDetection*> *results = [prePostProcessor outputsToNMSPredictions:rawOutputs];
