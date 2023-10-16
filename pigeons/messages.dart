@@ -49,7 +49,7 @@ abstract class ModelApi {
   @async
   List<double> getRawImagePredictionList(
     int index,
-    Uint8List imageData,
+    Float64List imageData,
     bool isTupleOutput,
     int tupleIndex,
   );
@@ -59,7 +59,7 @@ abstract class ModelApi {
   @async
   List<ResultObjectDetection> getRawImagePredictionListObjectDetection(
     int index,
-    Uint8List imageData,
+    Float64List imageData,
     double minimumScore,
     double IOUThreshold,
     int boxesLimit,
@@ -72,7 +72,7 @@ abstract class ModelApi {
   @async
   List<double> getImagePredictionList(
     int index,
-    Uint8List? imageData,
+    Float64List? imageData,
     List<Uint8List>? imageBytesList,
     int? imageWidthForBytesList,
     int? imageHeightForBytesList,
@@ -87,7 +87,7 @@ abstract class ModelApi {
   @async
   List<ResultObjectDetection> getImagePredictionListObjectDetection(
     int index,
-    Uint8List? imageData,
+    Float64List? imageData,
     List<Uint8List>? imageBytesList,
     int? imageWidthForBytesList,
     int? imageHeightForBytesList,

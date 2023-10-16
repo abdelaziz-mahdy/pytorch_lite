@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -246,7 +247,7 @@ class ClassificationModel {
     assert(std.length == 3, "STD should have size of 3");
 
     if (preProcessingMethod == PreProcessingMethod.imageLib) {
-      Uint8List data = await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
+      Float64List data = await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
           imageAsBytes, imageWidth, imageHeight, mean, std);
       return (await ModelApi().getRawImagePredictionList(
         _index,
@@ -259,7 +260,7 @@ class ClassificationModel {
     }
     return (await ModelApi().getImagePredictionList(
       _index,
-      imageAsBytes,
+      ImageUtilsIsolate.convertUInt8ListToFloat64List(imageAsBytes),
       null,
       null,
       null,
@@ -627,7 +628,7 @@ class ModelObjectDetection {
     int tupleIndex = 0,
   }) async {
     if (preProcessingMethod == PreProcessingMethod.imageLib) {
-      Uint8List data = await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
+      Float64List data = await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
           imageAsBytes, imageWidth, imageHeight, noMeanRGB, noSTDRGB);
       return (await ModelApi().getRawImagePredictionListObjectDetection(
         _index,
@@ -643,7 +644,7 @@ class ModelObjectDetection {
     }
     return (await ModelApi().getImagePredictionListObjectDetection(
       _index,
-      imageAsBytes,
+      ImageUtilsIsolate.convertUInt8ListToFloat64List(imageAsBytes),
       null,
       null,
       null,
