@@ -126,6 +126,22 @@ class ImageUtilsIsolate {
     return float64List;
   }
 
+  static Future<Uint8List> convertImageBytesToFloatBufferUInt8List(
+    Uint8List bytes,
+    int width,
+    int height,
+    List<double> mean,
+    List<double> std,
+  ) async {
+    await ImageUtilsIsolate.init();
+
+    return (await ImageUtilsIsolate.computer.compute(
+            _convertImageBytesToFloatBuffer,
+            param: [bytes, width, height, mean, std]) as TransferableTypedData)
+        .materialize()
+        .asUint8List();
+  }
+
   static Float64List convertUInt8ListToFloat64List(Uint8List uint8List) {
     final float64List = Float64List(uint8List.length);
 

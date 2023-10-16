@@ -59,7 +59,7 @@ abstract class ModelApi {
   @async
   List<ResultObjectDetection> getRawImagePredictionListObjectDetection(
     int index,
-    Float64List imageData,
+    Uint8List imageData,
     double minimumScore,
     double IOUThreshold,
     int boxesLimit,
@@ -72,7 +72,7 @@ abstract class ModelApi {
   @async
   List<double> getImagePredictionList(
     int index,
-    Float64List? imageData,
+    Uint8List? imageData,
     List<Uint8List>? imageBytesList,
     int? imageWidthForBytesList,
     int? imageHeightForBytesList,
@@ -87,7 +87,7 @@ abstract class ModelApi {
   @async
   List<ResultObjectDetection> getImagePredictionListObjectDetection(
     int index,
-    Float64List? imageData,
+    Uint8List? imageData,
     List<Uint8List>? imageBytesList,
     int? imageWidthForBytesList,
     int? imageHeightForBytesList,

@@ -260,7 +260,7 @@ class ClassificationModel {
     }
     return (await ModelApi().getImagePredictionList(
       _index,
-      ImageUtilsIsolate.convertUInt8ListToFloat64List(imageAsBytes),
+      imageAsBytes,
       null,
       null,
       null,
@@ -628,8 +628,9 @@ class ModelObjectDetection {
     int tupleIndex = 0,
   }) async {
     if (preProcessingMethod == PreProcessingMethod.imageLib) {
-      Float64List data = await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
-          imageAsBytes, imageWidth, imageHeight, noMeanRGB, noSTDRGB);
+      Uint8List data =
+          await ImageUtilsIsolate.convertImageBytesToFloatBufferUInt8List(
+              imageAsBytes, imageWidth, imageHeight, noMeanRGB, noSTDRGB);
       return (await ModelApi().getRawImagePredictionListObjectDetection(
         _index,
         data,
@@ -644,7 +645,7 @@ class ModelObjectDetection {
     }
     return (await ModelApi().getImagePredictionListObjectDetection(
       _index,
-      ImageUtilsIsolate.convertUInt8ListToFloat64List(imageAsBytes),
+      imageAsBytes,
       null,
       null,
       null,

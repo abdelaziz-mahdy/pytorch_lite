@@ -22,6 +22,7 @@ import org.pytorch.torchvision.TensorImageUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -135,7 +136,7 @@ result.error(e);
     }
 
     @Override
-    public void getRawImagePredictionList(Long index, byte[] imageData, Boolean isTupleOutput, Long tupleIndex, Pigeon.Result<List<Double>> result) {
+    public void getRawImagePredictionList(Long index, double[] imageData, Boolean isTupleOutput, Long tupleIndex, Pigeon.Result<List<Double>> result) {
 
         PrePostProcessor prePostProcessor = null;
         Module imageModule = null;
@@ -149,15 +150,11 @@ result.error(e);
     }
         try {
 
-            final FloatBuffer floatBuffer = Tensor.allocateFloatBuffer(3 * prePostProcessor.mImageWidth * prePostProcessor.mImageHeight);
-            ByteBuffer byteBuffer = ByteBuffer.wrap(imageData);
-            byteBuffer.order(ByteOrder.nativeOrder());
-            FloatBuffer tempFloatBuffer = byteBuffer.asFloatBuffer();
+            final DoubleBuffer doubleBuffer = Tensor.allocateDoubleBuffer(3 * prePostProcessor.mImageWidth * prePostProcessor.mImageHeight);
+            doubleBuffer.put(DoubleBuffer.wrap(imageData));
+            doubleBuffer.flip();
 
-            floatBuffer.put(tempFloatBuffer);
-            floatBuffer.flip();  // Reset the buffer's position to 0
-
-            final Tensor imageInputTensor =   Tensor.fromBlob(floatBuffer, new long[] {1, 3, prePostProcessor.mImageHeight, prePostProcessor.mImageWidth}, MemoryFormat.CONTIGUOUS);
+            final Tensor imageInputTensor =   Tensor.fromBlob(doubleBuffer, new long[] {1, 3, prePostProcessor.mImageHeight, prePostProcessor.mImageWidth}, MemoryFormat.CONTIGUOUS);
 
 
             Tensor imageOutputTensor = null;
