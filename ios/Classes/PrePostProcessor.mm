@@ -32,7 +32,7 @@
         _NO_STD_RGB = @[@1.0f, @1.0f, @1.0f];
 
         _mNumberOfClasses = 17;
-        _mOutputRow = 25200;
+        // _mOutputRow = 25200;
         _mOutputColumn = _mNumberOfClasses + 5;
         _mScoreThreshold = 0.30f;
         _mIOUThreshold = 0.30f;
@@ -60,10 +60,10 @@
         _mImageHeight = imageHeight;
         _mObjectDetectionModelType = objectDetectionModelType;
         if (_mObjectDetectionModelType==0) {
-            _mOutputRow = 25200;
+            // _mOutputRow = 25200;
             _mOutputColumn = _mNumberOfClasses + 5;
         } else {
-            _mOutputRow = 8400;
+            // _mOutputRow = 8400;
             _mOutputColumn = _mNumberOfClasses + 4;
         }
     }
@@ -141,22 +141,25 @@
 }
 
 - (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictionsYoloV8:(NSArray<NSNumber *> *)outputs {
+    int mOutputRow = outputs.count / self.mOutputColumn; 
+    NSLog(@"model mOutputRow is %d", mOutputRow); 
     NSMutableArray<ResultObjectDetection *> *results = [NSMutableArray array];
-    for (int i = 0; i < self.mOutputRow; i++) {
+
+    for (int i = 0; i < mOutputRow; i++) {
         float x = [outputs[i] floatValue];
-        float y = [outputs[self.mOutputRow + i] floatValue];
-        float w = [outputs[2 * self.mOutputRow + i] floatValue];
-        float h = [outputs[3 * self.mOutputRow + i] floatValue];
+        float y = [outputs[mOutputRow + i] floatValue];
+        float w = [outputs[2 * mOutputRow + i] floatValue];
+        float h = [outputs[3 * mOutputRow + i] floatValue];
 
         float left = (x - w / 2);
         float top = (y - h / 2);
         float right = (x + w / 2);
         float bottom = (y + h / 2);
 
-        float max = [outputs[4 * self.mOutputRow + i] floatValue];
+        float max = [outputs[4 * mOutputRow + i] floatValue];
         int cls = 0;
         for (int j = 4; j < self.mOutputColumn; j++) {
-            float currentVal = [outputs[j * self.mOutputRow + i] floatValue];
+            float currentVal = [outputs[j * mOutputRow + i] floatValue];
             if (currentVal > max) {
                 max = currentVal;
                 cls = j - 4;
@@ -186,8 +189,10 @@
 
 
 - (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictionsYolov5:(NSArray<NSNumber *> *)outputs {
+    int mOutputRow = outputs.count / self.mOutputColumn; 
+    NSLog(@"model mOutputRow is %d", mOutputRow); 
     NSMutableArray<ResultObjectDetection *> *results = [NSMutableArray array];
-    for (int i = 0; i < self.mOutputRow; i++) {
+    for (int i = 0; i < mOutputRow; i++) {
  float score = [outputs[i*self.mOutputColumn + 4] floatValue];
 
     if (score > self.mScoreThreshold) {

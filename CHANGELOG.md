@@ -1,3 +1,6 @@
+## 4.2.1-beta
+* Making model output dynamically calculated (yolov5,yolov8) to allow input sizes other than 640X640
+
 ## 4.2.0+2
 * Fix formatting
 
