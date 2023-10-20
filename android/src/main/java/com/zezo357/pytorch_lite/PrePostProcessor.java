@@ -19,7 +19,7 @@ public class PrePostProcessor {
     float[] NO_STD_RGB = new float[] { 1.0f, 1.0f, 1.0f };
     int mNumberOfClasses = 17;
     // model output is of size 25200*(num_of_class+5)
-    int mOutputRow = 25200; // as decided by the YOLOv5 model for input image of size 640*640
+    // int mOutputRow = 25200; // as decided by the YOLOv5 model for input image of size 640*640
     int mOutputColumn = (mNumberOfClasses + 5); // left, top, right, bottom, score and 80 class probability
     float mScoreThreshold = 0.30f; // score above which a detection is generated
     float mIOUThreshold = 0.30f; // IOU thershold
@@ -43,10 +43,10 @@ public class PrePostProcessor {
         mImageHeight = imageHeight;
         mObjectDetectionModelType = objectDetectionModelType;
         if (objectDetectionModelType == 0) {
-            mOutputRow = 25200; // as decided by the YOLOv5 model for input image of size 640*640
+            // mOutputRow = 25200; // as decided by the YOLOv5 model for input image of size 640*640
             mOutputColumn = (mNumberOfClasses + 5); // left, top, right, bottom, score and 80 class probability
         } else {
-            mOutputRow = 8400; // as decided by the YOLOv5 model for input image of size 640*640
+            // mOutputRow = 8400; // as decided by the YOLOv5 model for input image of size 640*640
             mOutputColumn = (mNumberOfClasses + 4); // left, top, right, bottom, score and 80 class probability
         }
 
@@ -135,6 +135,9 @@ public class PrePostProcessor {
     }
 
     ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictionsYoloV8(float[] outputs) {
+int mOutputRow = outputs.length/mOutputColumn;
+                Log.i("PytorchLitePlugin", "model mOutputRow is " + mOutputRow);
+
         ArrayList<Pigeon.ResultObjectDetection> results = new ArrayList<>();
         for (int i = 0; i < mOutputRow; i++) {
 
@@ -183,6 +186,8 @@ public class PrePostProcessor {
     }
 
     ArrayList<Pigeon.ResultObjectDetection> outputsToNMSPredictionsYolov5(float[] outputs) {
+        int mOutputRow = outputs.length/mOutputColumn;
+        Log.i("PytorchLitePlugin", "model mOutputRow is " + mOutputRow);
         ArrayList<Pigeon.ResultObjectDetection> results = new ArrayList<>();
         for (int i = 0; i < mOutputRow; i++) {
             // Log.i("PytorchLitePlugin","0:"+outputs[i* mOutputColumn]+"1");
