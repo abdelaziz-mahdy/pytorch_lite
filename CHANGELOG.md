@@ -1,7 +1,5 @@
-## 4.2.2-beta
-* fix classification bug on android 
-
-## 4.2.1-beta
+## 4.2.1
+* fix classification bug on android on native preprocessing
 * Making model output dynamically calculated (yolov5,yolov8) to allow input sizes other than 640X640
 
 ## 4.2.0+2
