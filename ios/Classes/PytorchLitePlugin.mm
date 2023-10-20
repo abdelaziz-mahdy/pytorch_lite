@@ -153,13 +153,12 @@ completion([NSNumber numberWithInteger:i], nil);
 
     if (imageData) {
         bitmap = [UIImage imageWithData:imageData.data];
-        bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
     } else {
     FlutterStandardTypedData *typedData = imageBytesList[0];
     uint8_t* in = (uint8_t*)[[typedData data] bytes];
     bitmap = [UIImage imageWithData:typedData.data];
-        bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
     }
+    bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
 
     float* input = [UIImageExtension normalize:bitmap withMean:mean withSTD:std];
     NSArray<NSNumber*> *results = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:FALSE objectDetectionType:0];
@@ -184,14 +183,13 @@ completion([NSNumber numberWithInteger:i], nil);
     
     if (imageData) {
         bitmap = [UIImage imageWithData:imageData.data];
-        bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
     } else {
             FlutterStandardTypedData *typedData = imageBytesList[0];
     uint8_t* in = (uint8_t*)[[typedData data] bytes];
     bitmap = [UIImage imageWithData:typedData.data];
-        bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
-        // Handle the scenario where you're given the byte list instead of imageData.
+
     }
+        bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
 
     float* input = [UIImageExtension normalize:bitmap withMean:prePostProcessor.NO_MEAN_RGB withSTD:prePostProcessor.NO_STD_RGB];
     NSArray<NSNumber*> *rawOutputs = [self predictImage:input withWidth:prePostProcessor.mImageWidth andHeight:prePostProcessor.mImageHeight atIndex:[index integerValue] isObjectDetection:TRUE objectDetectionType:prePostProcessor.mObjectDetectionModelType];

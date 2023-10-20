@@ -247,10 +247,11 @@ result.error(e);
             } else {
                 bitmap = getBitmapFromBytesList(imageBytesList, imageWidthForBytesList.intValue(),
                         imageHeightForBytesList.intValue());
+                            Matrix matrix = new Matrix();
+                matrix.postRotate(90.0f);
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             }
-            Matrix matrix = new Matrix();
-            matrix.postRotate(90.0f);
-            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            
             bitmap = Bitmap.createScaledBitmap(bitmap, prePostProcessor.mImageWidth, prePostProcessor.mImageHeight,
                     false);
 
