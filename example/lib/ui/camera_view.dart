@@ -52,13 +52,13 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
 
   //load your model
   Future loadModel() async {
-    String pathImageModel = "assets/models/model_classification.pt";
+    String pathImageModel = "assets/models/modelinho.pt";
     //String pathCustomModel = "assets/models/custom_model.ptl";
     String pathObjectDetectionModel = "assets/models/yolov8s.torchscript";
     try {
       _imageModel = await PytorchLite.loadClassificationModel(
-          pathImageModel, 224, 224, 1000,
-          labelPath: "assets/labels/label_classification_imageNet.txt");
+          pathImageModel, 224, 224, 3,
+          labelPath: "assets/labels/labels_modelinho.txt");
       //_customModel = await PytorchLite.loadCustomModel(pathCustomModel);
       _objectModel = await PytorchLite.loadObjectDetectionModel(
           pathObjectDetectionModel, 80, 640, 640,
