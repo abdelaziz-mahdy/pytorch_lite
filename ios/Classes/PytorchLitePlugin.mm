@@ -3,8 +3,8 @@
 #import "PrePostProcessor.h"
 //#import "TorchModule.h"
 #import "helpers/UIImageExtension.h"
-// #import <LibTorch/LibTorch.h>
-#import <Libtorch-Lite/Libtorch-Lite.h>
+#import <LibTorch/LibTorch.h>
+// #import <Libtorch-Lite/Libtorch-Lite.h>
 
 #include <vector>
 
