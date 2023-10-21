@@ -1,3 +1,7 @@
+## 4.2.2
+* upgrading pytorch android from 1.13.1 to 2.1.0
+* ios is still LibTorch 1.13.0.1 since its the last one
+
 ## 4.2.1
 * fix classification bug on android on native preprocessing
 * Making model output dynamically calculated (yolov5,yolov8) to allow input sizes other than 640X640
