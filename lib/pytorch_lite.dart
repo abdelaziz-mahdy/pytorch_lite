@@ -15,13 +15,12 @@ import 'package:collection/collection.dart';
 export 'enums/dtype.dart';
 export 'package:pytorch_lite/pigeon.dart';
 export 'extensions/to_map_json.dart';
-
+export 'enums/model_type.dart';
 const List<double> torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
 const List<double> torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
 const List<double> noMeanRGB = [0, 0, 0];
 const List<double> noSTDRGB = [1, 1, 1];
 
-enum ObjectDetectionModelType { yolov5, yolov8 }
 
 class PytorchLite {
   /*
