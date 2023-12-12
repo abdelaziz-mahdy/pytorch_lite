@@ -8,9 +8,18 @@ on:
 
 jobs:
   publish:
-    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
-    # with:
-    #   working-directory: path/to/package/within/repository
-    permissions:
-      id-token: write
-      contents: write
+    runs-on: ubuntu-latest  # Specify the runner environment
+    steps:
+    - uses: actions/checkout@v2  # Check out the repository code
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: "stable"
+        cache: true
+
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1  # Corrected the path for the Dart setup action
+
+    - name: Publish to pub.dev
+      run: flutter pub publish
