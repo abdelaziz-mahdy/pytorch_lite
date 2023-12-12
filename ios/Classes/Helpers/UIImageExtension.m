@@ -41,7 +41,7 @@
         normalizedBuffer[w * h + i] = (rawBytes[i * 4 + 1] / 255.0 - mean[1].floatValue) / std[1].floatValue;
         normalizedBuffer[w * h * 2 + i] = (rawBytes[i * 4 + 2] / 255.0 - mean[2].floatValue) / std[2].floatValue;	
     }
-    
+    free(rawBytes);
     return normalizedBuffer;
 }
 
