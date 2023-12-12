@@ -8,9 +8,16 @@ on:
 
 jobs:
   publish:
+    permissions:
+      id-token: write
+      contents: write
     runs-on: ubuntu-latest  # Specify the runner environment
     steps:
-    - uses: actions/checkout@v2  # Check out the repository code
+    - uses: actions/checkout@v3  # Check out the repository code
+   
+    # This action adds a token needed for pub.dev
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1  # Corrected the path for the Dart setup action
 
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
@@ -18,8 +25,6 @@ jobs:
         channel: "stable"
         cache: true
 
-    - name: Set up Dart
-      uses: dart-lang/setup-dart@v1  # Corrected the path for the Dart setup action
 
     - name: Publish to pub.dev
-      run: flutter pub publish
+      run: flutter pub publish --force
