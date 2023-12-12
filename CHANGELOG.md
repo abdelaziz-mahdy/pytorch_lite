@@ -1,4 +1,5 @@
-
+## 4.2.4
+* fixed ios possible memory leak (by [cyrillkuettel](https://github.com/cyrillkuettel))
 ## 4.2.3
 * fixed export of enums and classes
 
