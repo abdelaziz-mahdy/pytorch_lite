@@ -11,7 +11,7 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
-// import org.pytorch.LiteModuleLoader;
+import org.pytorch.LiteModuleLoader;
 import org.pytorch.DType;
 import org.pytorch.IValue;
 import org.pytorch.MemoryFormat;
@@ -66,8 +66,8 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
     public void loadModel(String modelPath, Long numberOfClasses, Long imageWidth, Long imageHeight, Long objectDetectionModelType, Pigeon.Result<Long> result) {
         int i = -1;
         try {
-            // modules.add(LiteModuleLoader.load(modelPath));
-            modules.add(Module.load(modelPath));
+            modules.add(LiteModuleLoader.load(modelPath));
+            // modules.add(Module.load(modelPath));
             if (numberOfClasses != null && imageWidth != null && imageHeight != null) {
                 prePostProcessors.add(new PrePostProcessor(numberOfClasses.intValue(), imageWidth.intValue(),
                         imageHeight.intValue(), objectDetectionModelType.intValue()));
