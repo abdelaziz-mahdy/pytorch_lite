@@ -30,7 +30,15 @@ jobs:
           channel: "stable"
           cache: true
       - run: flutter pub get
-      - run: flutter build apk --split-per-abi 
+      # Add separate steps for each ABI
+      - name: Build and analyze APK for android-arm
+        run: flutter build apk --analyze-size --target-platform=android-arm
+  
+      - name: Build and analyze APK for android-arm64
+        run: flutter build apk --analyze-size --target-platform=android-arm64
+  
+      - name: Build and analyze APK for android-x64
+        run: flutter build apk --analyze-size --target-platform=android-x64 
   android_macos:
     name: Android_macos
     runs-on: macos-latest
@@ -46,8 +54,15 @@ jobs:
           channel: "stable"
           cache: true
       - run: flutter pub get
-      - run: flutter build apk --split-per-abi 
+      # Add separate steps for each ABI
+      - name: Build and analyze APK for android-arm
+        run: flutter build apk --analyze-size --target-platform=android-arm
   
+      - name: Build and analyze APK for android-arm64
+        run: flutter build apk --analyze-size --target-platform=android-arm64
+  
+      - name: Build and analyze APK for android-x64
+        run: flutter build apk --analyze-size --target-platform=android-x64
   ios:
     name: iOS
     runs-on: macos-latest
