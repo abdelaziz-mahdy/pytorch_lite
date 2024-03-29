@@ -35,8 +35,8 @@ class PytorchLite {
   ///Sets pytorch model path and returns Model
   static Future<ClassificationModel> loadClassificationModel(
       String path, int imageWidth, int imageHeight, int numberOfClasses,
-      {String? labelPath, bool ensureMatchingNumberOfClasses = true, bool isAbsolutePath = false}) async {
-    String absPathModelPath = isAbsolutePath ? await _getAbsolutePath(path) : path;
+      {String? labelPath, bool ensureMatchingNumberOfClasses = true, bool isAbsolutePath = true}) async {
+    String absPathModelPath = isAbsolutePath ? path : await _getAbsolutePath(path);
     int index = await ModelApi()
         .loadModel(absPathModelPath, null, imageWidth, imageHeight, null);
     List<String> labels = [];
