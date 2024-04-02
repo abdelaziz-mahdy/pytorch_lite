@@ -41,7 +41,7 @@ flutter:
       #   ffiPlugin: true
 
       android:
-        package: com.zezo357.pytorch_lite
+        package: com.abdelaziz_mahdy.pytorch_lite
         pluginClass: PytorchLitePlugin
       ios:
         pluginClass: PytorchLitePlugin

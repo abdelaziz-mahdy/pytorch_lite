@@ -99,7 +99,7 @@ set(BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Define the files to be downloaded and their corresponding URLs
 set(LIBTORCH "libtorch-android-13.1.zip")
-set(LIBTORCH_URL "https://github.com/zezo357/pytorch_lite/releases/download/libs/${LIBTORCH}")
+set(LIBTORCH_URL "https://github.com/abdelaziz_mahdy/pytorch_lite/releases/download/libs/${LIBTORCH}")
 set(LIBTORCH_Folder_name "libtorch-android-13.1")
 
 
