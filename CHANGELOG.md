@@ -1,7 +1,6 @@
 
 ## 4.2.5
 * added ability to load model from path and assets, instead of only assets
-* updated pigeon from 11.0.0 to 17.0.0
 
 ## 4.2.4
 * fixed ios possible memory leak (by [cyrillkuettel](https://github.com/cyrillkuettel))
