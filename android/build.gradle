@@ -59,10 +59,10 @@ android {
 dependencies{
     // implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    //  implementation 'org.pytorch:pytorch_android_lite:2.1.0'
-    // implementation 'org.pytorch:pytorch_android_torchvision_lite:2.1.0'
-    implementation 'org.pytorch:pytorch_android:2.1.0'
-    implementation 'org.pytorch:pytorch_android_torchvision:2.1.0'
+    implementation 'org.pytorch:pytorch_android_lite:2.1.0'
+    implementation 'org.pytorch:pytorch_android_torchvision_lite:2.1.0'
+    //implementation 'org.pytorch:pytorch_android:2.1.0'
+    //implementation 'org.pytorch:pytorch_android_torchvision:2.1.0'
     implementation 'com.facebook.soloader:nativeloader:0.10.5'
 
     // extractForNativeBuild 'org.pytorch:pytorch_android:1.12'
