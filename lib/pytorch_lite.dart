@@ -16,11 +16,11 @@ export 'enums/dtype.dart';
 export 'package:pytorch_lite/pigeon.dart';
 export 'extensions/to_map_json.dart';
 export 'enums/model_type.dart';
+
 const List<double> torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
 const List<double> torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
 const List<double> noMeanRGB = [0, 0, 0];
 const List<double> noSTDRGB = [1, 1, 1];
-
 
 class PytorchLite {
   /*
@@ -35,10 +35,14 @@ class PytorchLite {
   ///Sets pytorch model path and returns Model
   static Future<ClassificationModel> loadClassificationModel(
       String path, int imageWidth, int imageHeight, int numberOfClasses,
-      {String? labelPath, bool ensureMatchingNumberOfClasses = true}) async {
-    String absPathModelPath = await _getAbsolutePath(path);
-    int index = await ModelApi()
-        .loadModel(absPathModelPath, null, imageWidth, imageHeight, null);
+      {String? labelPath,
+      bool ensureMatchingNumberOfClasses = true,
+      ModelLocation modelLocation = ModelLocation.asset}) async {
+    if (modelLocation == ModelLocation.asset) {
+      path = await _getAbsolutePath(path);
+    }
+    int index =
+        await ModelApi().loadModel(path, null, imageWidth, imageHeight, null);
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {
@@ -62,11 +66,14 @@ class PytorchLite {
       String path, int numberOfClasses, int imageWidth, int imageHeight,
       {String? labelPath,
       ObjectDetectionModelType objectDetectionModelType =
-          ObjectDetectionModelType.yolov5}) async {
-    String absPathModelPath = await _getAbsolutePath(path);
+          ObjectDetectionModelType.yolov5,
+      ModelLocation modelLocation = ModelLocation.asset}) async {
+    if (modelLocation == ModelLocation.asset) {
+      path = await _getAbsolutePath(path);
+    }
 
-    int index = await ModelApi().loadModel(absPathModelPath, numberOfClasses,
-        imageWidth, imageHeight, objectDetectionModelType.index);
+    int index = await ModelApi().loadModel(path, numberOfClasses, imageWidth,
+        imageHeight, objectDetectionModelType.index);
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {
