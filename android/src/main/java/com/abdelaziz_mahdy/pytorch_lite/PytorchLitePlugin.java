@@ -1,4 +1,4 @@
-package com.zezo357.pytorch_lite;
+package com.abdelaziz_mahdy.pytorch_lite;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -97,7 +97,7 @@ result.error(e);
         Module module = null;
         Double[] data = new Double[input.size()];
         DType dtype_enum = null;
-        long[] shape_primitve = null;
+        long[] shape_primitive = null;
         try {
             module = modules.get(index.intValue());
 
@@ -109,9 +109,9 @@ result.error(e);
             // long[] l = ArrayUtils.toPrimitive(l);
             // long[] result
 
-            shape_primitve = shape.stream().mapToLong(l -> l).toArray();
+            shape_primitive = shape.stream().mapToLong(l -> l).toArray();
 
-            Log.i(TAG, "parsed shape_formmatted");
+            Log.i(TAG, "parsed shape_formatted");
             data = input.toArray(new Double[0]);
             Log.i(TAG, "parsed data");
 
@@ -120,7 +120,7 @@ result.error(e);
         }
 
         // prepare input tensor
-        final Tensor inputTensor = getInputTensor(dtype_enum, data, shape_primitve);
+        final Tensor inputTensor = getInputTensor(dtype_enum, data, shape_primitive);
 
         // run model
         Tensor outputTensor = null;

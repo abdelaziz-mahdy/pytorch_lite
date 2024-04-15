@@ -1,4 +1,4 @@
-package com.zezo357.pytorch_lite;
+package com.abdelaziz_mahdy.pytorch_lite;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

@@ -20,3 +20,5 @@ enum CameraPreProcessingMethod {
   /// Only tested on Android.
   byteList,
 }
+
+enum ModelLocation { asset, path }

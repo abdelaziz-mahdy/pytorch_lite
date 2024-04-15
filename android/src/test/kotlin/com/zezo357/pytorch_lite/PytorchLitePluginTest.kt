@@ -1,4 +1,4 @@
-package com.zezo357.pytorch_lite
+package com.abdelaziz_mahdy.pytorch_lite
 
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
