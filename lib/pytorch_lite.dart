@@ -16,11 +16,11 @@ export 'enums/dtype.dart';
 export 'package:pytorch_lite/pigeon.dart';
 export 'extensions/to_map_json.dart';
 export 'enums/model_type.dart';
+
 const List<double> torchVisionNormMeanRGB = [0.485, 0.456, 0.406];
 const List<double> torchVisionNormSTDRGB = [0.229, 0.224, 0.225];
 const List<double> noMeanRGB = [0, 0, 0];
 const List<double> noSTDRGB = [1, 1, 1];
-
 
 class PytorchLite {
   /*
@@ -35,10 +35,13 @@ class PytorchLite {
   ///Sets pytorch model path and returns Model
   static Future<ClassificationModel> loadClassificationModel(
       String path, int imageWidth, int imageHeight, int numberOfClasses,
-      {String? labelPath, bool ensureMatchingNumberOfClasses = true, bool isAbsolutePath = false}) async {
-    String absPathModelPath = isAbsolutePath ? path : await _getAbsolutePath(path);
-    int index = await ModelApi()
-        .loadModel(absPathModelPath, null, imageWidth, imageHeight, null);
+      {String? labelPath,
+      bool ensureMatchingNumberOfClasses = true,
+      ModelLocation modelLocation = ModelLocation.asset}) async {
+    if (modelLocation == ModelLocation.asset) {
+      path = await _getAbsolutePath(path);
+    }
+    int index = await ModelApi().loadModel(path, null, imageWidth, imageHeight, null);
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {
@@ -61,12 +64,14 @@ class PytorchLite {
   static Future<ModelObjectDetection> loadObjectDetectionModel(
       String path, int numberOfClasses, int imageWidth, int imageHeight,
       {String? labelPath,
-      ObjectDetectionModelType objectDetectionModelType =
-          ObjectDetectionModelType.yolov5}) async {
-    String absPathModelPath = await _getAbsolutePath(path);
+      ObjectDetectionModelType objectDetectionModelType = ObjectDetectionModelType.yolov5,
+      ModelLocation modelLocation = ModelLocation.asset}) async {
+    if (modelLocation == ModelLocation.asset) {
+      path = await _getAbsolutePath(path);
+    }
 
-    int index = await ModelApi().loadModel(absPathModelPath, numberOfClasses,
-        imageWidth, imageHeight, objectDetectionModelType.index);
+    int index =
+        await ModelApi().loadModel(path, numberOfClasses, imageWidth, imageHeight, objectDetectionModelType.index);
     List<String> labels = [];
     if (labelPath != null) {
       if (labelPath.endsWith(".txt")) {
@@ -75,8 +80,7 @@ class PytorchLite {
         labels = await _getLabelsCsv(labelPath);
       }
     }
-    return ModelObjectDetection(index, imageWidth, imageHeight, labels,
-        modelType: objectDetectionModelType);
+    return ModelObjectDetection(index, imageWidth, imageHeight, labels, modelType: objectDetectionModelType);
   }
 
   static Future<String> _getAbsolutePath(String path) async {
@@ -84,8 +88,7 @@ class PytorchLite {
     String dirPath = join(dir.path, path);
     ByteData data = await rootBundle.load(path);
     //copy asset to documents directory
-    List<int> bytes =
-        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 
     //create non existant directories
     List split = path.split("/");
@@ -138,8 +141,7 @@ class ClassificationModel {
   final int imageWidth;
   final int imageHeight;
 
-  ClassificationModel(
-      this._index, this.labels, this.imageWidth, this.imageHeight);
+  ClassificationModel(this._index, this.labels, this.imageWidth, this.imageHeight);
 
   /// Returns the index of the maximum value in the prediction list using the softmax function.
   ///
@@ -245,8 +247,8 @@ class ClassificationModel {
     assert(std.length == 3, "STD should have size of 3");
 
     if (preProcessingMethod == PreProcessingMethod.imageLib) {
-      Uint8List data = await ImageUtilsIsolate.convertImageBytesToFloatBuffer(
-          imageAsBytes, imageWidth, imageHeight, mean, std);
+      Uint8List data =
+          await ImageUtilsIsolate.convertImageBytesToFloatBuffer(imageAsBytes, imageWidth, imageHeight, mean, std);
       return (await ModelApi().getRawImagePredictionList(
         _index,
         data,
@@ -404,16 +406,14 @@ class ClassificationModel {
     int rotation, {
     List<double> mean = torchVisionNormMeanRGB,
     List<double> std = torchVisionNormSTDRGB,
-    CameraPreProcessingMethod cameraPreProcessingMethod =
-        CameraPreProcessingMethod.imageLib,
+    CameraPreProcessingMethod cameraPreProcessingMethod = CameraPreProcessingMethod.imageLib,
     PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
     bool isTupleOutput = false,
     int tupleIndex = 0,
   }) async {
     // Perform preprocessing based on the chosen camera pre-processing method
     if (cameraPreProcessingMethod == CameraPreProcessingMethod.imageLib) {
-      Uint8List? bytes =
-          await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage);
+      Uint8List? bytes = await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage);
       if (bytes == null) {
         throw Exception("Unable to process image bytes");
       }
@@ -449,8 +449,7 @@ class ClassificationModel {
     int rotation, {
     List<double> mean = torchVisionNormMeanRGB,
     List<double> std = torchVisionNormSTDRGB,
-    CameraPreProcessingMethod cameraPreProcessingMethod =
-        CameraPreProcessingMethod.imageLib,
+    CameraPreProcessingMethod cameraPreProcessingMethod = CameraPreProcessingMethod.imageLib,
     PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
     bool isTupleOutput = false,
     int tupleIndex = 0,
@@ -483,8 +482,7 @@ class ClassificationModel {
     int rotation, {
     List<double> mean = torchVisionNormMeanRGB,
     List<double> std = torchVisionNormSTDRGB,
-    CameraPreProcessingMethod cameraPreProcessingMethod =
-        CameraPreProcessingMethod.imageLib,
+    CameraPreProcessingMethod cameraPreProcessingMethod = CameraPreProcessingMethod.imageLib,
     PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib,
     bool isTupleOutput = false,
     int tupleIndex = 0,
@@ -511,8 +509,7 @@ class ModelObjectDetection {
   final int imageHeight;
   final List<String> labels;
   final ObjectDetectionModelType modelType;
-  ModelObjectDetection(
-      this._index, this.imageWidth, this.imageHeight, this.labels,
+  ModelObjectDetection(this._index, this.imageWidth, this.imageHeight, this.labels,
       {this.modelType = ObjectDetectionModelType.yolov5});
 
   /// Adds labels to the given list of [prediction] objects.
@@ -551,8 +548,7 @@ class ModelObjectDetection {
     int tupleIndex = 0,
   }) async {
     // Perform object detection on the image
-    List<ResultObjectDetection> prediction = await getImagePredictionList(
-        imageAsBytes,
+    List<ResultObjectDetection> prediction = await getImagePredictionList(imageAsBytes,
         minimumScore: minimumScore,
         iOUThreshold: iOUThreshold,
         boxesLimit: boxesLimit,
@@ -587,8 +583,7 @@ class ModelObjectDetection {
     bool isTupleOutput = false,
     int tupleIndex = 0,
   }) async {
-    List<ResultObjectDetection> prediction =
-        await getImagePredictionListFromBytesList(
+    List<ResultObjectDetection> prediction = await getImagePredictionListFromBytesList(
       imageAsBytesList,
       imageWidth,
       imageHeight,
@@ -679,8 +674,7 @@ class ModelObjectDetection {
     bool isTupleOutput = false,
     int tupleIndex = 0,
   }) async {
-    final List<ResultObjectDetection> prediction =
-        (await ModelApi().getImagePredictionListObjectDetection(
+    final List<ResultObjectDetection> prediction = (await ModelApi().getImagePredictionListObjectDetection(
       _index,
       null,
       imageAsBytesList,
@@ -692,8 +686,8 @@ class ModelObjectDetection {
       isTupleOutput,
       tupleIndex,
     ))
-            .whereNotNull()
-            .toList();
+        .whereNotNull()
+        .toList();
 
     return prediction;
   }
@@ -702,19 +696,15 @@ class ModelObjectDetection {
   /// The [rotation] parameter specifies the rotation of the camera image.
   /// The optional parameters [minimumScore], [iOUThreshold], [boxesLimit], [cameraPreProcessingMethod], and [preProcessingMethod]
   /// allow customization of the prediction process.
-  Future<List<ResultObjectDetection>> getCameraImagePredictionList(
-      CameraImage cameraImage, int rotation,
+  Future<List<ResultObjectDetection>> getCameraImagePredictionList(CameraImage cameraImage, int rotation,
       {double minimumScore = 0.5,
       double iOUThreshold = 0.5,
       int boxesLimit = 10,
-      CameraPreProcessingMethod cameraPreProcessingMethod =
-          CameraPreProcessingMethod.imageLib,
-      PreProcessingMethod preProcessingMethod =
-          PreProcessingMethod.imageLib}) async {
+      CameraPreProcessingMethod cameraPreProcessingMethod = CameraPreProcessingMethod.imageLib,
+      PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib}) async {
     if (cameraPreProcessingMethod == CameraPreProcessingMethod.imageLib) {
       // Convert the camera image to bytes using ImageUtilsIsolate
-      Uint8List? bytes =
-          await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage);
+      Uint8List? bytes = await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage);
       if (bytes == null) {
         throw Exception("Unable to process image bytes");
       }
@@ -727,34 +717,26 @@ class ModelObjectDetection {
     }
     // Get the image prediction list directly from the camera image planes
     return await getImagePredictionFromBytesList(
-        cameraImage.planes.map((e) => e.bytes).toList(),
-        cameraImage.width,
-        cameraImage.height,
-        minimumScore: minimumScore,
-        iOUThreshold: iOUThreshold,
-        boxesLimit: boxesLimit);
+        cameraImage.planes.map((e) => e.bytes).toList(), cameraImage.width, cameraImage.height,
+        minimumScore: minimumScore, iOUThreshold: iOUThreshold, boxesLimit: boxesLimit);
   }
 
   /// Retrieves a list of [ResultObjectDetection] with its assigned labels by predicting the objects in the given [cameraImage].
   /// The [rotation] parameter specifies the rotation of the camera image.
   /// The optional parameters [minimumScore], [iOUThreshold], [boxesLimit], [cameraPreProcessingMethod], and [preProcessingMethod]
   /// allow customization of the prediction process.
-  Future<List<ResultObjectDetection>> getCameraImagePrediction(
-      CameraImage cameraImage, int rotation,
+  Future<List<ResultObjectDetection>> getCameraImagePrediction(CameraImage cameraImage, int rotation,
       {double minimumScore = 0.5,
       double iOUThreshold = 0.5,
       int boxesLimit = 10,
-      CameraPreProcessingMethod cameraPreProcessingMethod =
-          CameraPreProcessingMethod.imageLib,
-      PreProcessingMethod preProcessingMethod =
-          PreProcessingMethod.imageLib}) async {
-    final List<ResultObjectDetection> prediction =
-        await getCameraImagePredictionList(cameraImage, rotation,
-            minimumScore: minimumScore,
-            iOUThreshold: iOUThreshold,
-            boxesLimit: boxesLimit,
-            cameraPreProcessingMethod: cameraPreProcessingMethod,
-            preProcessingMethod: preProcessingMethod);
+      CameraPreProcessingMethod cameraPreProcessingMethod = CameraPreProcessingMethod.imageLib,
+      PreProcessingMethod preProcessingMethod = PreProcessingMethod.imageLib}) async {
+    final List<ResultObjectDetection> prediction = await getCameraImagePredictionList(cameraImage, rotation,
+        minimumScore: minimumScore,
+        iOUThreshold: iOUThreshold,
+        boxesLimit: boxesLimit,
+        cameraPreProcessingMethod: cameraPreProcessingMethod,
+        preProcessingMethod: preProcessingMethod);
     addLabels(prediction);
     return prediction;
   }
@@ -767,12 +749,10 @@ class ModelObjectDetection {
   /// The [showPercentage] parameter determines whether to show the percentage value in the label.
   ///
   /// Returns a Widget that renders the image with the boxes.
-  Widget renderBoxesOnImage(
-      File image, List<ResultObjectDetection?> recognitions,
+  Widget renderBoxesOnImage(File image, List<ResultObjectDetection?> recognitions,
       {Color? boxesColor, bool showPercentage = true}) {
     return LayoutBuilder(builder: (context, constraints) {
-      debugPrint(
-          'Max height: ${constraints.maxHeight}, max width: ${constraints.maxWidth}');
+      debugPrint('Max height: ${constraints.maxHeight}, max width: ${constraints.maxWidth}');
 
       // Calculate the scaling factors for the boxes based on the layout constraints
       double factorX = constraints.maxWidth;
@@ -797,12 +777,10 @@ class ModelObjectDetection {
             Color usedColor;
             if (boxesColor == null) {
               //change colors for each label
-              usedColor = Colors.primaries[
-                  ((re.className ?? re.classIndex.toString()).length +
-                          (re.className ?? re.classIndex.toString())
-                              .codeUnitAt(0) +
-                          re.classIndex) %
-                      Colors.primaries.length];
+              usedColor = Colors.primaries[((re.className ?? re.classIndex.toString()).length +
+                      (re.className ?? re.classIndex.toString()).codeUnitAt(0) +
+                      re.classIndex) %
+                  Colors.primaries.length];
             } else {
               usedColor = boxesColor;
             }
@@ -828,8 +806,7 @@ class ModelObjectDetection {
                     height: re.rect.height.toDouble() * factorY,
                     decoration: BoxDecoration(
                         border: Border.all(color: usedColor, width: 3),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(2))),
+                        borderRadius: const BorderRadius.all(Radius.circular(2))),
                     child: Container(),
                   ),
                 ],

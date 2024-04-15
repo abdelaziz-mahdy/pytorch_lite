@@ -1,3 +1,7 @@
+
+## 4.2.5
+* added ability to load model from path and assets, instead of only assets
+
 ## 4.2.4
 * fixed ios possible memory leak (by [cyrillkuettel](https://github.com/cyrillkuettel))
 ## 4.2.3
