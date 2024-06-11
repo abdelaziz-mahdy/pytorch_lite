@@ -165,7 +165,7 @@ List<double>? predictionListProbabilities = await _imageModel!.getCameraPredicti
 ### Get object detection prediction for an image
 ```dart
  List<ResultObjectDetection> objDetect = await _objectModel.getImagePrediction(await File(image.path).readAsBytes(),
-        minimumScore: 0.1, IOUThershold: 0.3);
+        minimumScore: 0.1, iOUThreshold: 0.3);
 ```
 
 ### Get object detection prediction from camera image
@@ -174,7 +174,7 @@ List<double>? predictionListProbabilities = await _imageModel!.getCameraPredicti
  List<ResultObjectDetection> objDetect = await _objectModel.getCameraImagePrediction(
         cameraImage,
         rotation, // check example for rotation values
-        minimumScore: 0.1, IOUThershold: 0.3);
+        minimumScore: 0.1, iOUThreshold: 0.3);
 ```
 
 ### Get render boxes with image
