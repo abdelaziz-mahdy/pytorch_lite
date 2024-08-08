@@ -1,7 +1,6 @@
 {
-    "cSpell.words": [
-        "calloc",
-        "malloc",
-        "Yolo"
-    ]
+  "cSpell.words": ["calloc", "malloc", "Yolo"],
+  "files.associations": {
+    "variant": "cpp"
+  }
 }

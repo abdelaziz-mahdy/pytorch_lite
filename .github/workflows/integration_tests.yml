@@ -1,15 +1,15 @@
 name: Integration_tests
 on:
   push:
-    branches: [ master, testing-ffi]
+    branches: [master, testing-ffi]
     paths:
-      - '**'
-      - '!README.md'
+      - "**"
+      - "!README.md"
   pull_request:
-    branches: [ master ]
+    branches: [master]
     paths:
-      - '**'
-      - '!README.md'
+      - "**"
+      - "!README.md"
 defaults:
   run:
     working-directory: example
@@ -24,12 +24,13 @@ jobs:
         api-level: [33]
         target: [google_apis]
     steps:
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '11'
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: "true"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "zulu" # See 'Supported distributions' for available options
+          java-version: "17"
       - uses: subosito/flutter-action@v2
         with:
           channel: "stable"
@@ -43,22 +44,21 @@ jobs:
           arch: x86_64
           profile: Nexus 6
           script: cd example && flutter pub get && flutter test integration_test
-  
-          
+
   ios_test:
     name: iOS_test
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: "true"
       - uses: subosito/flutter-action@v2
         with:
           channel: "stable"
           cache: true
-      - uses: futureware-tech/simulator-action@v2
+      - uses: futureware-tech/simulator-action@v3
         with:
-          model: 'iPhone 8'
+          os: "iOS"
       - run: flutter pub get
       - name: Run integration tests
         run: flutter test integration_test
