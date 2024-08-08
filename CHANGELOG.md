@@ -1,4 +1,7 @@
 
+## 4.2.6
+* update deps (pigeon and camera)
+
 ## 4.2.5
 * added ability to load model from path and assets, instead of only assets
 
