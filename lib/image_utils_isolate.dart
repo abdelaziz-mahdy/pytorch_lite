@@ -41,6 +41,7 @@ class ImageUtilsIsolate {
     List<Uint8List>? planes = values[3];
     int width = values[4];
     int height = values[5];
+    int? rotation = values[6];
     Image? image;
     if (imageFormatGroup == ImageFormatGroup.yuv420) {
       image = convertYUV420ToImage(
@@ -50,23 +51,34 @@ class ImageUtilsIsolate {
     } else {
       image = null;
     }
-
+    rotation ??= Platform.isAndroid ? 90 : 0;
     if (image != null) {
-      // if (Platform.isIOS) {
-      //   // ios, default camera image is portrait view
-      //   // rotate 270 to the view that top is on the left, bottom is on the right
-      //   // image ^4.0.17 error here
-      //   image = copyRotate(image, angle: 270);
-      // }
-      // if (Platform.isAndroid) {
-      //   image = copyRotate(image, angle: 90);
-      // }
+      if (Platform.isIOS) {
+        // ios, default camera image is portrait view
+        // rotate 270 to the view that top is on the left, bottom is on the right
+        // image ^4.0.17 error here
+        image = copyRotate(image, angle: rotation);
+      }
+      if (Platform.isAndroid) {
+        image = copyRotate(image, angle: rotation);
+      }
       return TransferableTypedData.fromList([encodeJpg(image)]);
     }
     return null;
   }
 
-  static List<dynamic> _getParamsBasedOnType(CameraImage cameraImage) {
+  Uint8List _rotateImageBytes(Uint8List imageBytes, int rotation) {
+    Image? image = decodeImage(imageBytes);
+    if (image == null) {
+      throw Exception("Unable to decode image bytes");
+    }
+
+    Image rotatedImage = copyRotate(image, angle: rotation);
+    return Uint8List.fromList(encodeJpg(rotatedImage));
+  }
+
+  static List<dynamic> _getParamsBasedOnType(CameraImage cameraImage,
+      {int? rotation}) {
     if (cameraImage.format.group == ImageFormatGroup.yuv420) {
       return [
         cameraImage.format.group,
@@ -74,7 +86,8 @@ class ImageUtilsIsolate {
         cameraImage.planes[1].bytesPerPixel ?? 0,
         cameraImage.planes.map((e) => e.bytes).toList(),
         cameraImage.width,
-        cameraImage.height
+        cameraImage.height,
+        rotation
       ];
     } else if (cameraImage.format.group == ImageFormatGroup.bgra8888) {
       return [
@@ -83,7 +96,8 @@ class ImageUtilsIsolate {
         null,
         cameraImage.planes.map((e) => e.bytes).toList(),
         cameraImage.width,
-        cameraImage.height
+        cameraImage.height,
+        rotation
       ];
     }
     // You can add more formats as needed
@@ -91,12 +105,12 @@ class ImageUtilsIsolate {
   }
 
   /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format
-  static Future<Uint8List?> convertCameraImageToBytes(
-      CameraImage cameraImage) async {
+  static Future<Uint8List?> convertCameraImageToBytes(CameraImage cameraImage,
+      {int? rotation}) async {
     await ImageUtilsIsolate.init();
 
     return (await ImageUtilsIsolate.computer.compute(_convertCameraImageToBytes,
-                param: _getParamsBasedOnType(cameraImage))
+                param: _getParamsBasedOnType(cameraImage, rotation: rotation))
             as TransferableTypedData?)
         ?.materialize()
         .asUint8List();
