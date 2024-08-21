@@ -11,6 +11,7 @@ import 'package:pytorch_lite/enums/model_type.dart';
 import 'package:pytorch_lite/image_utils_isolate.dart';
 import 'package:pytorch_lite/pigeon.dart';
 import 'package:collection/collection.dart';
+import 'package:image/image.dart' as img;
 
 export 'enums/dtype.dart';
 export 'package:pytorch_lite/pigeon.dart';
@@ -595,6 +596,15 @@ class ModelObjectDetection {
       // Convert the camera image to bytes using ImageUtilsIsolate
       Uint8List? bytes =
           await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage);
+
+      if (rotation != 0) {
+        try {
+          bytes = rotateImageBytes(bytes!, rotation);
+        } catch (error, _) {
+          rethrow;
+        }
+      }
+
       if (bytes == null) {
         throw Exception("Unable to process image bytes");
       }
@@ -637,6 +647,16 @@ class ModelObjectDetection {
             preProcessingMethod: preProcessingMethod);
     addLabels(prediction);
     return prediction;
+  }
+
+  Uint8List rotateImageBytes(Uint8List imageBytes, int rotation) {
+    img.Image? image = img.decodeImage(imageBytes);
+    if (image == null) {
+      throw Exception("Unable to decode image bytes");
+    }
+
+    img.Image rotatedImage = img.copyRotate(image, angle: rotation);
+    return Uint8List.fromList(img.encodeJpg(rotatedImage));
   }
 
   /// Renders a list of boxes on an image.
