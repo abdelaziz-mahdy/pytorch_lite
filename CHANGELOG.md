@@ -1,4 +1,8 @@
 
+## 4.2.7
+* Fixes Camera detection on ios and android rotation (by [silvershort](https://github.com/silvershort))
+
+
 ## 4.2.6
 * update deps (pigeon and camera)
 
