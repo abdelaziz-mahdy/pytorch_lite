@@ -52,15 +52,15 @@ class ImageUtilsIsolate {
     }
 
     if (image != null) {
-      if (Platform.isIOS) {
-        // ios, default camera image is portrait view
-        // rotate 270 to the view that top is on the left, bottom is on the right
-        // image ^4.0.17 error here
-        image = copyRotate(image, angle: 270);
-      }
-      if (Platform.isAndroid) {
-        image = copyRotate(image, angle: 90);
-      }
+      // if (Platform.isIOS) {
+      //   // ios, default camera image is portrait view
+      //   // rotate 270 to the view that top is on the left, bottom is on the right
+      //   // image ^4.0.17 error here
+      //   image = copyRotate(image, angle: 270);
+      // }
+      // if (Platform.isAndroid) {
+      //   image = copyRotate(image, angle: 90);
+      // }
       return TransferableTypedData.fromList([encodeJpg(image)]);
     }
     return null;

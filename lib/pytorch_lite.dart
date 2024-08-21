@@ -125,6 +125,16 @@ Future<List<String>> _getLabelsTxt(String labelPath) async {
   return labelsData.split("\n");
 }
 
+Uint8List _rotateImageBytes(Uint8List imageBytes, int rotation) {
+  img.Image? image = img.decodeImage(imageBytes);
+  if (image == null) {
+    throw Exception("Unable to decode image bytes");
+  }
+
+  img.Image rotatedImage = img.copyRotate(image, angle: rotation);
+  return Uint8List.fromList(img.encodeJpg(rotatedImage));
+}
+
 /*
 class CustomModel {
   final int _index;
@@ -333,13 +343,14 @@ class ClassificationModel {
 
   /// Retrieves a list of predictions for a camera image.
   ///
-  /// Takes a [cameraImage] and [rotation] as input. Optional parameters include [mean], [std],
+  /// Takes a [cameraImage] as input. Optional parameters include [rotation], [mean], [std],
   /// [cameraPreProcessingMethod], and [preProcessingMethod].
   /// Returns a [Future] that resolves to a [List] of [double] values representing the predictions.
   /// Throws an [Exception] if unable to process the image bytes.
   Future<List<double>> getCameraImagePredictionList(
-      CameraImage cameraImage, int rotation,
-      {List<double> mean = torchVisionNormMeanRGB,
+      CameraImage cameraImage,
+      {int? rotation,
+        List<double> mean = torchVisionNormMeanRGB,
       List<double> std = torchVisionNormSTDRGB,
       CameraPreProcessingMethod cameraPreProcessingMethod =
           CameraPreProcessingMethod.imageLib,
@@ -351,6 +362,14 @@ class ClassificationModel {
           await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage);
       if (bytes == null) {
         throw Exception("Unable to process image bytes");
+      }
+      rotation ??= Platform.isAndroid ? 90 : 0;
+      if (rotation != 0) {
+        try {
+          bytes = _rotateImageBytes(bytes, rotation);
+        } catch (error, _) {
+          rethrow;
+        }
       }
       // Retrieve the image predictions for the preprocessed image bytes
       return await getImagePredictionList(bytes,
@@ -367,11 +386,11 @@ class ClassificationModel {
 
   /// Retrieves the top prediction label for a camera image.
   ///
-  /// Takes a [cameraImage] and [rotation] as input. Optional parameters include [mean], [std],
+  /// Takes a [cameraImage] as input. Optional parameters include [rotation], [mean], [std],
   /// [cameraPreProcessingMethod], and [preProcessingMethod].
   /// Returns a [Future] that resolves to a [String] representing the top prediction label.
-  Future<String> getCameraImagePrediction(CameraImage cameraImage, int rotation,
-      {List<double> mean = torchVisionNormMeanRGB,
+  Future<String> getCameraImagePrediction(CameraImage cameraImage,
+      {int? rotation, List<double> mean = torchVisionNormMeanRGB,
       List<double> std = torchVisionNormSTDRGB,
       CameraPreProcessingMethod cameraPreProcessingMethod =
           CameraPreProcessingMethod.imageLib,
@@ -379,7 +398,8 @@ class ClassificationModel {
           PreProcessingMethod.imageLib}) async {
     // Retrieve the prediction list for the camera image
     final List<double> prediction = await getCameraImagePredictionList(
-        cameraImage, rotation,
+        cameraImage,
+        rotation: rotation,
         mean: mean,
         std: std,
         cameraPreProcessingMethod: cameraPreProcessingMethod,
@@ -393,12 +413,13 @@ class ClassificationModel {
 
   /// Retrieves the probabilities of predictions for a camera image.
   ///
-  /// Takes a [cameraImage] and [rotation] as input. Optional parameters include [mean], [std],
+  /// Takes a [cameraImage] as input. Optional parameters include [rotation], [mean], [std],
   /// [cameraPreProcessingMethod], and [preProcessingMethod].
   /// Returns a [Future] that resolves to a [List] of [double] values representing the prediction probabilities.
   Future<List<double>> getCameraImagePredictionProbabilities(
-      CameraImage cameraImage, int rotation,
-      {List<double> mean = torchVisionNormMeanRGB,
+      CameraImage cameraImage,
+      {int? rotation,
+        List<double> mean = torchVisionNormMeanRGB,
       List<double> std = torchVisionNormSTDRGB,
       CameraPreProcessingMethod cameraPreProcessingMethod =
           CameraPreProcessingMethod.imageLib,
@@ -406,7 +427,7 @@ class ClassificationModel {
           PreProcessingMethod.imageLib}) async {
     // Retrieve the prediction list for the camera image
     final List<double> prediction = await getCameraImagePredictionList(
-        cameraImage, rotation,
+        cameraImage, rotation: rotation,
         mean: mean,
         std: std,
         cameraPreProcessingMethod: cameraPreProcessingMethod,
@@ -584,8 +605,9 @@ class ModelObjectDetection {
   /// The optional parameters [minimumScore], [iOUThreshold], [boxesLimit], [cameraPreProcessingMethod], and [preProcessingMethod]
   /// allow customization of the prediction process.
   Future<List<ResultObjectDetection>> getCameraImagePredictionList(
-      CameraImage cameraImage, int rotation,
-      {double minimumScore = 0.5,
+      CameraImage cameraImage,
+      {int? rotation,
+        double minimumScore = 0.5,
       double iOUThreshold = 0.5,
       int boxesLimit = 10,
       CameraPreProcessingMethod cameraPreProcessingMethod =
@@ -596,17 +618,16 @@ class ModelObjectDetection {
       // Convert the camera image to bytes using ImageUtilsIsolate
       Uint8List? bytes =
           await ImageUtilsIsolate.convertCameraImageToBytes(cameraImage);
-
+      if (bytes == null) {
+        throw Exception("Unable to process image bytes");
+      }
+      rotation ??= Platform.isAndroid ? 90 : 0;
       if (rotation != 0) {
         try {
-          bytes = rotateImageBytes(bytes!, rotation);
+          bytes = _rotateImageBytes(bytes, rotation);
         } catch (error, _) {
           rethrow;
         }
-      }
-
-      if (bytes == null) {
-        throw Exception("Unable to process image bytes");
       }
       // Get the image prediction list using the converted bytes
       return await getImagePredictionList(bytes,
@@ -630,8 +651,9 @@ class ModelObjectDetection {
   /// The optional parameters [minimumScore], [iOUThreshold], [boxesLimit], [cameraPreProcessingMethod], and [preProcessingMethod]
   /// allow customization of the prediction process.
   Future<List<ResultObjectDetection>> getCameraImagePrediction(
-      CameraImage cameraImage, int rotation,
-      {double minimumScore = 0.5,
+      CameraImage cameraImage,
+      {int? rotation,
+        double minimumScore = 0.5,
       double iOUThreshold = 0.5,
       int boxesLimit = 10,
       CameraPreProcessingMethod cameraPreProcessingMethod =
@@ -639,7 +661,8 @@ class ModelObjectDetection {
       PreProcessingMethod preProcessingMethod =
           PreProcessingMethod.imageLib}) async {
     final List<ResultObjectDetection> prediction =
-        await getCameraImagePredictionList(cameraImage, rotation,
+        await getCameraImagePredictionList(cameraImage,
+            rotation: rotation,
             minimumScore: minimumScore,
             iOUThreshold: iOUThreshold,
             boxesLimit: boxesLimit,
@@ -647,16 +670,6 @@ class ModelObjectDetection {
             preProcessingMethod: preProcessingMethod);
     addLabels(prediction);
     return prediction;
-  }
-
-  Uint8List rotateImageBytes(Uint8List imageBytes, int rotation) {
-    img.Image? image = img.decodeImage(imageBytes);
-    if (image == null) {
-      throw Exception("Unable to decode image bytes");
-    }
-
-    img.Image rotatedImage = img.copyRotate(image, angle: rotation);
-    return Uint8List.fromList(img.encodeJpg(rotatedImage));
   }
 
   /// Renders a list of boxes on an image.

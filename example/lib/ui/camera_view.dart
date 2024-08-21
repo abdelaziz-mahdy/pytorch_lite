@@ -187,7 +187,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       Stopwatch stopwatch = Stopwatch()..start();
 
       String imageClassification = await _imageModel!
-          .getCameraImagePrediction(cameraImage, _camFrameRotation);
+          .getCameraImagePrediction(cameraImage, rotation: _camFrameRotation);
       // Stop the stopwatch
       stopwatch.stop();
       // print("imageClassification $imageClassification");
@@ -221,7 +221,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       List<ResultObjectDetection> objDetect =
           await _objectModel!.getCameraImagePrediction(
         cameraImage,
-        _camFrameRotation,
+        rotation: _camFrameRotation,
         minimumScore: 0.3,
         iOUThreshold: 0.3,
       );
