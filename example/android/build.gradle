@@ -20,9 +20,6 @@ allprojects {
 
 rootProject.buildDir = '../build'
 
-android {
-    namespace 'com.abdelaziz_mahdy.pytorch_lite'
-}
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
