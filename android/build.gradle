@@ -35,6 +35,10 @@ android {
     defaultConfig {
         minSdkVersion 21
     }
+    if (project.android.hasProperty("namespace")) {
+        namespace = "com.abdelaziz_mahdy.pytorch_lite"
+    }
+
     // // Add this block at the end of the file
     // project.afterEvaluate {
     //     preBuild.doLast {
