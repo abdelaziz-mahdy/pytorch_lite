@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.2'
+        classpath 'com.android.tools.build:gradle:7.4.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -19,6 +19,10 @@ allprojects {
 }
 
 rootProject.buildDir = '../build'
+
+android {
+    namespace 'com.abdelaziz_mahdy.pytorch_lite'
+}
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
