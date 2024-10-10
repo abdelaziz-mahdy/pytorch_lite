@@ -1,5 +1,5 @@
-group 'com.abdelaziz_mahdy.pytorch_lite'
-version '1.0'
+group = "com.abdelaziz_mahdy.pytorch_lite"
+version = "1.0"
 
 buildscript {
     repositories {
@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath("com.android.tools.build:gradle:8.1.0")
     }
 }
 
@@ -19,72 +19,40 @@ rootProject.allprojects {
     }
 }
 
-apply plugin: 'com.android.library'
+apply plugin: "com.android.library"
 
 android {
-//       configurations {
-//     extractForNativeBuild
-//   }
-    compileSdkVersion 31
+    if (project.android.hasProperty("namespace")) {
+        namespace = "com.abdelaziz_mahdy.pytorch_lite"
+    }
+
+    compileSdk = 34
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     defaultConfig {
-        minSdkVersion 21
+        minSdk = 21
     }
-    // // Add this block at the end of the file
-    // project.afterEvaluate {
-    //     preBuild.doLast {
-    //         // Execute your custom task here
-    //         exec {
-    //             commandLine 'cmake', '--build', '.'
-    //         }
-    //     }
-    // }
-    // externalNativeBuild {
 
-    //     // Encapsulates your CMake build configurations.
-    //     cmake {
+    dependencies {
+        implementation 'org.pytorch:pytorch_android:2.1.0'
+        implementation 'org.pytorch:pytorch_android_torchvision:2.1.0'
+        implementation 'com.facebook.soloader:nativeloader:0.10.5'
 
-    //         // Provides a relative path to your CMake build script.
-    //         path "CMakeLists.txt"
-    //         // arguments "-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE" // Set log level to VERBOSE
+        testImplementation("junit:junit:4.13.2")
+        testImplementation("org.mockito:mockito-core:5.0.0")
+    }
 
-    //     }
-    // }
+    testOptions {
+        unitTests.all {
+            testLogging {
+               events "passed", "skipped", "failed", "standardOut", "standardError"
+               outputs.upToDateWhen {false}
+               showStandardStreams = true
+            }
+        }
+    }
 }
-dependencies{
-    // implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-    //  implementation 'org.pytorch:pytorch_android_lite:2.1.0'
-    // implementation 'org.pytorch:pytorch_android_torchvision_lite:2.1.0'
-    implementation 'org.pytorch:pytorch_android:2.1.0'
-    implementation 'org.pytorch:pytorch_android_torchvision:2.1.0'
-    implementation 'com.facebook.soloader:nativeloader:0.10.5'
-
-    // extractForNativeBuild 'org.pytorch:pytorch_android:1.12'
-    // extractForNativeBuild 'org.pytorch:pytorch_android_torchvision:1.12'
-    
-    }
-// task extractAARForNativeBuild {
-//   doLast {
-//     configurations.extractForNativeBuild.files.each {
-//       def file = it.absoluteFile
-//       copy {
-//         from zipTree(file)
-//         into "$buildDir/$file.name"
-//         include "headers/**"
-//         include "jni/**"
-//       }
-//     }
-//   }
-// }
-
-// tasks.whenTaskAdded { task ->
-//   if (task.name.contains('externalNativeBuild')) {
-//     task.dependsOn(extractAARForNativeBuild)
-//   }
-// }

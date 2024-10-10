@@ -20,7 +20,7 @@
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   PytorchLitePlugin* instance = [[PytorchLitePlugin alloc] init];
-  ModelApiSetup(registrar.messenger, instance);
+    SetUpModelApi(registrar.messenger, instance);
     // instance.modulesVector = [NSMutableArray array];
     instance.prePostProcessors = [NSMutableArray array];
 }
