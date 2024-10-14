@@ -30,18 +30,18 @@ jobs:
       # Following https://github.com/cyface-de/android-backend/blob/main/.github/workflows/gradle_connected-tests.yml to fix emualtor not working sometimes
 
 
-      # From https://github.com/android/nowinandroid/pull/1219/files to fix flaky emulator start
-      # See https://github.com/ReactiveCircus/android-emulator-runner/issues/324#issuecomment-1998737488
-      - name: Delete unnecessary tools 🔧
-        uses: jlumbroso/free-disk-space@v1.3.1
-        with:
-          android: false # Keep Don't remove Android tools
-          tool-cache: true # Remove image tool cache - rm -rf "$AGENT_TOOLSDIRECTORY"
-          dotnet: true # rm -rf /usr/share/dotnet
-          haskell: true # rm -rf /opt/ghc...
-          swap-storage: true # rm -f /mnt/swapfile (4GiB)
-          docker-images: false # Takes 16s (`nowinandroid`), enable if needed in the future
-          large-packages: false # includes google-cloud-sdk and it's slow
+      # # From https://github.com/android/nowinandroid/pull/1219/files to fix flaky emulator start
+      # # See https://github.com/ReactiveCircus/android-emulator-runner/issues/324#issuecomment-1998737488
+      # - name: Delete unnecessary tools 🔧
+      #   uses: jlumbroso/free-disk-space@v1.3.1
+      #   with:
+      #     android: false # Keep Don't remove Android tools
+      #     tool-cache: true # Remove image tool cache - rm -rf "$AGENT_TOOLSDIRECTORY"
+      #     dotnet: true # rm -rf /usr/share/dotnet
+      #     haskell: true # rm -rf /opt/ghc...
+      #     swap-storage: true # rm -f /mnt/swapfile (4GiB)
+      #     docker-images: false # Takes 16s (`nowinandroid`), enable if needed in the future
+      #     large-packages: false # includes google-cloud-sdk and it's slow
 
       # # Set up KVM permissions to enable efficient Android emulator runs by modifying udev rules for universal access.
       # # From https://github.com/android/nowinandroid/blob/main/.github/workflows/Build.yaml#L142
@@ -75,7 +75,7 @@ jobs:
           disk-size: 6000M
           heap-size: 600M
           disable-animations: true
-          script: cd example && flutter pub get && flutter test integration_test
+          script: flutter pub get && flutter test integration_test
 
   ios_test:
     name: iOS_test
