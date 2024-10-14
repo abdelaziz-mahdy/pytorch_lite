@@ -111,6 +111,8 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
         bitmap = [UIImage imageWithData:imageData.data];
     } else {
         FlutterStandardTypedData *typedData = imageBytesList[0];
+        uint8_t* in = (uint8_t*)[[typedData data] bytes];
+
         bitmap = [UIImage imageWithData:typedData.data];
     }
     bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
@@ -139,6 +141,7 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
         bitmap = [UIImage imageWithData:imageData.data];
     } else {
         FlutterStandardTypedData *typedData = imageBytesList[0];
+        uint8_t* in = (uint8_t*)[[typedData data] bytes];
         bitmap = [UIImage imageWithData:typedData.data];
     }
     bitmap = [UIImageExtension resize:bitmap toWidth:prePostProcessor.mImageWidth toHeight:prePostProcessor.mImageHeight];
