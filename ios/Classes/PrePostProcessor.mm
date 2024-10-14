@@ -75,16 +75,16 @@
 - (NSMutableArray<ResultObjectDetection *> *)nonMaxSuppression:(NSMutableArray<ResultObjectDetection *> *)boxes {
     // Sort the boxes by confidence scores, from high to low.
     [boxes sortUsingComparator:^NSComparisonResult(ResultObjectDetection *box1, ResultObjectDetection *box2) {
-//                return [box2.score compare:box1.score];
-
-         if (box2.score > box1.score) {
-             return NSOrderedAscending;
-         } else if (box2.score < box1.score) {
-             return NSOrderedDescending;
-         } else {
-             return NSOrderedSame;
-         }
+        return [@([box2 score]) compare:@([box1 score])]; // Wrap in NSNumber
     }];
+        //  if (box2.score > box1.score) {
+        //      return NSOrderedAscending;
+        //  } else if (box2.score < box1.score) {
+        //      return NSOrderedDescending;
+        //  } else {
+        //      return NSOrderedSame;
+        //  }
+  
 
     NSMutableArray<ResultObjectDetection *> *selected = [NSMutableArray array];
     NSMutableArray<NSNumber *> *active = [NSMutableArray arrayWithCapacity:boxes.count];
