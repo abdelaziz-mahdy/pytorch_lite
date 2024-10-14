@@ -13,7 +13,9 @@ on:
 defaults:
   run:
     working-directory: example
-
+concurrency:
+  group: auto-deploy
+  cancel-in-progress: true
 jobs:
   android_test:
     name: Android_test
