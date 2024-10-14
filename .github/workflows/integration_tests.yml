@@ -10,9 +10,7 @@ on:
     paths:
       - "**"
       - "!README.md"
-defaults:
-  run:
-    working-directory: example
+
 concurrency:
   group: auto-deploy
   cancel-in-progress: true
@@ -95,4 +93,4 @@ jobs:
           os: "iOS"
       - run: flutter pub get
       - name: Run integration tests
-        run: flutter test integration_test
+        run: cd example && flutter test integration_test
