@@ -43,14 +43,14 @@ jobs:
       #     docker-images: false # Takes 16s (`nowinandroid`), enable if needed in the future
       #     large-packages: false # includes google-cloud-sdk and it's slow
 
-      # # Set up KVM permissions to enable efficient Android emulator runs by modifying udev rules for universal access.
-      # # From https://github.com/android/nowinandroid/blob/main/.github/workflows/Build.yaml#L142
-      # - name: Enable KVM group perms
-      #   run: |
-      #     echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-      #     sudo udevadm control --reload-rules
-      #     sudo udevadm trigger --name-match=kvm
-      #     ls /dev/kvm
+      # Set up KVM permissions to enable efficient Android emulator runs by modifying udev rules for universal access.
+      # From https://github.com/android/nowinandroid/blob/main/.github/workflows/Build.yaml#L142
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls /dev/kvm
 
       - uses: actions/checkout@v4
         with:
@@ -75,7 +75,7 @@ jobs:
           disk-size: 6000M
           heap-size: 600M
           disable-animations: true
-          script: flutter pub get && flutter test integration_test
+          script: cd example && flutter pub get && flutter test integration_test
 
   ios_test:
     name: iOS_test
