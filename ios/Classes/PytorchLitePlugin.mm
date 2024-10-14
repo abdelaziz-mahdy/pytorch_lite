@@ -22,6 +22,12 @@
     instance.prePostProcessors = [NSMutableArray array];
 }
 
+- (void)getPredictionCustomIndex:(NSInteger)index input:(NSArray<NSNumber *> *)input shape:(NSArray<NSNumber *> *)shape dtype:(NSString *)dtype completion:(void (^)(NSArray<id> *_Nullable, FlutterError *_Nullable))completion {
+    // Implement custom prediction logic here based on 'input', 'shape', and 'dtype'.
+    // This is a placeholder, replace with your actual implementation.
+    completion(nil, nil);
+}
+
 
 - (NSArray<NSNumber*>*)predictImage:(void*)imageBuffer withWidth:(int)width andHeight:(int)height atIndex:(NSInteger)moduleIndex isObjectDetection:(BOOL)isObjectDetection objectDetectionType:(NSInteger)objectDetectionType {
     try {
@@ -181,11 +187,6 @@ if (numberOfClasses != nil && imageWidth != nil && imageHeight != nil) {
 
 
 
-- (void)getPredictionCustomIndex:(NSInteger)index input:(NSArray<NSNumber *> *)input shape:(NSArray<NSNumber *> *)shape dtype:(NSString *)dtype completion:(void (^)(NSArray<id> *_Nullable, FlutterError *_Nullable))completion {
-    // Implement custom prediction logic here based on 'input', 'shape', and 'dtype'.
-    // This is a placeholder, replace with your actual implementation.
-    completion(nil, nil);
-}
 
 
 
