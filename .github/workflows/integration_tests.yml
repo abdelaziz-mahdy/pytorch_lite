@@ -75,7 +75,7 @@ jobs:
           disk-size: 6000M
           heap-size: 600M
           disable-animations: true
-          script: cd example && flutter pub get && flutter test integration_test
+          script: cd example && ls assets && ls && flutter pub get && flutter test integration_test
 
   ios_test:
     name: iOS_test
