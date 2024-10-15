@@ -14,7 +14,7 @@ defaults:
   run:
     working-directory: example
 concurrency:
-  group: auto-deploy
+  group: auto-deploy-build-cross-platform
   cancel-in-progress: true
 jobs:
   android_windows:
