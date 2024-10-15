@@ -58,13 +58,13 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/models/
-    - assets/labels/
     - assets/kitten.jpeg
     - assets/8k-test.jpg
+    - assets/models/
+    - assets/labels/
   # To add assets to your application, add an assets section, like this:
   # assets:
-  #   - images/a_dot_burr.jpeg
+    # - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

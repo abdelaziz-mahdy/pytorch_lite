@@ -1,5 +1,3 @@
-
-
 #import "pigeon.h"
 
 @interface PrePostProcessor : NSObject
@@ -59,7 +57,7 @@
         _mImageWidth = imageWidth;
         _mImageHeight = imageHeight;
         _mObjectDetectionModelType = objectDetectionModelType;
-        if (_mObjectDetectionModelType==0) {
+        if (_mObjectDetectionModelType == 0) {
             // _mOutputRow = 25200;
             _mOutputColumn = _mNumberOfClasses + 5;
         } else {
@@ -70,29 +68,31 @@
     return self;
 }
 
-
-
-
-
-
-
-  + (double)getFloatAsDouble:(float)fValue {
++ (double)getFloatAsDouble:(float)fValue {
     return (double)fValue;
 }
 
 - (NSMutableArray<ResultObjectDetection *> *)nonMaxSuppression:(NSMutableArray<ResultObjectDetection *> *)boxes {
     // Sort the boxes by confidence scores, from high to low.
     [boxes sortUsingComparator:^NSComparisonResult(ResultObjectDetection *box1, ResultObjectDetection *box2) {
-        return [box2.score compare:box1.score];
+        return [@([box2 score]) compare:@([box1 score])]; // Wrap in NSNumber
     }];
-    
+        //  if (box2.score > box1.score) {
+        //      return NSOrderedAscending;
+        //  } else if (box2.score < box1.score) {
+        //      return NSOrderedDescending;
+        //  } else {
+        //      return NSOrderedSame;
+        //  }
+  
+
     NSMutableArray<ResultObjectDetection *> *selected = [NSMutableArray array];
     NSMutableArray<NSNumber *> *active = [NSMutableArray arrayWithCapacity:boxes.count];
     for (NSUInteger i = 0; i < boxes.count; i++) {
         [active addObject:@(YES)];
     }
     NSUInteger numActive = active.count;
-    
+
     BOOL done = NO;
     for (NSUInteger i = 0; i < boxes.count && !done; i++) {
         if (active[i].boolValue) {
@@ -101,7 +101,7 @@
             if (selected.count >= self.mNmsLimit) {
                 break;
             }
-            
+
             for (NSUInteger j = i + 1; j < boxes.count; j++) {
                 if (active[j].boolValue) {
                     ResultObjectDetection *boxB = boxes[j];
@@ -117,32 +117,33 @@
             }
         }
     }
-    
+
     NSLog(@"PytorchLitePlugin result length after processing %lu", (unsigned long)selected.count);
-    
+
     return selected;
 }
+
 - (double)IOU:(PyTorchRect *)a boxB:(PyTorchRect *)b {
-    double areaA = ((a.right.doubleValue - a.left.doubleValue) * (a.bottom.doubleValue - a.top.doubleValue));
+    double areaA = ((a.right - a.left) * (a.bottom - a.top));
     if (areaA <= 0.0)
         return 0.0;
 
-    double areaB = ((b.right.doubleValue - b.left.doubleValue) * (b.bottom.doubleValue - b.top.doubleValue));
+    double areaB = ((b.right - b.left) * (b.bottom - b.top));
     if (areaB <= 0.0)
         return 0.0;
 
-    double intersectionMinX = MAX(a.left.doubleValue, b.left.doubleValue);
-    double intersectionMinY = MAX(a.top.doubleValue, b.top.doubleValue);
-    double intersectionMaxX = MIN(a.right.doubleValue, b.right.doubleValue);
-    double intersectionMaxY = MIN(a.bottom.doubleValue, b.bottom.doubleValue);
+    double intersectionMinX = MAX(a.left, b.left);
+    double intersectionMinY = MAX(a.top, b.top);
+    double intersectionMaxX = MIN(a.right, b.right);
+    double intersectionMaxY = MIN(a.bottom, b.bottom);
     double intersectionArea = MAX(intersectionMaxY - intersectionMinY, 0) *
             MAX(intersectionMaxX - intersectionMinX, 0);
     return intersectionArea / (areaA + areaB - intersectionArea);
 }
 
 - (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictionsYoloV8:(NSArray<NSNumber *> *)outputs {
-    int mOutputRow = outputs.count / self.mOutputColumn; 
-    NSLog(@"model mOutputRow is %d", mOutputRow); 
+    int mOutputRow = (int)(outputs.count / self.mOutputColumn);
+    NSLog(@"model mOutputRow is %d", mOutputRow);
     NSMutableArray<ResultObjectDetection *> *results = [NSMutableArray array];
 
     for (int i = 0; i < mOutputRow; i++) {
@@ -167,16 +168,16 @@
         }
 
         if (max > self.mScoreThreshold) {
-            PyTorchRect *rect = [PyTorchRect makeWithLeft:@([self.class getFloatAsDouble:left / self.mImageWidth])
-                                                      top:@([self.class getFloatAsDouble:top / self.mImageHeight])
-                                                    right:@([self.class getFloatAsDouble:right / self.mImageWidth])
-                                                   bottom:@([self.class getFloatAsDouble:bottom / self.mImageHeight])
-                                                    width:@([self.class getFloatAsDouble:w / self.mImageWidth])
-                                                   height:@([self.class getFloatAsDouble:h / self.mImageHeight])];
+            PyTorchRect *rect = [PyTorchRect makeWithLeft:[PrePostProcessor getFloatAsDouble:left / self.mImageWidth]
+                                                    top:[PrePostProcessor getFloatAsDouble:top / self.mImageHeight]
+                                                  right:[PrePostProcessor getFloatAsDouble:right / self.mImageWidth]
+                                                 bottom:[PrePostProcessor getFloatAsDouble:bottom / self.mImageHeight]
+                                                  width:[PrePostProcessor getFloatAsDouble:w / self.mImageWidth]
+                                                 height:[PrePostProcessor getFloatAsDouble:h / self.mImageHeight]];
 
-            ResultObjectDetection *result = [ResultObjectDetection makeWithClassIndex:@(cls)
+            ResultObjectDetection *result = [ResultObjectDetection makeWithClassIndex:cls
                                                                               className:nil
-                                                                                 score:@([self.class getFloatAsDouble:max])
+                                                                                 score:[PrePostProcessor getFloatAsDouble:max]
                                                                                   rect:rect];
 
             [results addObject:result];
@@ -187,55 +188,53 @@
     return [self nonMaxSuppression:results];
 }
 
-
 - (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictionsYolov5:(NSArray<NSNumber *> *)outputs {
-    int mOutputRow = outputs.count / self.mOutputColumn; 
-    NSLog(@"model mOutputRow is %d", mOutputRow); 
+    int mOutputRow = (int)(outputs.count / self.mOutputColumn);
+    NSLog(@"model mOutputRow is %d", mOutputRow);
     NSMutableArray<ResultObjectDetection *> *results = [NSMutableArray array];
     for (int i = 0; i < mOutputRow; i++) {
- float score = [outputs[i*self.mOutputColumn + 4] floatValue];
+        float score = [outputs[i * self.mOutputColumn + 4] floatValue];
 
-    if (score > self.mScoreThreshold) {
-        float x = [outputs[i * self.mOutputColumn] floatValue];
-        float y = [outputs[i * self.mOutputColumn + 1] floatValue];
-        float w = [outputs[i * self.mOutputColumn + 2] floatValue];
-        float h = [outputs[i * self.mOutputColumn + 3] floatValue];
+        if (score > self.mScoreThreshold) {
+            float x = [outputs[i * self.mOutputColumn] floatValue];
+            float y = [outputs[i * self.mOutputColumn + 1] floatValue];
+            float w = [outputs[i * self.mOutputColumn + 2] floatValue];
+            float h = [outputs[i * self.mOutputColumn + 3] floatValue];
 
-        float left = (x - w / 2);
-        float top = (y - h / 2);
-        float right = (x + w / 2);
-        float bottom = (y + h / 2);
+            float left = (x - w / 2);
+            float top = (y - h / 2);
+            float right = (x + w / 2);
+            float bottom = (y + h / 2);
 
-        float max = [outputs[i * self.mOutputColumn + 5] floatValue];
-        int cls = 0;
-        for (int j = 0; j < self.mOutputColumn - 5; j++) {
-            float currentVal = [outputs[i * self.mOutputColumn + 5 + j] floatValue];
-            if (currentVal > max) {
-                max = currentVal;
-                cls = j;
+            float max = [outputs[i * self.mOutputColumn + 5] floatValue];
+            int cls = 0;
+            for (int j = 0; j < self.mOutputColumn - 5; j++) {
+                float currentVal = [outputs[i * self.mOutputColumn + 5 + j] floatValue];
+                if (currentVal > max) {
+                    max = currentVal;
+                    cls = j;
+                }
             }
-        }
 
-        PyTorchRect *rect = [PyTorchRect makeWithLeft:@([self.class getFloatAsDouble:left / self.mImageWidth])
-                                                  top:@([self.class getFloatAsDouble:top / self.mImageHeight])
-                                                right:@([self.class getFloatAsDouble:right / self.mImageWidth])
-                                               bottom:@([self.class getFloatAsDouble:bottom / self.mImageHeight])
-                                                width:@([self.class getFloatAsDouble:w / self.mImageWidth])
-                                               height:@([self.class getFloatAsDouble:h / self.mImageHeight])];
+            PyTorchRect *rect = [PyTorchRect makeWithLeft:[PrePostProcessor getFloatAsDouble:left / self.mImageWidth]
+                                                    top:[PrePostProcessor getFloatAsDouble:top / self.mImageHeight]
+                                                  right:[PrePostProcessor getFloatAsDouble:right / self.mImageWidth]
+                                                 bottom:[PrePostProcessor getFloatAsDouble:bottom / self.mImageHeight]
+                                                  width:[PrePostProcessor getFloatAsDouble:w / self.mImageWidth]
+                                                 height:[PrePostProcessor getFloatAsDouble:h / self.mImageHeight]];
 
-        ResultObjectDetection *result = [ResultObjectDetection makeWithClassIndex:@(cls)
-                                                                          className:nil
-                                                                             score:@([self.class getFloatAsDouble:[outputs[i * self.mOutputColumn + 4] floatValue]])
-                                                                              rect:rect];
+            ResultObjectDetection *result = [ResultObjectDetection makeWithClassIndex:cls
+                                                                              className:nil
+                                                                                 score:[PrePostProcessor getFloatAsDouble:score]
+                                                                                  rect:rect];
 
-        [results addObject:result];
+            [results addObject:result];
         }
     }
 
     NSLog(@"PytorchLitePlugin result length before processing %lu", (unsigned long)results.count);
     return [self nonMaxSuppression:results];
 }
-
 
 - (NSMutableArray<ResultObjectDetection *> *)outputsToNMSPredictions:(NSArray<NSNumber *> *)outputs {
     if (self.mObjectDetectionModelType == 0) {

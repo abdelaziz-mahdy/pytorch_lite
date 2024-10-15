@@ -1,5 +1,6 @@
 package com.abdelaziz_mahdy.pytorch_lite;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -88,12 +89,9 @@ result.error(e);
 
     }
 
-
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    @java.lang.Override
-    public void getPredictionCustom(Long index, List<Double> input, List<Long> shape, String dtype,
-            Pigeon.Result<List<Object>> result) {
+    @TargetApi(Build.VERSION_CODES.N)
+    @Override
+    public void getPredictionCustom(Long index, List<Double> input, List<Long> shape, String dtype, Pigeon.NullableResult<List<Object>> result) {
         Module module = null;
         Double[] data = new Double[input.size()];
         DType dtype_enum = null;
@@ -133,6 +131,9 @@ result.error(e);
         }
         result.success(Collections.singletonList(outputTensor));
     }
+
+
+
 
     @Override
     public void getRawImagePredictionList(Long index, byte[] imageData, Pigeon.Result<List<Double>> result) {
@@ -481,11 +482,11 @@ result.error(e);
         }
 
         void startListening(PytorchLitePlugin methodCallHandler, BinaryMessenger messenger) {
-            Pigeon.ModelApi.setup(messenger, methodCallHandler);
+            Pigeon.ModelApi.setUp(messenger, methodCallHandler);
         }
 
         void stopListening(BinaryMessenger messenger) {
-            Pigeon.ModelApi.setup(messenger, null);
+            Pigeon.ModelApi.setUp(messenger, null);
         }
     }
 }
