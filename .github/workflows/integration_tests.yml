@@ -94,3 +94,5 @@ jobs:
       - run: flutter pub get
       - name: Run integration tests
         run: cd example && flutter test integration_test
+
+        
