@@ -83,7 +83,7 @@ public class PytorchLitePlugin implements FlutterPlugin, Pigeon.ModelApi {
         } catch (Exception e) {
             Log.e(TAG, modelPath + " is not a proper model", e);
 
-result.error(e);
+            result.error(e);
         }
 
     }
@@ -93,7 +93,7 @@ result.error(e);
     @RequiresApi(api = Build.VERSION_CODES.N)
     @java.lang.Override
     public void getPredictionCustom(Long index, List<Double> input, List<Long> shape, String dtype,
-            Pigeon.Result<List<Object>> result) {
+                                    Pigeon.Result<List<Object>> result) {
         Module module = null;
         Double[] data = new Double[input.size()];
         DType dtype_enum = null;
@@ -144,9 +144,9 @@ result.error(e);
             imageModule = modules.get(index.intValue());
 
             prePostProcessor = prePostProcessors.get(index.intValue());
-    } catch (Exception e) {
-        Log.e(TAG, "error reading image", e);
-    }
+        } catch (Exception e) {
+            Log.e(TAG, "error reading image", e);
+        }
         try {
 
             final FloatBuffer floatBuffer = Tensor.allocateFloatBuffer(3 * prePostProcessor.mImageWidth * prePostProcessor.mImageHeight);
@@ -167,19 +167,67 @@ result.error(e);
                 imageOutputTensor = imageModule.forward(IValue.from(imageInputTensor)).toTensor();
             }
 
-            // getting tensor content as java array of doubles
-            float[] scores = imageOutputTensor.getDataAsFloatArray();
-
-            Double[] scoresDouble = new Double[scores.length];
-            for (int i = 0; i < scoresDouble.length; i++) {
-
-                scoresDouble[i] = Double.valueOf(Float.valueOf(scores[i]));
+            double[] doubleArray = null;
+            switch (imageOutputTensor.dtype()) {
+                case UINT8: {
+                    byte[] byteArray = imageOutputTensor.getDataAsUnsignedByteArray();
+                    doubleArray = new double[byteArray.length];
+                    for (int i = 0 ; i < byteArray.length; i++)
+                    {
+                        doubleArray[i] = (double) byteArray[i];
+                    }
+                }
+                break;
+                case INT8: {
+                    byte[] byteArray = imageOutputTensor.getDataAsByteArray();
+                    doubleArray = new double[byteArray.length];
+                    for (int i = 0 ; i < byteArray.length; i++)
+                    {
+                        doubleArray[i] = (double) byteArray[i];
+                    }
+                }
+                break;
+                case INT32: {
+                    int[] intArray = imageOutputTensor.getDataAsIntArray();
+                    doubleArray = new double[intArray.length];
+                    for (int i = 0 ; i < intArray.length; i++)
+                    {
+                        doubleArray[i] = (double) intArray[i];
+                    }
+                }
+                break;
+                case FLOAT32: {
+                    float[] floatArray = imageOutputTensor.getDataAsFloatArray();
+                    doubleArray = new double[floatArray.length];
+                    for (int i = 0; i < floatArray.length; i++) {
+                        doubleArray[i] = Double.valueOf(Float.valueOf(floatArray[i]));
+                    }
+                }
+                break;
+                case INT64: {
+                    long[] longArray = imageOutputTensor.getDataAsLongArray();
+                    doubleArray = new double[longArray.length];
+                    for (int i = 0 ; i < longArray.length; i++)
+                    {
+                        doubleArray[i] = (double) longArray[i];
+                    }
+                }
+                break;
+                case FLOAT64: {
+                    doubleArray = imageOutputTensor.getDataAsDoubleArray();
+                }
+                break;
             }
-            result.success(Arrays.asList(scoresDouble));
+
+            List<Double> doubleList = new ArrayList<>();
+            for (double d : doubleArray) {
+                doubleList.add(d);
+            }
+
+            result.success(doubleList);
         } catch (Exception e) {
             Log.e(TAG, "error classifying image", e);
             result.error(e);
-
         }
     }
 
@@ -239,8 +287,8 @@ result.error(e);
 
     @Override
     public void getImagePredictionList(Long index, byte[] imageData, List<byte[]> imageBytesList,
-            Long imageWidthForBytesList, Long imageHeightForBytesList, List<Double> mean, List<Double> std, Boolean isTupleOutput, Long tupleIndex,
-            Pigeon.Result<List<Double>> result) {
+                                       Long imageWidthForBytesList, Long imageHeightForBytesList, List<Double> mean, List<Double> std, Boolean isTupleOutput, Long tupleIndex,
+                                       Pigeon.Result<List<Double>> result) {
         Module imageModule = null;
         Bitmap bitmap = null;
         PrePostProcessor prePostProcessor = null;
@@ -256,11 +304,11 @@ result.error(e);
             } else {
                 bitmap = getBitmapFromBytesList(imageBytesList, imageWidthForBytesList.intValue(),
                         imageHeightForBytesList.intValue());
-                            Matrix matrix = new Matrix();
+                Matrix matrix = new Matrix();
                 matrix.postRotate(90.0f);
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             }
-            
+
             bitmap = Bitmap.createScaledBitmap(bitmap, prePostProcessor.mImageWidth, prePostProcessor.mImageHeight,
                     false);
 
@@ -306,8 +354,8 @@ result.error(e);
 
     @Override
     public void getImagePredictionListObjectDetection(Long index, byte[] imageData, List<byte[]> imageBytesList,
-            Long imageWidthForBytesList, Long imageHeightForBytesList, Double minimumScore, Double IOUThreshold,
-            Long boxesLimit, Boolean isTupleOutput, Long tupleIndex, Pigeon.Result<List<Pigeon.ResultObjectDetection>> result) {
+                                                      Long imageWidthForBytesList, Long imageHeightForBytesList, Double minimumScore, Double IOUThreshold,
+                                                      Long boxesLimit, Boolean isTupleOutput, Long tupleIndex, Pigeon.Result<List<Pigeon.ResultObjectDetection>> result) {
         Module imageModule = null;
         PrePostProcessor prePostProcessor = null;
         Bitmap bitmap = null;
@@ -394,19 +442,19 @@ result.error(e);
      * RenderScript rs = RenderScript.create(context);
      * ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic =
      * ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
-     * 
+     *
      * Type.Builder yuvType = new Type.Builder(rs,
      * Element.U8(rs)).setX(nv21.length);
      * Allocation in = Allocation.createTyped(rs, yuvType.create(),
      * Allocation.USAGE_SCRIPT);
-     * 
+     *
      * Type.Builder rgbaType = new Type.Builder(rs,
      * Element.RGBA_8888(rs)).setX(width).setY(height);
      * Allocation out = Allocation.createTyped(rs, rgbaType.create(),
      * Allocation.USAGE_SCRIPT);
-     * 
+     *
      * in.copyFrom(nv21);
-     * 
+     *
      * yuvToRgbIntrinsic.setInput(in);
      * yuvToRgbIntrinsic.forEach(out);
      * return out;
@@ -491,8 +539,8 @@ result.error(e);
         private final TextureRegistry textureRegistry;
 
         FlutterState(Context applicationContext,
-                BinaryMessenger messenger,
-                TextureRegistry textureRegistry) {
+                     BinaryMessenger messenger,
+                     TextureRegistry textureRegistry) {
             this.applicationContext = applicationContext;
             this.binaryMessenger = messenger;
             this.textureRegistry = textureRegistry;
