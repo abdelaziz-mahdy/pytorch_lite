@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pytorch_lite_example/run_model_by_camera_demo.dart';
 import 'package:pytorch_lite_example/run_model_by_image_demo.dart';
+import 'package:pytorch_lite_example/run_model_by_image_picker_camera_demo.dart';
 
 Future<void> main() async {
   runApp(const ChooseDemo());
@@ -60,7 +61,27 @@ class _ChooseDemoState extends State<ChooseDemo> {
                       color: Colors.white,
                     ),
                   ),
-                )
+                ),
+                TextButton(
+                  onPressed: () => {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const RunModelByImagePickerCameraDemo(),
+                      ),
+                    )
+                  },
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                  ),
+                  child: const Text(
+                    "Run Model with ImagePicker Camera",
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ],
             ),
           );
@@ -69,3 +90,5 @@ class _ChooseDemoState extends State<ChooseDemo> {
     );
   }
 }
+
+
