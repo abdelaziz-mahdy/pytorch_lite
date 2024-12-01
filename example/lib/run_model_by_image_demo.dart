@@ -18,7 +18,7 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
   //CustomModel? _customModel;
   late ModelObjectDetection _objectModel;
   late ModelObjectDetection _objectModelYoloV8;
-
+  late ModelObjectDetection _objectModelYoloV11;
   String? textToShow;
   List? _prediction;
   File? _image;
@@ -37,6 +37,7 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
     //String pathCustomModel = "assets/models/custom_model.ptl";
     String pathObjectDetectionModel = "assets/models/yolov5s.torchscript";
     String pathObjectDetectionModelYolov8 = "assets/models/yolov8s.torchscript";
+    String pathObjectDetectionModelYolov11 = "assets/models/yolo11n.torchscript";
     try {
       _imageModel = await PytorchLite.loadClassificationModel(
           pathImageModel, 224, 224, 1000,
@@ -49,6 +50,14 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
           pathObjectDetectionModelYolov8, 80, 640, 640,
           labelPath: "assets/labels/labels_objectDetection_Coco.txt",
           objectDetectionModelType: ObjectDetectionModelType.yolov8);
+      _objectModelYoloV11 = await PytorchLite.loadObjectDetectionModel(
+        pathObjectDetectionModelYolov11,
+        80,
+        640,
+        640,
+        labelPath: "assets/labels/labels_objectDetection_Coco.txt",
+        objectDetectionModelType: ObjectDetectionModelType.yolov8
+      );
     } catch (e) {
       if (e is PlatformException) {
         print("only supported for android, Error is $e");
@@ -129,6 +138,41 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
     Stopwatch stopwatch = Stopwatch()..start();
 
     objDetect = await _objectModelYoloV8.getImagePrediction(
+        await File(image!.path).readAsBytes(),
+        minimumScore: 0.1,
+        iOUThreshold: 0.3);
+    textToShow = inferenceTimeAsString(stopwatch);
+
+    print('object executed in ${stopwatch.elapsed.inMilliseconds} ms');
+    for (var element in objDetect) {
+      print({
+        "score": element?.score,
+        "className": element?.className,
+        "class": element?.classIndex,
+        "rect": {
+          "left": element?.rect.left,
+          "top": element?.rect.top,
+          "width": element?.rect.width,
+          "height": element?.rect.height,
+          "right": element?.rect.right,
+          "bottom": element?.rect.bottom,
+        },
+      });
+    }
+
+    setState(() {
+      //this.objDetect = objDetect;
+      _image = File(image.path);
+    });
+  }
+
+  Future runObjectDetectionYoloV11() async {
+    //pick a random image
+
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    Stopwatch stopwatch = Stopwatch()..start();
+
+    objDetect = await _objectModelYoloV11.getImagePrediction(
         await File(image!.path).readAsBytes(),
         minimumScore: 0.1,
         iOUThreshold: 0.3);
@@ -290,6 +334,18 @@ class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
               ),
               child: const Text(
                 "Run object detection YoloV8 with labels",
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: runObjectDetectionYoloV11,
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.blue,
+              ),
+              child: const Text(
+                "Run object detection YoloV11 with labels",
                 style: TextStyle(
                   color: Colors.white,
                 ),
