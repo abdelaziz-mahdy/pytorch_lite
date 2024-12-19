@@ -1,3 +1,6 @@
+## 4.3.1
+
+- Removed example models from version published to pub
 ## 4.3.0
 
 - Updated Pigeon to v22.4.2

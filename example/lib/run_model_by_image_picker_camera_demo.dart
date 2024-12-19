@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
-import 'package:pytorch_lite_example/ui/box_widget.dart';
 
 class RunModelByImagePickerCameraDemo extends StatefulWidget {
   const RunModelByImagePickerCameraDemo({Key? key}) : super(key: key);

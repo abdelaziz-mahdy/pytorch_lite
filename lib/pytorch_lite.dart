@@ -11,7 +11,6 @@ import 'package:pytorch_lite/enums/model_type.dart';
 import 'package:pytorch_lite/image_utils_isolate.dart';
 import 'package:pytorch_lite/pigeon.dart';
 import 'package:collection/collection.dart';
-import 'package:image/image.dart' as img;
 
 export 'enums/dtype.dart';
 export 'package:pytorch_lite/pigeon.dart';
@@ -123,16 +122,6 @@ Future<List<String>> _getLabelsCsv(String labelPath) async {
 Future<List<String>> _getLabelsTxt(String labelPath) async {
   String labelsData = await rootBundle.loadString(labelPath);
   return labelsData.split("\n");
-}
-
-Uint8List _rotateImageBytes(Uint8List imageBytes, int rotation) {
-  img.Image? image = img.decodeImage(imageBytes);
-  if (image == null) {
-    throw Exception("Unable to decode image bytes");
-  }
-
-  img.Image rotatedImage = img.copyRotate(image, angle: rotation);
-  return Uint8List.fromList(img.encodeJpg(rotatedImage));
 }
 
 /*
@@ -735,7 +724,7 @@ class ModelObjectDetection {
                 ],
               ),
             );
-          }).toList()
+          })
         ],
       );
     });

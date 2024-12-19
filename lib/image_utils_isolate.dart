@@ -67,15 +67,6 @@ class ImageUtilsIsolate {
     return null;
   }
 
-  Uint8List _rotateImageBytes(Uint8List imageBytes, int rotation) {
-    Image? image = decodeImage(imageBytes);
-    if (image == null) {
-      throw Exception("Unable to decode image bytes");
-    }
-
-    Image rotatedImage = copyRotate(image, angle: rotation);
-    return Uint8List.fromList(encodeJpg(rotatedImage));
-  }
 
   static List<dynamic> _getParamsBasedOnType(CameraImage cameraImage,
       {int? rotation}) {
