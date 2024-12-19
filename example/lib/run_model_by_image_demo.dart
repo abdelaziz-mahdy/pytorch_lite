@@ -10,10 +10,10 @@ class RunModelByImageDemo extends StatefulWidget {
   const RunModelByImageDemo({Key? key}) : super(key: key);
 
   @override
-  _RunModelByImageDemoState createState() => _RunModelByImageDemoState();
+  RunModelByImageDemoState createState() => RunModelByImageDemoState();
 }
 
-class _RunModelByImageDemoState extends State<RunModelByImageDemo> {
+class RunModelByImageDemoState extends State<RunModelByImageDemo> {
   ClassificationModel? _imageModel;
   //CustomModel? _customModel;
   late ModelObjectDetection _objectModel;

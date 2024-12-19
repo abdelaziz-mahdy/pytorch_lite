@@ -8,11 +8,11 @@ class RunModelByImagePickerCameraDemo extends StatefulWidget {
   const RunModelByImagePickerCameraDemo({Key? key}) : super(key: key);
 
   @override
-  _RunModelByImagePickerCameraDemoState createState() =>
-      _RunModelByImagePickerCameraDemoState();
+  RunModelByImagePickerCameraDemoState createState() =>
+      RunModelByImagePickerCameraDemoState();
 }
 
-class _RunModelByImagePickerCameraDemoState
+class RunModelByImagePickerCameraDemoState
     extends State<RunModelByImagePickerCameraDemo> {
   List<ResultObjectDetection>? objectDetectionResults;
   String? classificationResult;

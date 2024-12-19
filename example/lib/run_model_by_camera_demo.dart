@@ -9,10 +9,10 @@ class RunModelByCameraDemo extends StatefulWidget {
   const RunModelByCameraDemo({Key? key}) : super(key: key);
 
   @override
-  _RunModelByCameraDemoState createState() => _RunModelByCameraDemoState();
+  RunModelByCameraDemoState createState() => RunModelByCameraDemoState();
 }
 
-class _RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
+class RunModelByCameraDemoState extends State<RunModelByCameraDemo> {
   List<ResultObjectDetection>? results;
   Duration? objectDetectionInferenceTime;
 
