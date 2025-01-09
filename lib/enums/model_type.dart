@@ -21,4 +21,28 @@ enum CameraPreProcessingMethod {
   byteList,
 }
 
-enum ModelLocation { asset, path }
+/// Enum representing the location of the model.
+///
+/// `asset` indicates that the model is located in the application's assets.
+///
+/// `path` indicates that the model is located at a specific file path.
+enum ModelLocation {
+  /// `asset` indicates that the model is located in the application's assets.
+  asset,
+
+  /// `path` indicates that the model is located at a specific file path.
+  path
+}
+
+/// Enum representing the location of the labels.
+///
+/// `asset` indicates that the labels are located in the application's assets.
+///
+/// `path` indicates that the labels are located at a specific file path.
+enum LabelsLocation {
+  /// `asset` indicates that the model is located in the application's assets.
+  asset,
+
+  /// `path` indicates that the model is located at a specific file path.
+  path
+}
