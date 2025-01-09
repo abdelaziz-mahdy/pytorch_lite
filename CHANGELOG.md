@@ -1,3 +1,7 @@
+## 4.3.2
+
+- Add LabelsLocation enum and update labels loading methods
+
 ## 4.3.1+1
 
 - fixed example

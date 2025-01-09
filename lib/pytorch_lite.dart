@@ -37,18 +37,22 @@ class PytorchLite {
       String path, int imageWidth, int imageHeight, int numberOfClasses,
       {String? labelPath,
       bool ensureMatchingNumberOfClasses = true,
-      ModelLocation modelLocation = ModelLocation.asset}) async {
+      ModelLocation modelLocation = ModelLocation.asset,
+      LabelsLocation labelsLocation = LabelsLocation.asset}) async {
     if (modelLocation == ModelLocation.asset) {
       path = await _getAbsolutePath(path);
     }
+
     int index =
         await ModelApi().loadModel(path, null, imageWidth, imageHeight, null);
     List<String> labels = [];
     if (labelPath != null) {
+      String labelData =
+          await _loadLabelsFile(labelPath, labelsLocation: labelsLocation);
       if (labelPath.endsWith(".txt")) {
-        labels = await _getLabelsTxt(labelPath);
+        labels = await _getLabelsTxt(labelData);
       } else {
-        labels = await _getLabelsCsv(labelPath);
+        labels = await _getLabelsCsv(labelData);
       }
       if (ensureMatchingNumberOfClasses) {
         if (labels.length != numberOfClasses) {
@@ -67,7 +71,8 @@ class PytorchLite {
       {String? labelPath,
       ObjectDetectionModelType objectDetectionModelType =
           ObjectDetectionModelType.yolov5,
-      ModelLocation modelLocation = ModelLocation.asset}) async {
+      ModelLocation modelLocation = ModelLocation.asset,
+      LabelsLocation labelsLocation = LabelsLocation.asset}) async {
     if (modelLocation == ModelLocation.asset) {
       path = await _getAbsolutePath(path);
     }
@@ -76,10 +81,12 @@ class PytorchLite {
         imageHeight, objectDetectionModelType.index);
     List<String> labels = [];
     if (labelPath != null) {
+      String labelData =
+          await _loadLabelsFile(labelPath, labelsLocation: labelsLocation);
       if (labelPath.endsWith(".txt")) {
-        labels = await _getLabelsTxt(labelPath);
+        labels = await _getLabelsTxt(labelData);
       } else {
-        labels = await _getLabelsCsv(labelPath);
+        labels = await _getLabelsCsv(labelData);
       }
     }
     return ModelObjectDetection(index, imageWidth, imageHeight, labels,
@@ -110,18 +117,31 @@ class PytorchLite {
   }
 }
 
+Future<String> _loadLabelsFile(String labelPath,
+    {LabelsLocation labelsLocation = LabelsLocation.asset}) async {
+  String labelsData;
+  if (labelsLocation == LabelsLocation.asset) {
+    labelsData = await rootBundle.loadString(labelPath);
+  } else {
+    labelsData = await File(labelPath).readAsString();
+  }
+  return labelsData;
+}
+
 ///get labels in csv format
 ///labels are separated by commas
-Future<List<String>> _getLabelsCsv(String labelPath) async {
-  String labelsData = await rootBundle.loadString(labelPath);
-  return labelsData.split(",");
+Future<List<String>> _getLabelsCsv(
+  String fileContent,
+) async {
+  return fileContent.split(",");
 }
 
 ///get labels in txt format
 ///each line is a label
-Future<List<String>> _getLabelsTxt(String labelPath) async {
-  String labelsData = await rootBundle.loadString(labelPath);
-  return labelsData.split("\n");
+Future<List<String>> _getLabelsTxt(
+  String fileContent,
+) async {
+  return fileContent.split("\n");
 }
 
 /*
