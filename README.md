@@ -1,5 +1,14 @@
 # pytorch_lite
 
+### ⚠️ This package has been migrated to ExecutorTorch
+
+This package (pytorch_lite) is deprecated. Please use the new **executorch_flutter** package instead:
+
+- **GitHub**: https://github.com/abdelaziz-mahdy/executorch_flutter
+- **pub.dev**: https://pub.dev/packages/executorch_flutter
+
+---
+
 - flutter package to help run pytorch lite models classification and YoloV5 and YoloV8.
 
 # example for Classification
