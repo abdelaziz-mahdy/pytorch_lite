@@ -160,7 +160,7 @@ void main() {
     });
   });
 
-  group('Testing Model Runs', () {
+  group('Testing Model Runs preprocessing by native methods', () {
     testWidgets('Run Classification Model on Small Image (raw list)',
         (WidgetTester tester) async {
       await runTestWithWrapper(
@@ -169,7 +169,8 @@ void main() {
           testBody: () async {
             Uint8List smallImageData =
                 await _getImageBytes(pathToSmallTestImage);
-            return await imageModel.getImagePredictionList(smallImageData);
+            return await imageModel.getImagePredictionList(smallImageData,
+                preProcessingMethod: PreProcessingMethod.native);
           });
     });
     testWidgets('Run Classification Model on Small Image',
@@ -180,7 +181,8 @@ void main() {
           testBody: () async {
             Uint8List smallImageData =
                 await _getImageBytes(pathToSmallTestImage);
-            return await imageModel.getImagePrediction(smallImageData);
+            return await imageModel.getImagePrediction(smallImageData,
+                preProcessingMethod: PreProcessingMethod.native);
           });
     });
 
@@ -192,7 +194,8 @@ void main() {
           testBody: () async {
             Uint8List largeImageData =
                 await _getImageBytes(pathToLargeTestImage);
-            return await imageModel.getImagePrediction(largeImageData);
+            return await imageModel.getImagePrediction(largeImageData,
+                preProcessingMethod: PreProcessingMethod.native);
           });
     });
 
@@ -205,7 +208,8 @@ void main() {
             Uint8List smallImageData =
                 await _getImageBytes(pathToSmallTestImage);
             return await objectModel.getImagePrediction(smallImageData,
-                minimumScore: 0.1, iOUThreshold: 0.3);
+                minimumScore: 0.1, iOUThreshold: 0.3,
+                preProcessingMethod: PreProcessingMethod.native);
           });
     });
 
@@ -218,7 +222,8 @@ void main() {
             Uint8List largeImageData =
                 await _getImageBytes(pathToLargeTestImage);
             return await objectModel.getImagePrediction(largeImageData,
-                minimumScore: 0.1, iOUThreshold: 0.3);
+                minimumScore: 0.1, iOUThreshold: 0.3,
+                preProcessingMethod: PreProcessingMethod.native);
           });
     });
 
@@ -231,7 +236,8 @@ void main() {
             Uint8List smallImageData =
                 await _getImageBytes(pathToSmallTestImage);
             return await objectModelYolov8.getImagePrediction(smallImageData,
-                minimumScore: 0.1, iOUThreshold: 0.3);
+                minimumScore: 0.1, iOUThreshold: 0.3,
+                preProcessingMethod: PreProcessingMethod.native);
           });
     });
 
@@ -244,7 +250,103 @@ void main() {
             Uint8List largeImageData =
                 await _getImageBytes(pathToLargeTestImage);
             return await objectModelYolov8.getImagePrediction(largeImageData,
-                minimumScore: 0.1, iOUThreshold: 0.3);
+                minimumScore: 0.1, iOUThreshold: 0.3,
+                preProcessingMethod: PreProcessingMethod.native);
+          });
+    });
+  });
+    group('Testing Model Runs preprocessing by imagelib', () {
+    testWidgets('Run Classification Model on Small Image (raw list)',
+        (WidgetTester tester) async {
+      await runTestWithWrapper(
+          tester: tester,
+          testName: 'Run Classification Model on Small Image (raw list)',
+          testBody: () async {
+            Uint8List smallImageData =
+                await _getImageBytes(pathToSmallTestImage);
+            return await imageModel.getImagePredictionList(smallImageData,
+                preProcessingMethod: PreProcessingMethod.native);
+          });
+    });
+    testWidgets('Run Classification Model on Small Image',
+        (WidgetTester tester) async {
+      await runTestWithWrapper(
+          tester: tester,
+          testName: 'Run Classification Model on Small Image',
+          testBody: () async {
+            Uint8List smallImageData =
+                await _getImageBytes(pathToSmallTestImage);
+            return await imageModel.getImagePrediction(smallImageData,
+                preProcessingMethod: PreProcessingMethod.native);
+          });
+    });
+
+    testWidgets('Run Classification Model on Large Image',
+        (WidgetTester tester) async {
+      await runTestWithWrapper(
+          tester: tester,
+          testName: 'Run Classification Model on Large Image',
+          testBody: () async {
+            Uint8List largeImageData =
+                await _getImageBytes(pathToLargeTestImage);
+            return await imageModel.getImagePrediction(largeImageData,
+                preProcessingMethod: PreProcessingMethod.native);
+          });
+    });
+
+    testWidgets('Run Object Detection Model on Small Image',
+        (WidgetTester tester) async {
+      await runTestWithWrapper(
+          tester: tester,
+          testName: 'Run Object Detection Model on Small Image',
+          testBody: () async {
+            Uint8List smallImageData =
+                await _getImageBytes(pathToSmallTestImage);
+            return await objectModel.getImagePrediction(smallImageData,
+                minimumScore: 0.1, iOUThreshold: 0.3,
+                preProcessingMethod: PreProcessingMethod.native);
+          });
+    });
+
+    testWidgets('Run Object Detection Model on Large Image',
+        (WidgetTester tester) async {
+      await runTestWithWrapper(
+          tester: tester,
+          testName: 'Run Object Detection Model on Large Image',
+          testBody: () async {
+            Uint8List largeImageData =
+                await _getImageBytes(pathToLargeTestImage);
+            return await objectModel.getImagePrediction(largeImageData,
+                minimumScore: 0.1, iOUThreshold: 0.3,
+                preProcessingMethod: PreProcessingMethod.native);
+          });
+    });
+
+    testWidgets('Run Object Detection Model YOLOv8 on Small Image',
+        (WidgetTester tester) async {
+      await runTestWithWrapper(
+          tester: tester,
+          testName: 'Run Object Detection Model YOLOv8 on Small Image',
+          testBody: () async {
+            Uint8List smallImageData =
+                await _getImageBytes(pathToSmallTestImage);
+            return await objectModelYolov8.getImagePrediction(smallImageData,
+                minimumScore: 0.1, iOUThreshold: 0.3,
+                preProcessingMethod: PreProcessingMethod.native);
+          });
+    });
+
+    testWidgets('Run Object Detection Model YOLOv8 on Large Image',
+        (WidgetTester tester) async {
+      await runTestWithWrapper(
+          tester: tester,
+          testName: 'Run Object Detection Model YOLOv8 on Large Image',
+          testBody: () async {
+            Uint8List largeImageData =
+                await _getImageBytes(pathToLargeTestImage);
+            return await objectModelYolov8.getImagePrediction(largeImageData,
+                minimumScore: 0.1, iOUThreshold: 0.3,
+                preProcessingMethod: PreProcessingMethod.native);
           });
     });
   });
